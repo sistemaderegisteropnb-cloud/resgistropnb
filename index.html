@@ -23,6 +23,7 @@
             justify-content: center;
             padding: 20px;
             background-color: var(--azul-fondo);
+            /* Fondo geométrico */
             background-image: 
                 linear-gradient(145deg, #000d1a 0%, #002145 40%, #003570 100%),
                 url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 0L100 50L50 100L0 50Z' fill='%23ffffff' fill-opacity='0.03'/%3E%3Ccircle cx='50' cy='50' r='20' stroke='%23d4c9a8' stroke-opacity='0.15' stroke-width='1' fill='none'/%3E%3Cpath d='M50 10L90 50L50 90L10 50Z' stroke='%23ffffff' stroke-opacity='0.05' fill='none'/%3E%3C/svg%3E");
@@ -31,7 +32,7 @@
             position: relative;
         }
 
-        /* 🔹 Marca de agua grande a la derecha */
+        /* 🔹 Marca de agua con tu logo local */
         body::after {
             content: "";
             position: fixed;
@@ -42,20 +43,15 @@
             height: 50vw;
             max-width: 800px;
             max-height: 800px;
-            background: url('https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Logo_Polic%C3%ADa_Nacional_Bolivariana.svg/1200px-Logo_Polic%C3%ADa_Nacional_Bolivariana.svg.png') center/contain no-repeat;
-            opacity: 0.07;
-            filter: brightness(2.2) contrast(0.7);
+            background: url('img/firma.png') center/contain no-repeat;
+            opacity: 0.08; /* Ligeramente más visible para el fondo */
+            filter: brightness(1.5) contrast(0.9) grayscale(0.5);
             z-index: 1;
-            pointer-events: none; /* No bloquea clics */
-            transition: opacity 0.5s ease;
+            pointer-events: none;
         }
 
-        @media (max-width: 900px) { 
-            body::after { right: -15%; opacity: 0.04; } 
-        }
-        @media (max-width: 600px) { 
-            body::after { display: none; } /* Ocultar en móvil */
-        }
+        @media (max-width: 900px) { body::after { right: -15%; opacity: 0.05; } }
+        @media (max-width: 600px) { body::after { display: none; } }
 
         .login-container { 
             background: var(--blanco); 
@@ -66,11 +62,11 @@
             box-shadow: 0 15px 40px rgba(0,0,0,0.45); 
             border-top: 5px solid var(--azul-primario);
             position: relative;
-            z-index: 10; /* Por encima de la marca de agua */
+            z-index: 10;
         }
         
         .header { text-align: center; margin-bottom: 24px; }
-        .header img { width: 85px; height: auto; margin-bottom: 10px; }
+        .header img { width: 100%; max-width: 140px; height: auto; margin-bottom: 12px; } /* Ajuste para tu firma */
         .header h1 { color: var(--azul-primario); font-size: 1.25rem; font-weight: 700; letter-spacing: 0.5px; }
         .header p { color: #5a5a5a; font-size: 0.8rem; margin-top: 4px; font-weight: 500; }
         
@@ -122,7 +118,8 @@
 <body>
     <div class="login-container">
         <div class="header">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Logo_Polic%C3%ADa_Nacional_Bolivariana.svg/1200px-Logo_Polic%C3%ADa_Nacional_Bolivariana.svg.png" alt="Logo PNB">
+            <!-- ✅ Tu imagen local -->
+            <img src="img/firma.png" alt="Logo PNB">
             <h1>Sistema de Registro Policial</h1>
             <p>Policía Nacional Bolivariana | Acceso Restringido</p>
         </div>
