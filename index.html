@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Registro - Policía Nacional Bolivariana</title>
+    <!-- Cargar librería de Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary: #002b5c;
+            --secondary: #c5a028;
+            --bg: #f4f7fa;
+            --text: #222;
+            --input-border: #ccc;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background: var(--bg); color: var(--text); padding: 20px; }
+        header { text-align: center; margin-bottom: 25px; padding: 20px; background: var(--primary); color: white; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        header h1 { font-size: 1.6rem; margin-bottom: 5px; }
+        header p { opacity: 0.9; font-size: 0.9rem; }
+        .container { max-width: 750px; margin: 0 auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { flex: 1; padding: 12px; border: none; background: #e9ecef; cursor: pointer; border-radius: 8px; font-weight: 600; transition: 0.25s; }
+        .tab-btn.active { background: var(--primary); color: white; }
+        .form-section { display: none; animation: fadeIn 0.3s ease; }
+        .form-section.active { display: block; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 0.95rem; }
+        .form-group input { width: 100%; padding: 10px 12px; border: 1px solid var(--input-border); border-radius: 6px; font-size: 0.95rem; }
+        .form-group input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(0,43,92,0.15); }
+        .btn-submit { width: 100%; padding: 12px; background: var(--secondary); color: var(--primary); border: none; border-radius: 6px; font-weight: 700; cursor: pointer; transition: 0.2s; margin-top: 5px; }
+        .btn-submit:hover { background: #b08e20; }
+        .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+        .msg { padding: 12px; margin-top: 15px; border-radius: 6px; display: none; text-align: center; font-weight: 500; }
+        .msg.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .msg.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        footer { text-align: center; margin-top: 25px; font-size: 0.8rem; color: #666; }
+        @media (max-width: 600px) { .container { padding: 15px; } .tabs { flex-direction: column; } }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🚔 Sistema de Registro Policial</h1>
+        <p>Policía Nacional Bolivariana | Módulo de Personas y Vehículos</p>
+    </header>
+
+    <div class="container">
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="personas">👤 Personas</button>
+            <button class="tab-btn" data-tab="vehiculos">🚗 Vehículos</button>
+        </div>
+
+        <section id="personas" class="form-section active">
+            <form id="form-personas">
+                <div class="form-group">
+                    <label for="p-cedula">Cédula de Identidad</label>
+                    <input type="text" id="p-cedula" placeholder="Ej: V-12345678" required>
+                </div>
+                <div class="form-group">
+                    <label for="p-nombres">Nombres</label>
+                    <input type="text" id="p-nombres" placeholder="Nombres completos" required>
+                </div>
+                <div class="form-group">
+                    <label for="p-apellidos">Apellidos</label>
+                    <input type="text" id="p-apellidos" placeholder="Apellidos completos" required>
+                </div>
+                <div class="form-group">
+                    <label for="p-telefono">Teléfono</label>
+                    <input type="tel" id="p-telefono" placeholder="Ej: 0414-1234567">
+                </div>
+                <button type="submit" class="btn-submit">Registrar Persona</button>
+            </form>
+            <div id="msg-personas" class="msg"></div>
+        </section>
+
+        <section id="vehiculos" class="form-section">
+            <form id="form-vehiculos">
+                <div class="form-group">
+                    <label for="v-placa">Placa</label>
+                    <input type="text" id="v-placa" placeholder="Ej: ABC-123" required>
+                </div>
+                <div class="form-group">
+                    <label for="v-marca">Marca</label>
+                    <input type="text" id="v-marca" placeholder="Ej: Toyota" required>
+                </div>
+                <div class="form-group">
+                    <label for="v-modelo">Modelo</label>
+                    <input type="text" id="v-modelo" placeholder="Ej: Corolla" required>
+                </div>
+                <div class="form-group">
+                    <label for="v-anio">Año</label>
+                    <input type="number" id="v-anio" placeholder="Ej: 2020" min="1900" max="2026" required>
+                </div>
+                <div class="form-group">
+                    <label for="v-color">Color</label>
+                    <input type="text" id="v-color" placeholder="Ej: Blanco" required>
+                </div>
+                <div class="form-group">
+                    <label for="v-propietario">Cédula del Propietario</label>
+                    <input type="text" id="v-propietario" placeholder="Ej: V-12345678" required>
+                </div>
+                <button type="submit" class="btn-submit">Registrar Vehículo</button>
+            </form>
+            <div id="msg-vehiculos" class="msg"></div>
+        </section>
+    </div>
+
+    <footer>
+        &copy; 2026 Sistema de Registro PNB | Conectado a Supabase
+    </footer>
+
+    <!-- 🔑 Cargar config.js PRIMERO, luego script.js -->
+    <script src="config.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
