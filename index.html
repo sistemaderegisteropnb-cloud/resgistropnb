@@ -3,100 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acceso al Sistema - PNB</title>
+    <title>Acceso Restringido - PNB</title>
+    <!-- Librería Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
-            --primary-blue: #002b5c;
-            --secondary-blue: #003a75;
-            --beige-light: #f5f3e8;
-            --beige-dark: #d9cfa7;
-            --text-dark: #1a1a1a;
-            --white: #ffffff;
-            --border: #c2b896;
+            --azul-primario: #002b5c;
+            --azul-secundario: #003a75;
+            --beige-fondo: #f4f1e8;
+            --beige-claro: #faf8f3;
+            --beige-borde: #d4c9a8;
+            --texto: #1a1a1a;
+            --blanco: #ffffff;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
         body { 
-            background: linear-gradient(145deg, var(--beige-light) 0%, #e8e2d1 100%); 
+            background: var(--beige-fondo); 
             min-height: 100vh; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
             padding: 20px; 
         }
-        .login-card { 
-            background: var(--white); 
+        .login-container { 
+            background: var(--blanco); 
             width: 100%; 
-            max-width: 400px; 
-            padding: 35px 25px; 
-            border-radius: 10px; 
-            box-shadow: 0 10px 30px rgba(0,43,92,0.12); 
-            border-top: 4px solid var(--primary-blue);
+            max-width: 380px; 
+            padding: 30px 25px; 
+            border-radius: 8px; 
+            box-shadow: 0 8px 24px rgba(0,43,92,0.10); 
+            border-top: 4px solid var(--azul-primario);
         }
-        .logo-section { text-align: center; margin-bottom: 25px; }
-        .logo-section img { width: 90px; height: auto; margin-bottom: 10px; }
-        .logo-section h2 { color: var(--primary-blue); font-size: 1.3rem; font-weight: 700; letter-spacing: 0.5px; }
-        .logo-section p { color: #5a5a5a; font-size: 0.85rem; margin-top: 4px; }
+        .header { text-align: center; margin-bottom: 24px; }
+        .header img { width: 85px; height: auto; margin-bottom: 8px; }
+        .header h1 { color: var(--azul-primario); font-size: 1.25rem; font-weight: 700; letter-spacing: 0.5px; }
+        .header p { color: #5a5a5a; font-size: 0.8rem; margin-top: 4px; }
         .form-group { margin-bottom: 16px; }
-        .form-group label { display: block; margin-bottom: 5px; color: var(--text-dark); font-weight: 500; font-size: 0.9rem; }
+        .form-group label { display: block; margin-bottom: 6px; color: var(--texto); font-weight: 500; font-size: 0.88rem; }
         .form-group input, .form-group select { 
-            width: 100%; padding: 11px 12px; border: 1px solid var(--border); 
-            border-radius: 6px; font-size: 0.95rem; background: #faf9f5; 
-            transition: 0.2s; color: var(--text-dark);
+            width: 100%; padding: 11px 12px; border: 1px solid var(--beige-borde); 
+            border-radius: 5px; font-size: 0.9rem; background: var(--beige-claro); 
+            color: var(--texto); transition: 0.2s;
         }
         .form-group input:focus, .form-group select:focus { 
-            outline: none; border-color: var(--primary-blue); 
-            box-shadow: 0 0 0 3px rgba(0,43,92,0.08); 
+            outline: none; border-color: var(--azul-primario); 
+            box-shadow: 0 0 0 2px rgba(0,43,92,0.08); 
         }
-        .btn-login { 
-            width: 100%; padding: 13px; background: var(--primary-blue); 
-            color: var(--white); border: none; border-radius: 6px; 
-            font-weight: 600; font-size: 1rem; cursor: pointer; transition: 0.2s; margin-top: 8px;
+        .btn-acceso { 
+            width: 100%; padding: 12px; background: var(--azul-primario); 
+            color: var(--blanco); border: none; border-radius: 5px; 
+            font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: 0.2s; margin-top: 6px;
         }
-        .btn-login:hover { background: var(--secondary-blue); transform: translateY(-1px); }
-        .btn-login:disabled { background: #8fa3b8; cursor: not-allowed; transform: none; }
-        .msg { padding: 11px; margin-top: 14px; border-radius: 5px; text-align: center; font-size: 0.88rem; display: none; }
-        .msg.error { background: #fde2e2; color: #b91c1c; border: 1px solid #fca5a5; }
-        .msg.success { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
-        footer { text-align: center; margin-top: 20px; font-size: 0.72rem; color: #6b7280; }
-        @media (max-width: 450px) { .login-card { padding: 25px 18px; } }
+        .btn-acceso:hover { background: var(--azul-secundario); }
+        .btn-acceso:disabled { background: #8fa3b8; cursor: not-allowed; }
+        .mensaje { padding: 10px; margin-top: 12px; border-radius: 4px; text-align: center; font-size: 0.85rem; display: none; }
+        .mensaje.error { background: #fde2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+        .mensaje.exito { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+        footer { text-align: center; margin-top: 18px; font-size: 0.7rem; color: #6b7280; }
+        @media (max-width: 420px) { .login-container { padding: 22px 16px; } }
     </style>
 </head>
 <body>
-    <div class="login-card">
-        <div class="logo-section">
-            <!-- 🔍 Reemplaza esta URL con tu logo local si lo prefieres -->
+    <div class="login-container">
+        <div class="header">
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Logo_Polic%C3%ADa_Nacional_Bolivariana.svg/1200px-Logo_Polic%C3%ADa_Nacional_Bolivariana.svg.png" alt="Logo PNB">
-            <h2>Sistema de Registro Policial</h2>
+            <h1>Sistema de Registro Policial</h1>
             <p>Policía Nacional Bolivariana | Acceso Restringido</p>
         </div>
 
         <form id="login-form">
             <div class="form-group">
                 <label for="email">Correo Institucional</label>
-                <input type="email" id="email" placeholder="nombre@pnb.gob.ve" required>
+                <input type="email" id="email" placeholder="usuario@pnb.gob.ve" required autocomplete="email">
             </div>
             <div class="form-group">
                 <label for="password">Contraseña</label>
-                <input type="password" id="password" placeholder="••••••••" required>
+                <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password">
             </div>
             <div class="form-group">
-                <label for="role">Nivel de Acceso</label>
-                <select id="role" required>
+                <label for="nivel">Nivel de Acceso</label>
+                <select id="nivel" required>
                     <option value="" disabled selected>Seleccione su nivel</option>
-                    <option value="administrador">🔑 Administrador</option>
-                    <option value="moderador">🛡️ Moderador</option>
-                    <option value="consultor">👁️ Consultor</option>
+                    <option value="administrador">Administrador</option>
+                    <option value="moderador">Moderador</option>
+                    <option value="consultor">Consultor</option>
                 </select>
             </div>
-            <button type="submit" class="btn-login" id="btn-login">Iniciar Sesión</button>
-            <div id="msg" class="msg"></div>
+            <button type="submit" class="btn-acceso" id="btn-acceso">Iniciar Sesión</button>
+            <div id="mensaje" class="mensaje"></div>
         </form>
 
-        <footer>&copy; 2026 PNB | Todos los derechos reservados</footer>
+        <footer>&copy; 2026 PNB | Sistema Oficial</footer>
     </div>
 
+    <!-- Carga de configuración y lógica principal -->
     <script src="config.js"></script>
-    <script src="script.js"></script>
+    <script src="index.js"></script>
 </body>
 </html>
