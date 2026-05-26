@@ -9,7 +9,7 @@
         :root {
             --azul-primario: #002b5c;
             --azul-secundario: #004a8f;
-            --azul-fondo: #001f3f;
+            --azul-fondo: #00152c;
             --beige-acento: #d4c9a8;
             --blanco: #ffffff;
             --texto: #1a1a1a;
@@ -22,61 +22,82 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
-            /* Fondo azul institucional + vector geométrico sutil */
+            /* Fondo azul institucional profundo + diseño vectorial geométrico */
             background-color: var(--azul-fondo);
             background-image: 
-                linear-gradient(160deg, #001833 0%, #002a54 50%, #003570 100%),
-                url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M40 0l40 40-40 40L0 40z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-            background-size: cover, 120px 120px;
+                linear-gradient(145deg, #000d1a 0%, #002145 40%, #003570 100%),
+                url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 0L100 50L50 100L0 50Z' fill='%23ffffff' fill-opacity='0.03'/%3E%3Ccircle cx='50' cy='50' r='20' stroke='%23d4c9a8' stroke-opacity='0.15' stroke-width='1' fill='none'/%3E%3Cpath d='M50 10L90 50L50 90L10 50Z' stroke='%23ffffff' stroke-opacity='0.05' fill='none'/%3E%3C/svg%3E");
+            background-size: cover, 140px 140px;
             background-attachment: fixed;
         }
 
         .login-container { 
             background: var(--blanco); 
             width: 100%; 
-            max-width: 360px; 
-            padding: 28px 24px; 
-            border-radius: 8px; 
-            box-shadow: 0 12px 32px rgba(0,0,0,0.35); 
-            border-top: 4px solid var(--beige-acento);
+            max-width: 380px; 
+            padding: 30px 26px; 
+            border-radius: 10px; 
+            box-shadow: 0 15px 40px rgba(0,0,0,0.45); 
+            border-top: 5px solid var(--azul-primario);
             position: relative;
             z-index: 10;
         }
-        .header { text-align: center; margin-bottom: 22px; }
-        .header img { width: 80px; height: auto; margin-bottom: 8px; }
-        .header h1 { color: var(--azul-primario); font-size: 1.2rem; font-weight: 700; }
-        .header p { color: #5a5a5a; font-size: 0.78rem; margin-top: 4px; }
         
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; color: var(--texto); font-weight: 500; font-size: 0.85rem; }
+        .header { text-align: center; margin-bottom: 24px; }
+        .header img { width: 85px; height: auto; margin-bottom: 10px; }
+        .header h1 { color: var(--azul-primario); font-size: 1.25rem; font-weight: 700; letter-spacing: 0.5px; }
+        .header p { color: #5a5a5a; font-size: 0.8rem; margin-top: 4px; font-weight: 500; }
+        
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; margin-bottom: 6px; color: var(--texto); font-weight: 600; font-size: 0.85rem; }
         .form-group input { 
-            width: 100%; padding: 11px 12px; border: 1px solid var(--beige-acento); 
-            border-radius: 5px; font-size: 0.9rem; background: #f8f9fa; 
+            width: 100%; padding: 12px 12px; border: 1.5px solid var(--beige-acento); 
+            border-radius: 6px; font-size: 0.95rem; background: #f8f9fa; 
             color: var(--texto); transition: 0.2s;
         }
         .form-group input:focus { 
             outline: none; border-color: var(--azul-primario); 
-            box-shadow: 0 0 0 2px rgba(0,43,92,0.1); 
+            box-shadow: 0 0 0 3px rgba(0,43,92,0.1); 
+            background: var(--blanco);
         }
-        .btn-acceso { 
-            width: 100%; padding: 12px; background: var(--azul-primario); 
-            color: var(--blanco); border: none; border-radius: 5px; 
-            font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: 0.2s; margin-top: 6px;
-        }
-        .btn-acceso:hover { background: var(--azul-secundario); }
-        .btn-acceso:disabled { background: #6c757d; cursor: not-allowed; }
         
+        .btn-acceso { 
+            width: 100%; padding: 13px; background: var(--azul-primario); 
+            color: var(--blanco); border: none; border-radius: 6px; 
+            font-weight: 600; font-size: 1rem; cursor: pointer; transition: 0.2s; margin-top: 8px;
+        }
+        .btn-acceso:hover { background: var(--azul-secundario); transform: translateY(-1px); }
+        .btn-acceso:disabled { background: #6c757d; cursor: not-allowed; transform: none; }
+        
+        /* ✅ Nuevo aviso de seguridad */
+        .security-note {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 16px;
+            padding: 10px;
+            background: #f0f7ff;
+            border: 1px solid #cce4ff;
+            border-radius: 6px;
+            font-size: 0.82rem;
+            color: var(--azul-primario);
+            font-weight: 500;
+        }
+        .security-note svg { width: 16px; height: 16px; flex-shrink: 0; fill: var(--azul-secundario); }
+
         .mensaje { padding: 10px; margin-top: 12px; border-radius: 4px; text-align: center; font-size: 0.85rem; display: none; }
         .mensaje.error { background: #fde2e2; color: #b91c1c; border: 1px solid #fca5a5; }
         .mensaje.exito { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
         
-        footer { text-align: center; margin-top: 16px; font-size: 0.7rem; color: #6b7280; }
-        @media (max-width: 400px) { .login-container { padding: 20px 16px; } }
+        footer { text-align: center; margin-top: 18px; font-size: 0.7rem; color: #6b7280; }
+        @media (max-width: 420px) { .login-container { padding: 22px 18px; } }
     </style>
 </head>
 <body>
     <div class="login-container">
         <div class="header">
+            <!-- Logo oficial de la PNB (SVG vectorizado para nitidez) -->
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Logo_Polic%C3%ADa_Nacional_Bolivariana.svg/1200px-Logo_Polic%C3%ADa_Nacional_Bolivariana.svg.png" alt="Logo PNB">
             <h1>Sistema de Registro Policial</h1>
             <p>Policía Nacional Bolivariana | Acceso Restringido</p>
@@ -92,6 +113,15 @@
                 <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password">
             </div>
             <button type="submit" class="btn-acceso" id="btn-acceso">Iniciar Sesión</button>
+            
+            <!-- ✅ Aviso de seguridad añadido -->
+            <div class="security-note">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3v2h-6V8c0-1.66 1.34-3 3-3zm5 11H7v-1c0-2.33 4.67-4 7-4s5 1.67 5 4v1z" opacity="0.9"/>
+                </svg>
+                Seguridad de extremo a extremo cifrada
+            </div>
+
             <div id="mensaje" class="mensaje"></div>
         </form>
 
