@@ -3,6 +3,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const btn = document.getElementById('btn-acceso');
     const msgBox = document.getElementById('mensaje');
 
+    if (!form) {
+        console.error('⚠️ Formulario #login-form no encontrado en el DOM');
+        return;
+    }
+
     function mostrarMensaje(texto, tipo) {
         msgBox.textContent = texto;
         msgBox.className = `mensaje ${tipo}`;
@@ -16,38 +21,33 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.textContent = 'Verificando...';
         msgBox.style.display = 'none';
 
-        const email = document.getElementById('email').value.trim().toLowerCase();
-        const password = document.getElementById('password').value;
-        const nivelSeleccionado = document.getElementById('nivel').value;
+        // ✅ Acceso seguro a los inputs sin getElementById
+        const email = form.elements['email'].value.trim().toLowerCase();
+        const password = form.elements['password'].value;
 
         try {
-            // 1️⃣ Autenticación con Supabase
-            const { data: auth, error: authErr } = await supabase.auth.signInWithPassword({
+            const { data: auth, error: authErr } = await window.supabaseClient.auth.signInWithPassword({
                 email, password
             });
             if (authErr) throw new Error('Credenciales incorrectas o cuenta inactiva.');
 
-            // 2️⃣ Verificar nivel asignado en BD (seguridad real)
-            const { data: perfil, error: perfilErr } = await supabase
+            const { data: perfil, error: perfilErr } = await window.supabaseClient
                 .from('perfiles_usuario')
                 .select('nivel')
                 .eq('user_id', auth.user.id)
                 .single();
 
             if (perfilErr || !perfil) throw new Error('Perfil de acceso no encontrado.');
-            if (perfil.nivel !== nivelSeleccionado) {
-                throw new Error('El nivel seleccionado no coincide con el asignado por la institución.');
-            }
 
-            // 3️⃣ Guardar sesión y redirigir
             sessionStorage.setItem('pnb_user_id', auth.user.id);
             sessionStorage.setItem('pnb_user_email', auth.user.email);
-            sessionStorage.setItem('pbn_user_nivel', perfil.nivel);
+            sessionStorage.setItem('pnb_user_nivel', perfil.nivel);
 
-            mostrarMensaje('✅ Acceso concedido. Cargando panel...', 'exito');
-            
-            // ⏳ Aquí puedes redirigir a la vista correspondiente cuando la crees
-            // setTimeout(() => window.location.href = 'panel.html', 1500);
+            mostrarMensaje('✅ Acceso concedido. Redirigiendo...', 'exito');
+
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 1200);
 
         } catch (err) {
             console.error('Error de acceso:', err);
@@ -57,4 +57,3 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
-
