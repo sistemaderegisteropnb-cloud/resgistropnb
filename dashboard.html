@@ -4,76 +4,114 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Control - PNB</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚔</text></svg>">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { 
-            --primary: #002b5c; 
-            --secondary: #004a8f; 
-            --bg: #f4f7fa; 
-            --text: #222; 
-            --white: #fff; 
+        :root {
+            --primary: #002b5c; --primary-dark: #001f44; --secondary: #c5a028;
+            --beige-light: #f5f3e8; --beige-border: #d4c9a8;
+            --bg: #f4f7fa; --text: #222; --white: #fff; --danger: #dc2626;
+            --sidebar-width: 260px; --header-height: 60px;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
-        body { background: var(--bg); color: var(--text); min-height: 100vh; }
+        body { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
         
-        .navbar { 
-            background: var(--primary); 
-            color: var(--white); 
-            padding: 15px 20px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.15); 
+        /* 🔹 Header superior */
+        .navbar {
+            background: var(--primary); color: var(--white); padding: 0 20px;
+            height: var(--header-height); display: flex; align-items: center; justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15); position: fixed; top: 0; left: 0; right: 0; z-index: 100;
         }
-        .navbar h2 { font-size: 1.1rem; }
-        .user-info { display: flex; align-items: center; gap: 15px; font-size: 0.9rem; }
-        .badge { 
-            background: rgba(255,255,255,0.2); 
-            padding: 4px 10px; 
-            border-radius: 12px; 
-            font-weight: 600; 
-            text-transform: uppercase; 
-            font-size: 0.75rem; 
+        .navbar h2 { font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
+        .user-info { display: flex; align-items: center; gap: 12px; font-size: 0.85rem; }
+        .badge {
+            background: var(--secondary); color: var(--primary); padding: 4px 10px;
+            border-radius: 12px; font-weight: 700; text-transform: uppercase; font-size: 0.7rem;
         }
-        .btn-logout { 
-            background: transparent; 
-            border: 1px solid rgba(255,255,255,0.5); 
-            color: var(--white); 
-            padding: 6px 12px; 
-            border-radius: 5px; 
-            cursor: pointer; 
-            font-size: 0.85rem; 
-            transition: 0.2s; 
+        .btn-logout {
+            background: transparent; border: 1px solid rgba(255,255,255,0.6); color: var(--white);
+            padding: 6px 14px; border-radius: 5px; cursor: pointer; font-size: 0.8rem; transition: 0.2s;
         }
         .btn-logout:hover { background: rgba(255,255,255,0.15); }
+
+        /* 🔹 Layout principal */
+        .dashboard-wrapper { display: flex; margin-top: var(--header-height); min-height: calc(100vh - var(--header-height)); }
         
-        .container { 
-            max-width: 1000px; 
-            margin: 30px auto; 
-            padding: 20px; 
-            background: var(--white); 
-            border-radius: 10px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
-            min-height: 400px; 
+        /* 🔹 Sidebar izquierdo */
+        .sidebar {
+            width: var(--sidebar-width); background: var(--white); border-right: 1px solid #e2e8f0;
+            padding: 20px 0; position: fixed; top: var(--header-height); bottom: 0; overflow-y: auto;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.05); z-index: 90;
         }
-        .loading { text-align: center; padding: 50px; color: #666; font-style: italic; }
-        .content-placeholder { 
-            padding: 30px; 
-            border: 2px dashed #e2e8f0; 
-            border-radius: 8px; 
-            text-align: center; 
-            color: #94a3b8; 
-            margin-top: 20px; 
+        .menu-item { border-bottom: 1px solid #f1f1f1; }
+        .menu-btn {
+            width: 100%; padding: 14px 20px; text-align: left; background: none; border: none;
+            font-size: 0.95rem; font-weight: 500; color: var(--text); cursor: pointer;
+            display: flex; align-items: center; justify-content: space-between; transition: 0.2s;
+        }
+        .menu-btn:hover, .menu-btn.active { background: var(--beige-light); color: var(--primary); border-left: 3px solid var(--secondary); }
+        .menu-btn svg { width: 18px; height: 18px; margin-right: 10px; fill: currentColor; }
+        .menu-btn .arrow { transition: transform 0.2s; }
+        .menu-btn.expanded .arrow { transform: rotate(180deg); }
+        
+        /* 🔹 Submenú desplegable */
+        .submenu {
+            max-height: 0; overflow: hidden; transition: max-height 0.3s ease;
+            background: #fafafa; border-left: 3px solid var(--primary);
+        }
+        .submenu.show { max-height: 200px; }
+        .submenu-item {
+            padding: 10px 20px 10px 52px; font-size: 0.85rem; color: #4a5568;
+            cursor: pointer; display: block; text-decoration: none; transition: 0.2s;
+        }
+        .submenu-item:hover { background: var(--beige-light); color: var(--primary); padding-left: 56px; }
+        .submenu-item.danger { color: var(--danger); }
+        .submenu-item.danger:hover { background: #fef2f2; }
+
+        /* 🔹 Área de contenido principal */
+        .main-content {
+            flex: 1; margin-left: var(--sidebar-width); padding: 25px;
+        }
+        .content-section { display: none; animation: fadeIn 0.3s ease; }
+        .content-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .card {
+            background: var(--white); border-radius: 10px; padding: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px;
+        }
+        .card h3 { color: var(--primary); margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid var(--beige-border); }
+        
+        .placeholder {
+            text-align: center; padding: 40px; color: #64748b; font-style: italic;
+            border: 2px dashed #e2e8f0; border-radius: 8px; background: #f8fafc;
         }
         
-        @media (max-width: 600px) { 
-            .navbar { flex-direction: column; gap: 10px; text-align: center; } 
+        /* 🔹 Responsive */
+        @media (max-width: 900px) {
+            .sidebar { transform: translateX(-100%); transition: transform 0.3s; }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .menu-toggle { display: block !important; }
         }
+        .menu-toggle {
+            display: none; background: var(--primary); color: white; border: none;
+            padding: 8px 12px; border-radius: 5px; margin-right: 10px; cursor: pointer;
+        }
+        
+        /* 🔹 Utilidades */
+        .hidden { display: none !important; }
+        .text-center { text-align: center; }
+        .mt-2 { margin-top: 1rem; }
     </style>
 </head>
 <body>
+    <!-- 🔹 Header -->
     <nav class="navbar">
-        <h2>🚔 Panel de Control PNB</h2>
+        <div style="display: flex; align-items: center;">
+            <button class="menu-toggle" id="menuToggle">☰</button>
+            <h2>🚔 Panel PNB</h2>
+        </div>
         <div class="user-info">
             <span id="user-email">Cargando...</span>
             <span id="user-role" class="badge">---</span>
@@ -81,19 +119,179 @@
         </div>
     </nav>
 
-    <main class="container">
-        <div id="loading" class="loading">Verificando acceso...</div>
-        <div id="dashboard-content" style="display: none;">
-            <h3>Bienvenido al Sistema de Registro</h3>
-            <p>Seleccione el módulo correspondiente desde el menú principal.</p>
-            <div class="content-placeholder">
-                ⏳ Área de trabajo en configuración.<br>
-                (Aquí se integrarán los formularios de personas y vehículos)
-            </div>
-        </div>
-    </main>
+    <div class="dashboard-wrapper">
+        <!-- 🔹 Sidebar con módulos -->
+        <aside class="sidebar" id="sidebar">
+            <nav class="menu">
+                <!-- 1️⃣ Consulta -->
+                <div class="menu-item">
+                    <button class="menu-btn" data-section="consulta">
+                        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                        Consulta
+                        <span class="arrow">▼</span>
+                    </button>
+                </div>
 
-<script src="js/config.js"></script>
-<script src="js/dashboard.js"></script>
+                <!-- 2️⃣ Registro de Personas (desplegable) -->
+                <div class="menu-item">
+                    <button class="menu-btn" data-toggle="submenu-personas">
+                        <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                        Registro de Personas
+                        <span class="arrow">▼</span>
+                    </button>
+                    <div class="submenu" id="submenu-personas">
+                        <a href="#" class="submenu-item" data-action="personas-registrar">📝 Registrar</a>
+                        <a href="#" class="submenu-item" data-action="personas-modificar">✏️ Modificar</a>
+                        <a href="#" class="submenu-item danger" data-action="personas-eliminar">🗑️ Eliminar</a>
+                    </div>
+                </div>
+
+                <!-- 3️⃣ Registro de Vehículos (desplegable) -->
+                <div class="menu-item">
+                    <button class="menu-btn" data-toggle="submenu-vehiculos">
+                        <svg viewBox="0 0 24 24"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/></svg>
+                        Registro de Vehículos
+                        <span class="arrow">▼</span>
+                    </button>
+                    <div class="submenu" id="submenu-vehiculos">
+                        <a href="#" class="submenu-item" data-action="vehiculos-registrar">📝 Registrar</a>
+                        <a href="#" class="submenu-item" data-action="vehiculos-modificar">✏️ Modificar</a>
+                        <a href="#" class="submenu-item danger" data-action="vehiculos-eliminar">🗑️ Eliminar</a>
+                    </div>
+                </div>
+
+                <!-- 4️⃣ Personas con Vehículos (desplegable) -->
+                <div class="menu-item">
+                    <button class="menu-btn" data-toggle="submenu-personas-vehiculos">
+                        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                        Personas con Vehículos
+                        <span class="arrow">▼</span>
+                    </button>
+                    <div class="submenu" id="submenu-personas-vehiculos">
+                        <a href="#" class="submenu-item" data-action="pv-registrar">📝 Registrar</a>
+                        <a href="#" class="submenu-item" data-action="pv-modificar">✏️ Modificar</a>
+                        <a href="#" class="submenu-item danger" data-action="pv-eliminar">🗑️ Eliminar</a>
+                    </div>
+                </div>
+
+                <!-- 5️⃣ Procesar -->
+                <div class="menu-item">
+                    <button class="menu-btn" data-section="procesar">
+                        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                        Procesar
+                        <span class="arrow">▼</span>
+                    </button>
+                </div>
+
+                <!-- 6️⃣ Gestión de Usuarios (solo admin) -->
+                <div class="menu-item" id="menu-gestion-usuarios">
+                    <button class="menu-btn" data-section="gestion-usuarios">
+                        <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+                        Gestión de Usuarios
+                        <span class="arrow">▼</span>
+                    </button>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- 🔹 Contenido principal -->
+        <main class="main-content">
+            <!-- Sección: Consulta -->
+            <section id="consulta" class="content-section active">
+                <div class="card">
+                    <h3>🔍 Consulta de Registros</h3>
+                    <div class="placeholder">
+                        Módulo de consulta en desarrollo.<br>
+                        <small>Permitirá buscar por cédula, placa, nombre o fecha.</small>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección: Registro Personas -->
+            <section id="personas-registrar" class="content-section">
+                <div class="card">
+                    <h3>📝 Registrar Persona</h3>
+                    <div class="placeholder">Formulario de registro de personas (conectado a tabla `personas`)</div>
+                </div>
+            </section>
+            <section id="personas-modificar" class="content-section">
+                <div class="card">
+                    <h3>✏️ Modificar Persona</h3>
+                    <div class="placeholder">Buscador + formulario de edición</div>
+                </div>
+            </section>
+            <section id="personas-eliminar" class="content-section">
+                <div class="card">
+                    <h3>🗑️ Eliminar Persona</h3>
+                    <div class="placeholder">Buscador + confirmación de eliminación</div>
+                </div>
+            </section>
+
+            <!-- Sección: Registro Vehículos -->
+            <section id="vehiculos-registrar" class="content-section">
+                <div class="card">
+                    <h3>📝 Registrar Vehículo</h3>
+                    <div class="placeholder">Formulario de registro de vehículos (conectado a tabla `vehiculos`)</div>
+                </div>
+            </section>
+            <section id="vehiculos-modificar" class="content-section">
+                <div class="card">
+                    <h3>✏️ Modificar Vehículo</h3>
+                    <div class="placeholder">Buscador + formulario de edición</div>
+                </div>
+            </section>
+            <section id="vehiculos-eliminar" class="content-section">
+                <div class="card">
+                    <h3>🗑️ Eliminar Vehículo</h3>
+                    <div class="placeholder">Buscador + confirmación de eliminación</div>
+                </div>
+            </section>
+
+            <!-- Sección: Personas con Vehículos -->
+            <section id="pv-registrar" class="content-section">
+                <div class="card">
+                    <h3>📝 Vincular Persona con Vehículo</h3>
+                    <div class="placeholder">Formulario para asociar cédula con placa</div>
+                </div>
+            </section>
+            <section id="pv-modificar" class="content-section">
+                <div class="card">
+                    <h3>✏️ Modificar Vinculación</h3>
+                    <div class="placeholder">Editar relación persona-vehículo</div>
+                </div>
+            </section>
+            <section id="pv-eliminar" class="content-section">
+                <div class="card">
+                    <h3>🗑️ Eliminar Vinculación</h3>
+                    <div class="placeholder">Desvincular persona de vehículo</div>
+                </div>
+            </section>
+
+            <!-- Sección: Procesar -->
+            <section id="procesar" class="content-section">
+                <div class="card">
+                    <h3>⚙️ Procesar Registros</h3>
+                    <div class="placeholder">
+                        Módulo para validar, aprobar o exportar lotes de registros.<br>
+                        <small>Funcionalidad avanzada para administradores y moderadores.</small>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección: Gestión de Usuarios (solo admin) -->
+            <section id="gestion-usuarios" class="content-section">
+                <div class="card">
+                    <h3>👥 Gestión de Usuarios del Sistema</h3>
+                    <div class="placeholder">
+                        Crear, editar o desactivar cuentas de oficiales.<br>
+                        <small>Acceso exclusivo para nivel: <strong>administrador</strong></small>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/dashboard.js"></script>
 </body>
 </html>
