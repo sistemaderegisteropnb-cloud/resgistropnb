@@ -23,7 +23,6 @@
             justify-content: center;
             padding: 20px;
             background-color: var(--azul-fondo);
-            /* Fondo geométrico */
             background-image: 
                 linear-gradient(145deg, #000d1a 0%, #002145 40%, #003570 100%),
                 url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 0L100 50L50 100L0 50Z' fill='%23ffffff' fill-opacity='0.03'/%3E%3Ccircle cx='50' cy='50' r='20' stroke='%23d4c9a8' stroke-opacity='0.15' stroke-width='1' fill='none'/%3E%3Cpath d='M50 10L90 50L50 90L10 50Z' stroke='%23ffffff' stroke-opacity='0.05' fill='none'/%3E%3C/svg%3E");
@@ -32,7 +31,7 @@
             position: relative;
         }
 
-        /* 🔹 Marca de agua con tu logo local */
+        /* 🔹 Marca de agua del fondo (firma.png) */
         body::after {
             content: "";
             position: fixed;
@@ -44,7 +43,7 @@
             max-width: 800px;
             max-height: 800px;
             background: url('img/firma.png') center/contain no-repeat;
-            opacity: 0.08; /* Ligeramente más visible para el fondo */
+            opacity: 0.08;
             filter: brightness(1.5) contrast(0.9) grayscale(0.5);
             z-index: 1;
             pointer-events: none;
@@ -66,7 +65,8 @@
         }
         
         .header { text-align: center; margin-bottom: 24px; }
-        .header img { width: 100%; max-width: 140px; height: auto; margin-bottom: 12px; } /* Ajuste para tu firma */
+        /* ✅ Logo del encabezado actualizado */
+        .header img { width: 100%; max-width: 150px; height: auto; margin-bottom: 12px; }
         .header h1 { color: var(--azul-primario); font-size: 1.25rem; font-weight: 700; letter-spacing: 0.5px; }
         .header p { color: #5a5a5a; font-size: 0.8rem; margin-top: 4px; font-weight: 500; }
         
@@ -118,8 +118,8 @@
 <body>
     <div class="login-container">
         <div class="header">
-            <!-- ✅ Tu imagen local -->
-            <img src="img/firma.png" alt="Logo PNB">
+            <!-- ✅ Logo principal: LOGO-PNB.png -->
+            <img src="img/LOGO-PNB.png" alt="Logo PNB">
             <h1>Sistema de Registro Policial</h1>
             <p>Policía Nacional Bolivariana | Acceso Restringido</p>
         </div>
