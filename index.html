@@ -4,113 +4,66 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Acceso Restringido - PNB</title>
+    <!-- ✅ Favicon para eliminar el 404 -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚔</text></svg>">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
-            --azul-primario: #002b5c;
-            --azul-secundario: #004a8f;
-            --azul-fondo: #00152c;
-            --beige-acento: #d4c9a8;
-            --blanco: #ffffff;
-            --texto: #1a1a1a;
+            --azul-primario: #002b5c; --azul-secundario: #004a8f; --azul-fondo: #00152c;
+            --beige-acento: #d4c9a8; --blanco: #ffffff; --texto: #1a1a1a;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
-        
         body {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
+            min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px;
             background-color: var(--azul-fondo);
-            background-image: 
-                linear-gradient(145deg, #000d1a 0%, #002145 40%, #003570 100%),
-                url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 0L100 50L50 100L0 50Z' fill='%23ffffff' fill-opacity='0.03'/%3E%3Ccircle cx='50' cy='50' r='20' stroke='%23d4c9a8' stroke-opacity='0.15' stroke-width='1' fill='none'/%3E%3Cpath d='M50 10L90 50L50 90L10 50Z' stroke='%23ffffff' stroke-opacity='0.05' fill='none'/%3E%3C/svg%3E");
-            background-size: cover, 140px 140px;
-            background-attachment: fixed;
-            position: relative;
+            background-image: linear-gradient(145deg, #000d1a 0%, #002145 40%, #003570 100%),
+            url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 0L100 50L50 100L0 50Z' fill='%23ffffff' fill-opacity='0.03'/%3E%3Ccircle cx='50' cy='50' r='20' stroke='%23d4c9a8' stroke-opacity='0.15' stroke-width='1' fill='none'/%3E%3Cpath d='M50 10L90 50L50 90L10 50Z' stroke='%23ffffff' stroke-opacity='0.05' fill='none'/%3E%3C/svg%3E");
+            background-size: cover, 140px 140px; background-attachment: fixed; position: relative;
         }
-
-        /* 🔹 Marca de agua del fondo (firma.png) */
         body::after {
-            content: "";
-            position: fixed;
-            right: -5%;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 50vw;
-            height: 50vw;
-            max-width: 800px;
-            max-height: 800px;
-            background: url('img/firma.png') center/contain no-repeat;
-            opacity: 0.08;
-            filter: brightness(1.5) contrast(0.9) grayscale(0.5);
-            z-index: 1;
-            pointer-events: none;
+            content: ""; position: fixed; right: -5%; top: 50%; transform: translateY(-50%);
+            width: 50vw; height: 50vw; max-width: 800px; max-height: 800px;
+            background: url('img/firma.png') center/contain no-repeat; opacity: 0.08;
+            filter: brightness(1.5) contrast(0.9) grayscale(0.5); z-index: 1; pointer-events: none;
         }
-
         @media (max-width: 900px) { body::after { right: -15%; opacity: 0.05; } }
         @media (max-width: 600px) { body::after { display: none; } }
-
         .login-container { 
-            background: var(--blanco); 
-            width: 100%; 
-            max-width: 380px; 
-            padding: 30px 26px; 
-            border-radius: 10px; 
-            box-shadow: 0 15px 40px rgba(0,0,0,0.45); 
-            border-top: 5px solid var(--azul-primario);
-            position: relative;
-            z-index: 10;
+            background: var(--blanco); width: 100%; max-width: 380px; padding: 30px 26px; 
+            border-radius: 10px; box-shadow: 0 15px 40px rgba(0,0,0,0.45); 
+            border-top: 5px solid var(--azul-primario); position: relative; z-index: 10;
         }
-        
         .header { text-align: center; margin-bottom: 24px; }
-        /* ✅ Logo del encabezado actualizado */
         .header img { width: 100%; max-width: 150px; height: auto; margin-bottom: 12px; }
         .header h1 { color: var(--azul-primario); font-size: 1.25rem; font-weight: 700; letter-spacing: 0.5px; }
         .header p { color: #5a5a5a; font-size: 0.8rem; margin-top: 4px; font-weight: 500; }
-        
         .form-group { margin-bottom: 16px; }
         .form-group label { display: block; margin-bottom: 6px; color: var(--texto); font-weight: 600; font-size: 0.85rem; }
         .form-group input { 
             width: 100%; padding: 12px 12px; border: 1.5px solid var(--beige-acento); 
-            border-radius: 6px; font-size: 0.95rem; background: #f8f9fa; 
-            color: var(--texto); transition: 0.2s;
+            border-radius: 6px; font-size: 0.95rem; background: #f8f9fa; color: var(--texto); transition: 0.2s;
         }
-        .form-group input:focus { 
-            outline: none; border-color: var(--azul-primario); 
-            box-shadow: 0 0 0 3px rgba(0,43,92,0.1); 
-            background: var(--blanco);
-        }
-        
+        .form-group input:focus { outline: none; border-color: var(--azul-primario); box-shadow: 0 0 0 3px rgba(0,43,92,0.1); background: var(--blanco); }
         .btn-acceso { 
-            width: 100%; padding: 13px; background: var(--azul-primario); 
-            color: var(--blanco); border: none; border-radius: 6px; 
-            font-weight: 600; font-size: 1rem; cursor: pointer; transition: 0.2s; margin-top: 8px;
+            width: 100%; padding: 13px; background: var(--azul-primario); color: var(--blanco); border: none; 
+            border-radius: 6px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: 0.2s; margin-top: 8px;
         }
         .btn-acceso:hover { background: var(--azul-secundario); transform: translateY(-1px); }
         .btn-acceso:disabled { background: #6c757d; cursor: not-allowed; transform: none; }
-        
         .security-note {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            margin-top: 16px;
-            padding: 10px;
-            background: #f0f7ff;
-            border: 1px solid #cce4ff;
-            border-radius: 6px;
-            font-size: 0.82rem;
-            color: var(--azul-primario);
-            font-weight: 500;
+            display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 16px; padding: 10px;
+            background: #f0f7ff; border: 1px solid #cce4ff; border-radius: 6px; font-size: 0.82rem; color: var(--azul-primario); font-weight: 500;
         }
         .security-note svg { width: 16px; height: 16px; flex-shrink: 0; fill: var(--azul-secundario); }
-
+        .patriotic-note {
+            display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px; padding: 8px 10px;
+            background: #fef2f2; border: 1px solid #fecaca; border-left: 4px solid #dc2626; border-radius: 6px;
+            font-size: 0.78rem; color: #991b1b; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase;
+        }
+        .patriotic-note svg { width: 14px; height: 14px; flex-shrink: 0; fill: #dc2626; }
         .mensaje { padding: 10px; margin-top: 12px; border-radius: 4px; text-align: center; font-size: 0.85rem; display: none; }
         .mensaje.error { background: #fde2e2; color: #b91c1c; border: 1px solid #fca5a5; }
         .mensaje.exito { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
-        
         footer { text-align: center; margin-top: 18px; font-size: 0.7rem; color: #6b7280; }
         @media (max-width: 420px) { .login-container { padding: 22px 18px; } }
     </style>
@@ -118,37 +71,34 @@
 <body>
     <div class="login-container">
         <div class="header">
-            <!-- ✅ Logo principal: LOGO-PNB.png -->
             <img src="img/LOGO-PNB.png" alt="Logo PNB">
             <h1>Sistema de Registro Policial</h1>
             <p>Policía Nacional Bolivariana | Acceso Restringido</p>
         </div>
-
         <form id="login-form">
             <div class="form-group">
                 <label for="email">Correo Institucional</label>
-                <input type="email" id="email" placeholder="usuario@pnb.gob.ve" required autocomplete="email">
+                <input type="email" id="email" name="email" placeholder="usuario@pnb.gob.ve" required autocomplete="email">
             </div>
             <div class="form-group">
                 <label for="password">Contraseña</label>
-                <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password">
+                <input type="password" id="password" name="password" placeholder="••••••••" required autocomplete="current-password">
             </div>
             <button type="submit" class="btn-acceso" id="btn-acceso">Iniciar Sesión</button>
-            
             <div class="security-note">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3v2h-6V8c0-1.66 1.34-3 3-3zm5 11H7v-1c0-2.33 4.67-4 7-4s5 1.67 5 4v1z" opacity="0.9"/>
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3v2h-6V8c0-1.66 1.34-3 3-3zm5 11H7v-1c0-2.33 4.67-4 7-4s5 1.67 5 4v1z" opacity="0.9"/></svg>
                 Seguridad de extremo a extremo cifrada
             </div>
-
+            <div class="patriotic-note">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2L9 9H2l6 4.5L5.5 22 12 17l6.5 5L16 13.5 22 9h-7L12 2z"/></svg>
+                Dudar es traición
+            </div>
             <div id="mensaje" class="mensaje"></div>
         </form>
-
-        <footer>&copy; OTIC-ZULIA 2026 PNB | Sistema Oficial</footer>
+        <footer>&copy; 2026 PNB | Sistema Oficial</footer>
     </div>
-
-   <script src="js/config.js"></script>
-<script src="js/index.js"></script>
+    <!-- ✅ Rutas corregidas a /js/ -->
+    <script src="js/config.js"></script>
+    <script src="js/index.js"></script>
 </body>
 </html>
