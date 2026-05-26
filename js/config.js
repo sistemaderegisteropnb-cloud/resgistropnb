@@ -1,7 +1,8 @@
-// 🔐 Configuración de Supabase - Policía Nacional Bolivariana
-// Este archivo debe cargarse ANTES de script.js
-const SUPABASE_CONFIG = {
-    URL: 'https://aonfdszenkihbmhyyfgr.supabase.co',
-    ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFvbmZkc3plbmtpaGJtaHl5ZmdyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3Njc1NjcsImV4cCI6MjA5NTM0MzU2N30.txJtXdXDamTGIBRpSH90KBw0yR2C-7XJgCJSo8H3rsI'
-};
-const supabase = window.supabase.createClient(SUPABASE_CONFIG.URL, SUPABASE_CONFIG.ANON_KEY);
+// ✅ Evita redeclaración por caché o carga múltiple
+if (!window.supabaseClient) {
+    const SUPABASE_CONFIG = {
+        URL: 'https://aonfdszenkihbmhyyfgr.supabase.co',
+        ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFvbmZkc3plbmtpaGJtaHl5ZmdyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3Njc1NjcsImV4cCI6MjA5NTM0MzU2N30.txJtXdXDamTGIBRpSH90KBw0yR2C-7XJgCJSo8H3rsI'
+    };
+    window.supabaseClient = window.supabase.createClient(SUPABASE_CONFIG.URL, SUPABASE_CONFIG.ANON_KEY);
+}
