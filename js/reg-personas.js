@@ -1,5 +1,5 @@
 window.initRegPersonas = function() {
-    // 🔹 Helper para campos condicionales genéricos
+    // 🔹 1. Helper para campos condicionales (GLOBAL para HTML onchange)
     window.toggleCampo = function(select, targetId) {
         const el = document.getElementById(targetId);
         const input = el?.querySelector('input');
@@ -12,7 +12,7 @@ window.initRegPersonas = function() {
         }
     };
 
-    // 🔹 Función GLOBAL para perforaciones
+    // 🔹 2. Función GLOBAL para perforaciones
     window.activarCampoPerforacion = function(select) {
         const caja = document.getElementById('box-lugar-perforacion');
         const input = document.getElementById('txt_lugar_perforacion');
@@ -27,7 +27,7 @@ window.initRegPersonas = function() {
         }
     };
 
-    // 🔹 Función para convertir estatura: metros (1.60) → cm (160)
+    // 🔹 3. Función para convertir estatura: metros (1.60) → cm (160)
     window.convertirEstatura = function() {
         const inputM = document.getElementById('p_estatura');
         const inputCm = document.getElementById('p_estatura_cm');
@@ -41,14 +41,14 @@ window.initRegPersonas = function() {
         return null;
     };
 
-    // 🔹 Listener para estatura en tiempo real
+    // 🔹 4. Listeners para estatura
     const estaturaInput = document.getElementById('p_estatura');
     if (estaturaInput) {
         estaturaInput.addEventListener('input', window.convertirEstatura);
         estaturaInput.addEventListener('blur', window.convertirEstatura);
     }
 
-    // 🔹 Vista previa de imágenes
+    // 🔹 5. Vista previa de imágenes
     const setupPreview = (inputId, previewId) => {
         const input = document.getElementById(inputId);
         const preview = document.getElementById(previewId);
@@ -71,7 +71,7 @@ window.initRegPersonas = function() {
     setupPreview('foto_perfil_izq', 'prev_izq');
     setupPreview('foto_perfil_der', 'prev_der');
 
-    // 🔹 Calcular edad automáticamente
+    // 🔹 6. Calcular edad automáticamente
     const fechaNac = document.getElementById('p_fecha_nac');
     const edadInput = document.getElementById('p_edad');
     if (fechaNac && edadInput) {
@@ -86,20 +86,18 @@ window.initRegPersonas = function() {
         });
     }
 
-    // 🔹 Validaciones de entrada (solo números)
+    // 🔹 7. Validaciones de entrada (solo números)
     const cedulaInput = document.getElementById('p_cedula');
     const tlfNumInput = document.getElementById('p_tlf_num');
     if (cedulaInput) cedulaInput.addEventListener('input', e => e.target.value = e.target.value.replace(/\D/g, '').slice(0, 8));
     if (tlfNumInput) tlfNumInput.addEventListener('input', e => e.target.value = e.target.value.replace(/\D/g, '').slice(0, 7));
 
-    // ✅ VALIDACIÓN EN TIEMPO REAL DE CÉDULA DUPLICADA
+    // ✅ 8. VALIDACIÓN EN TIEMPO REAL DE CÉDULA DUPLICADA
     const cedulaStatus = document.getElementById('cedula-status');
     let cedulaCheckTimeout = null;
 
     async function verificarCedulaEnTiempoReal(cedula) {
-        if (!cedulaStatus) return;
-        
-        // Limpiar validaciones previas
+        if (!cedulaStatus) return false;
         cedulaStatus.className = 'cedula-status checking';
         cedulaStatus.textContent = '🔍 Verificando...';
         cedulaInput?.classList.remove('cedula-duplicate');
@@ -114,32 +112,27 @@ window.initRegPersonas = function() {
             if (error) throw error;
 
             if (data) {
-                // ❌ Cédula ya existe
                 cedulaStatus.className = 'cedula-status error';
                 cedulaStatus.innerHTML = '⚠️ Esta cédula ya está registrada';
                 cedulaInput?.classList.add('cedula-duplicate');
-                return true; // duplicada
+                return true;
             } else {
-                // ✅ Cédula disponible
                 cedulaStatus.className = 'cedula-status success';
                 cedulaStatus.textContent = '✅ Cédula disponible';
                 cedulaInput?.classList.remove('cedula-duplicate');
-                return false; // única
+                return false;
             }
         } catch (err) {
             console.warn('⚠️ No se pudo verificar cédula:', err.message);
             cedulaStatus.className = 'cedula-status';
             cedulaStatus.textContent = '';
-            return false; // Permitir continuar si falla la verificación
+            return false;
         }
     }
 
-    // Listener con debounce (espera 500ms después de dejar de escribir)
     if (cedulaInput) {
         cedulaInput.addEventListener('input', function() {
             const cedula = this.value.trim();
-            
-            // Limpiar estado si está vacío o incompleto
             if (cedula.length < 8) {
                 if (cedulaStatus) {
                     cedulaStatus.className = 'cedula-status';
@@ -148,25 +141,16 @@ window.initRegPersonas = function() {
                 this.classList.remove('cedula-duplicate');
                 return;
             }
-
-            // Debounce: cancelar verificación anterior si el usuario sigue escribiendo
             if (cedulaCheckTimeout) clearTimeout(cedulaCheckTimeout);
-            
-            cedulaCheckTimeout = setTimeout(() => {
-                verificarCedulaEnTiempoReal(cedula);
-            }, 500);
+            cedulaCheckTimeout = setTimeout(() => verificarCedulaEnTiempoReal(cedula), 500);
         });
-
-        // Verificar también al perder el foco
         cedulaInput.addEventListener('blur', function() {
             const cedula = this.value.trim();
-            if (cedula.length === 8) {
-                verificarCedulaEnTiempoReal(cedula);
-            }
+            if (cedula.length === 8) verificarCedulaEnTiempoReal(cedula);
         });
     }
 
-    // 🔹 Envío del formulario
+    // 🔹 9. Envío del formulario
     const form = document.getElementById('form-reg-personas');
     const btn = form?.querySelector('.btn-submit');
     const msg = document.getElementById('msg-reg-personas');
@@ -180,7 +164,7 @@ window.initRegPersonas = function() {
         e.preventDefault();
         if (!form.checkValidity()) { form.reportValidity(); return; }
 
-        // ✅ Verificación final antes de enviar (doble seguridad)
+        // Verificación final de cédula antes de enviar
         const cedula = cedulaInput?.value.trim();
         if (cedula && cedula.length === 8) {
             const esDuplicada = await verificarCedulaEnTiempoReal(cedula);
@@ -191,7 +175,7 @@ window.initRegPersonas = function() {
                     msg.style.display = 'block';
                 }
                 cedulaInput?.focus();
-                return; // Detener envío
+                return;
             }
         }
 
@@ -229,7 +213,11 @@ window.initRegPersonas = function() {
                 der: await uploadFile(files.der, paths.der)
             };
 
-            // 2️⃣ Preparar datos
+            // 2️⃣ Preparar datos (Teléfono y Observaciones opcionales → null)
+            const tlfCod = document.getElementById('p_tlf_cod')?.value;
+            const tlfNum = document.getElementById('p_tlf_num')?.value.trim();
+            const telefonoValido = tlfCod && tlfNum;
+
             const data = {
                 estatus: document.getElementById('p_estatus')?.value || 'Verificación',
                 estacion_policial: document.getElementById('p_estacion')?.value,
@@ -241,8 +229,8 @@ window.initRegPersonas = function() {
                 cedula: cedulaInput?.value,
                 fecha_nacimiento: document.getElementById('p_fecha_nac')?.value,
                 edad: parseInt(document.getElementById('p_edad')?.value || 0),
-                tlf_codigo: document.getElementById('p_tlf_cod')?.value,
-                tlf_numero: document.getElementById('p_tlf_num')?.value,
+                tlf_codigo: telefonoValido ? tlfCod : null,
+                tlf_numero: telefonoValido ? tlfNum : null,
                 direccion: document.getElementById('p_direccion')?.value.trim(),
                 apodo: document.getElementById('p_apodo')?.value.trim() || null,
                 marca_corporal: document.getElementById('p_marca')?.value.trim() || null,
