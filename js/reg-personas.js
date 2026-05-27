@@ -12,7 +12,7 @@ window.initRegPersonas = function() {
         }
     };
 
-    // 🔹 Función GLOBAL para perforaciones (accesible desde HTML onchange)
+    // 🔹 Función GLOBAL para perforaciones
     window.activarCampoPerforacion = function(select) {
         const caja = document.getElementById('box-lugar-perforacion');
         const input = document.getElementById('txt_lugar_perforacion');
@@ -92,6 +92,80 @@ window.initRegPersonas = function() {
     if (cedulaInput) cedulaInput.addEventListener('input', e => e.target.value = e.target.value.replace(/\D/g, '').slice(0, 8));
     if (tlfNumInput) tlfNumInput.addEventListener('input', e => e.target.value = e.target.value.replace(/\D/g, '').slice(0, 7));
 
+    // ✅ VALIDACIÓN EN TIEMPO REAL DE CÉDULA DUPLICADA
+    const cedulaStatus = document.getElementById('cedula-status');
+    let cedulaCheckTimeout = null;
+
+    async function verificarCedulaEnTiempoReal(cedula) {
+        if (!cedulaStatus) return;
+        
+        // Limpiar validaciones previas
+        cedulaStatus.className = 'cedula-status checking';
+        cedulaStatus.textContent = '🔍 Verificando...';
+        cedulaInput?.classList.remove('cedula-duplicate');
+
+        try {
+            const { data, error } = await window.supabaseClient
+                .from('registro_personas')
+                .select('cedula')
+                .eq('cedula', cedula)
+                .maybeSingle();
+
+            if (error) throw error;
+
+            if (data) {
+                // ❌ Cédula ya existe
+                cedulaStatus.className = 'cedula-status error';
+                cedulaStatus.innerHTML = '⚠️ Esta cédula ya está registrada';
+                cedulaInput?.classList.add('cedula-duplicate');
+                return true; // duplicada
+            } else {
+                // ✅ Cédula disponible
+                cedulaStatus.className = 'cedula-status success';
+                cedulaStatus.textContent = '✅ Cédula disponible';
+                cedulaInput?.classList.remove('cedula-duplicate');
+                return false; // única
+            }
+        } catch (err) {
+            console.warn('⚠️ No se pudo verificar cédula:', err.message);
+            cedulaStatus.className = 'cedula-status';
+            cedulaStatus.textContent = '';
+            return false; // Permitir continuar si falla la verificación
+        }
+    }
+
+    // Listener con debounce (espera 500ms después de dejar de escribir)
+    if (cedulaInput) {
+        cedulaInput.addEventListener('input', function() {
+            const cedula = this.value.trim();
+            
+            // Limpiar estado si está vacío o incompleto
+            if (cedula.length < 8) {
+                if (cedulaStatus) {
+                    cedulaStatus.className = 'cedula-status';
+                    cedulaStatus.textContent = '';
+                }
+                this.classList.remove('cedula-duplicate');
+                return;
+            }
+
+            // Debounce: cancelar verificación anterior si el usuario sigue escribiendo
+            if (cedulaCheckTimeout) clearTimeout(cedulaCheckTimeout);
+            
+            cedulaCheckTimeout = setTimeout(() => {
+                verificarCedulaEnTiempoReal(cedula);
+            }, 500);
+        });
+
+        // Verificar también al perder el foco
+        cedulaInput.addEventListener('blur', function() {
+            const cedula = this.value.trim();
+            if (cedula.length === 8) {
+                verificarCedulaEnTiempoReal(cedula);
+            }
+        });
+    }
+
     // 🔹 Envío del formulario
     const form = document.getElementById('form-reg-personas');
     const btn = form?.querySelector('.btn-submit');
@@ -105,6 +179,21 @@ window.initRegPersonas = function() {
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!form.checkValidity()) { form.reportValidity(); return; }
+
+        // ✅ Verificación final antes de enviar (doble seguridad)
+        const cedula = cedulaInput?.value.trim();
+        if (cedula && cedula.length === 8) {
+            const esDuplicada = await verificarCedulaEnTiempoReal(cedula);
+            if (esDuplicada) {
+                if (msg) {
+                    msg.textContent = '❌ No se puede registrar: esta cédula ya existe en el sistema.';
+                    msg.className = 'msg error';
+                    msg.style.display = 'block';
+                }
+                cedulaInput?.focus();
+                return; // Detener envío
+            }
+        }
 
         btn.disabled = true;
         btn.textContent = '⏳ Subiendo fotos y registrando...';
@@ -140,7 +229,7 @@ window.initRegPersonas = function() {
                 der: await uploadFile(files.der, paths.der)
             };
 
-            // 2️⃣ Preparar datos (con conversión de estatura)
+            // 2️⃣ Preparar datos
             const data = {
                 estatus: document.getElementById('p_estatus')?.value || 'Verificación',
                 estacion_policial: document.getElementById('p_estacion')?.value,
@@ -149,7 +238,7 @@ window.initRegPersonas = function() {
                 segundo_nombre: document.getElementById('p_nombre2')?.value.trim() || null,
                 primer_apellido: document.getElementById('p_apellido1')?.value.trim(),
                 segundo_apellido: document.getElementById('p_apellido2')?.value.trim() || null,
-                cedula: document.getElementById('p_cedula')?.value,
+                cedula: cedulaInput?.value,
                 fecha_nacimiento: document.getElementById('p_fecha_nac')?.value,
                 edad: parseInt(document.getElementById('p_edad')?.value || 0),
                 tlf_codigo: document.getElementById('p_tlf_cod')?.value,
@@ -159,7 +248,7 @@ window.initRegPersonas = function() {
                 marca_corporal: document.getElementById('p_marca')?.value.trim() || null,
                 nacionalidad: document.getElementById('p_nacionalidad')?.value,
                 sexo: document.getElementById('p_sexo')?.value,
-                estatura_cm: window.convertirEstatura(), // ✅ Conversión automática: 1.60 → 160
+                estatura_cm: window.convertirEstatura(),
                 color_piel: document.getElementById('p_color_piel')?.value,
                 color_ojos: document.getElementById('p_color_ojos')?.value,
                 color_cabello: document.getElementById('p_color_cabello')?.value,
@@ -176,7 +265,12 @@ window.initRegPersonas = function() {
 
             // 3️⃣ Guardar en Supabase
             const { error } = await window.supabaseClient.from('registro_personas').insert([data]);
-            if (error) throw new Error(error.message || 'Error al guardar en BD.');
+            if (error) {
+                if (error.code === '23505' || error.message?.includes('unique_cedula')) {
+                    throw new Error('Esta cédula ya está registrada en el sistema.');
+                }
+                throw new Error(error.message || 'Error al guardar en BD.');
+            }
 
             if (msg) {
                 msg.textContent = '✅ Persona registrada exitosamente';
@@ -187,7 +281,10 @@ window.initRegPersonas = function() {
             if (edadInput) edadInput.value = '';
             document.querySelectorAll('.hidden-field').forEach(el => el.style.display = 'none');
             document.querySelectorAll('.img-preview').forEach(img => img.style.display = 'none');
-            // Resetear estatura
+            if (cedulaStatus) {
+                cedulaStatus.className = 'cedula-status';
+                cedulaStatus.textContent = '';
+            }
             const estaturaCmHidden = document.getElementById('p_estatura_cm');
             if (estaturaCmHidden) estaturaCmHidden.value = '';
         } catch (err) {
