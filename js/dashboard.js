@@ -23,15 +23,35 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (primerModulo) cargarModulo(primerModulo.dataset.src, primerModulo.dataset.js, primerModulo.dataset.init);
     }
 
+    // 🔒 Matriz de permisos estricta
     function aplicarPermisos(rol) {
+        const allSubItems = document.querySelectorAll('.submenu-item');
         const gestionItem = document.getElementById('menu-gestion-usuarios');
+
+        // 👁️ CONSULTOR: Solo ve "Consulta"
         if (rol === 'consultor') {
             document.querySelectorAll('.menu-item').forEach(item => item.style.display = 'none');
             const consultaBtn = document.querySelector('[data-toggle="submenu-consulta"]');
             if (consultaBtn) consultaBtn.closest('.menu-item').style.display = 'block';
             return;
         }
-        if (rol === 'moderador' && gestionItem) gestionItem.style.display = 'none';
+
+        // 🛡️ MODERADOR: Ve todo MENOS Modificar, Eliminar y Gestión de Usuarios
+        if (rol === 'moderador') {
+            // Ocultar Gestión de Usuarios
+            if (gestionItem) gestionItem.style.display = 'none';
+            
+            // Ocultar dinámicamente TODAS las opciones de Modificar y Eliminar
+            allSubItems.forEach(item => {
+                const src = item.dataset.src || '';
+                if (src.includes('mod-') || src.includes('elim-')) {
+                    item.style.display = 'none';
+                }
+            });
+            return;
+        }
+
+        // 🔑 ADMINISTRADOR: Ve todo (no se oculta nada)
     }
 
     // 🔹 MOTOR DE CARGA DINÁMICA
