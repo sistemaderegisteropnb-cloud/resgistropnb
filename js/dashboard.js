@@ -16,8 +16,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         aplicarPermisos(rol);
         configurarMenu();
+        iniciarReloj(); // ⏰ Iniciar reloj en tiempo real
         
-        // Cargar módulo por defecto
+        // Cargar primer módulo por defecto
         const primerModulo = document.querySelector('.menu-btn[data-src]');
         if (primerModulo) cargarModulo(primerModulo.dataset.src, primerModulo.dataset.js, primerModulo.dataset.init);
     }
@@ -25,28 +26,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     function aplicarPermisos(rol) {
         const gestionItem = document.getElementById('menu-gestion-usuarios');
         if (rol === 'consultor') {
-            document.querySelectorAll('.menu-btn:not([data-src="html/consulta.html"])').forEach(b => b.closest('.menu-item').classList.add('hidden'));
+            document.querySelectorAll('.menu-item').forEach(item => item.style.display = 'none');
+            const consultaBtn = document.querySelector('[data-toggle="submenu-consulta"]');
+            if (consultaBtn) consultaBtn.closest('.menu-item').style.display = 'block';
             return;
         }
-        if (rol === 'moderador' && gestionItem) gestionItem.classList.add('hidden');
+        if (rol === 'moderador' && gestionItem) gestionItem.style.display = 'none';
     }
 
     // 🔹 MOTOR DE CARGA DINÁMICA
     async function cargarModulo(htmlPath, jsPath, initFnName) {
         appContent.innerHTML = '<div class="loading">⏳ Cargando módulo...</div>';
         try {
-            const res = await fetch(htmlPath + '?v=' + Date.now()); // Cache-buster
+            const res = await fetch(htmlPath + '?v=' + Date.now());
             if (!res.ok) throw new Error('Archivo no encontrado');
-            
             appContent.innerHTML = await res.text();
 
             if (jsPath) {
                 const script = document.createElement('script');
                 script.src = jsPath + '?v=' + Date.now();
                 script.onload = () => {
-                    if (initFnName && typeof window[initFnName] === 'function') {
-                        window[initFnName]();
-                    }
+                    if (initFnName && typeof window[initFnName] === 'function') window[initFnName]();
                 };
                 document.head.appendChild(script);
             }
@@ -56,24 +56,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function configurarMenu() {
-        // Toggle submenús
         document.querySelectorAll('[data-toggle]').forEach(btn => {
             btn.addEventListener('click', () => {
                 const submenu = document.getElementById(btn.dataset.toggle);
-                document.querySelectorAll('.submenu').forEach(sm => sm !== submenu && sm.classList.remove('show'));
+                document.querySelectorAll('.submenu').forEach(sm => {
+                    if (sm.id !== btn.dataset.toggle) {
+                        sm.classList.remove('show');
+                        document.querySelector(`[data-toggle="${sm.id}"]`)?.classList.remove('expanded');
+                    }
+                });
                 submenu.classList.toggle('show');
+                btn.classList.toggle('expanded');
             });
         });
 
-        // Navegación por módulos
         document.addEventListener('click', async (e) => {
             const btn = e.target.closest('[data-src]');
             if (!btn) return;
             e.preventDefault();
-
             document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            
             await cargarModulo(btn.dataset.src, btn.dataset.js, btn.dataset.init);
             if (window.innerWidth <= 900) sidebar.classList.remove('open');
         });
@@ -84,6 +86,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (window.innerWidth <= 900 && !sidebar.contains(e.target) && !menuToggle.contains(e.target)) sidebar.classList.remove('open');
             });
         }
+    }
+
+    // ⏰ Reloj en tiempo real
+    function iniciarReloj() {
+        const clockEl = document.getElementById('live-clock');
+        if (!clockEl) return;
+        const actualizar = () => {
+            const ahora = new Date();
+            const opciones = { weekday: 'short', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+            clockEl.textContent = ahora.toLocaleString('es-VE', opciones).replace(',', '');
+        };
+        actualizar();
+        setInterval(actualizar, 1000);
     }
 
     btnLogout.addEventListener('click', async () => {
