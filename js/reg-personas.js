@@ -79,18 +79,35 @@ window.initRegPersonas = function() {
     setupPreview('foto_perfil_izq', 'prev_izq');
     setupPreview('foto_perfil_der', 'prev_der');
 
-    // Calcular edad automáticamente
+    // Calcular edad automáticamente + validar rango
     const fechaNac = document.getElementById('p_fecha_nac');
     const edadInput = document.getElementById('p_edad');
+    
+    function calcularEdad(fechaStr) {
+        if (!fechaStr) return null;
+        const hoy = new Date();
+        const nac = new Date(fechaStr);
+        let edad = hoy.getFullYear() - nac.getFullYear();
+        const m = hoy.getMonth() - nac.getMonth();
+        if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
+        return (edad >= 0 && edad <= 120) ? edad : null;
+    }
+    
     if (fechaNac && edadInput) {
         fechaNac.addEventListener('change', () => {
-            if (!fechaNac.value) return;
-            const hoy = new Date();
-            const nac = new Date(fechaNac.value);
-            let edad = hoy.getFullYear() - nac.getFullYear();
-            const m = hoy.getMonth() - nac.getMonth();
-            if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
-            edadInput.value = edad >= 0 ? edad : '';
+            if (!fechaNac.value) {
+                edadInput.value = '';
+                return;
+            }
+            const edad = calcularEdad(fechaNac.value);
+            if (edad !== null) {
+                edadInput.value = edad;
+                edadInput.classList.remove('input-error');
+            } else {
+                edadInput.value = '';
+                edadInput.classList.add('input-error');
+                edadInput.title = 'Fecha de nacimiento inválida';
+            }
         });
     }
 
@@ -178,6 +195,30 @@ window.initRegPersonas = function() {
         e.preventDefault();
         if (!form.checkValidity()) { form.reportValidity(); return; }
 
+        // ✅ VALIDACIÓN PREVIA: Edad obligatoria y válida
+        const edadValue = parseInt(document.getElementById('p_edad')?.value);
+        const fechaValue = document.getElementById('p_fecha_nac')?.value;
+        
+        if (!fechaValue) {
+            if (msg) {
+                msg.textContent = '❌ Por favor, ingresa la fecha de nacimiento para calcular la edad.';
+                msg.className = 'msg error';
+                msg.style.display = 'block';
+            }
+            fechaNac?.focus();
+            return;
+        }
+        
+        if (isNaN(edadValue) || edadValue < 0 || edadValue > 120) {
+            if (msg) {
+                msg.textContent = '❌ La edad calculada no es válida. Verifica la fecha de nacimiento.';
+                msg.className = 'msg error';
+                msg.style.display = 'block';
+            }
+            edadInput?.focus();
+            return;
+        }
+
         // Verificación final de cédula antes de enviar
         const cedula = cedulaInput?.value.trim();
         if (cedula && cedula.length === 8) {
@@ -230,7 +271,6 @@ window.initRegPersonas = function() {
             // 2️⃣ Preparar datos con manejo seguro de opcionales
             const tlfCodRaw = document.getElementById('p_tlf_cod')?.value;
             const tlfNumRaw = document.getElementById('p_tlf_num')?.value.trim();
-            // Si falta código O número, ambos son NULL (evita datos huérfanos)
             const tlfCodigo = (tlfCodRaw && tlfNumRaw) ? tlfCodRaw : null;
             const tlfNumero = (tlfCodRaw && tlfNumRaw) ? tlfNumRaw : null;
 
@@ -245,9 +285,8 @@ window.initRegPersonas = function() {
                 primer_apellido: document.getElementById('p_apellido1')?.value.trim(),
                 segundo_apellido: document.getElementById('p_apellido2')?.value.trim() || null,
                 cedula: cedulaInput?.value,
-                fecha_nacimiento: document.getElementById('p_fecha_nac')?.value,
-                edad: parseInt(document.getElementById('p_edad')?.value) || null,
-                // ✅ Teléfono: o tiene los 2 valores, o es null
+                fecha_nacimiento: fechaValue,
+                edad: edadValue, // ✅ Ya validado arriba
                 tlf_codigo: tlfCodigo,
                 tlf_numero: tlfNumero,
                 direccion: document.getElementById('p_direccion')?.value.trim(),
@@ -273,12 +312,18 @@ window.initRegPersonas = function() {
             // 3️⃣ Guardar en Supabase
             const { error } = await window.supabaseClient.from('registro_personas').insert([data]);
             if (error) {
-                // Manejo específico de errores de restricción
+                // 🎯 Manejo específico de errores con mensajes amigables
                 if (error.code === '23505' || error.message?.includes('unique_cedula') || error.message?.includes('registro_personas_cedula_key')) {
                     throw new Error('Esta cédula ya está registrada en el sistema.');
                 }
                 if (error.message?.includes('tlf_numero_check')) {
                     throw new Error('Formato de teléfono inválido. Debe tener 7 dígitos o dejarse vacío.');
+                }
+                if (error.message?.includes('registro_personas_edad_check') || error.message?.includes('null value in column "edad"')) {
+                    throw new Error('No se pudo calcular la edad. Por favor, verifica la fecha de nacimiento e intenta nuevamente.');
+                }
+                if (error.message?.includes('estatura_cm_check')) {
+                    throw new Error('La estatura debe estar entre 50 cm y 230 cm.');
                 }
                 throw new Error(error.message || 'Error al guardar en la base de datos.');
             }
@@ -288,7 +333,6 @@ window.initRegPersonas = function() {
                 msg.textContent = '✅ Persona registrada exitosamente';
                 msg.className = 'msg success';
                 msg.style.display = 'block';
-                // Auto-ocultar mensaje después de 4 segundos
                 setTimeout(() => { if (msg) msg.style.display = 'none'; }, 4000);
             }
             form.reset();
