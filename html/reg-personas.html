@@ -138,32 +138,46 @@
                 <div class="form-group"><label>Complexión</label><select id="p_complexion" required><option value="">Seleccione...</option><option value="Delgada">Delgada</option><option value="Media">Media</option><option value="Atlética">Atlética</option><option value="Robusta">Robusta</option><option value="Obesa">Obesa</option></select></div>
             </div>
         </fieldset>
+<fieldset>
+    <legend>🏥 Salud y Marcas</legend>
+    
+    <!-- ✅ 1. ¿Usa Lentes? -->
+    <div class="form-group">
+        <label>¿Usa Lentes?</label>
+        <select id="p_lentes" required onchange="toggleCampo(this, 'det-lentes')">
+            <option value="false">No</option>
+            <option value="true">Sí</option>
+        </select>
+    </div>
+    <div id="det-lentes" class="hidden-field">
+        <label>Tipo/Descripción</label>
+        <input type="text" id="txt_lentes">
+    </div>
 
-        <!-- ✅ SALUD Y MARCAS (CORREGIDO: cierre de fieldset y campo perforaciones integrado) -->
-        <fieldset>
-            <legend>🏥 Salud y Marcas</legend>
-            <div class="form-grid">
-                <div class="form-group"><label>¿Usa Lentes?</label><select id="p_lentes" required onchange="toggleCampo(this, 'det-lentes')"><option value="false">No</option><option value="true">Sí</option></select></div>
-                <div class="form-group"><label>¿Perforaciones?</label><select id="p_perforaciones" required onchange="activarCampoPerforacion(this)"><option value="false">No</option><option value="true">Sí</option></select></div>
-            </div>
+    <!-- ✅ 2. ¿Perforaciones? (AHORA DEBAJO) -->
+    <div class="form-group" style="margin-top: 14px;">
+        <label>¿Perforaciones?</label>
+        <select id="p_perforaciones" required onchange="activarCampoPerforacion(this)">
+            <option value="false">No</option>
+            <option value="true">Sí</option>
+        </select>
+    </div>
+    <div id="box-lugar-perforacion" class="hidden-field" style="margin-top: 10px;">
+        <label>Lugar de la perforación</label>
+        <input type="text" id="txt_lugar_perforacion" placeholder="Ej: Lóbulo, septum, ombligo, ceja...">
+    </div>
 
-            <div id="det-lentes" class="hidden-field"><label>Tipo/Descripción</label><input type="text" id="txt_lentes"></div>
-            <div id="box-lugar-perforacion" class="hidden-field" style="margin-top: 10px;">
-                <label>Lugar de la perforación</label>
-                <input type="text" id="txt_lugar_perforacion" placeholder="Ej: Lóbulo, septum, ombligo, ceja...">
-            </div>
+    <!-- ✅ 3. Resto de campos médicos -->
+    <div class="form-grid" style="margin-top: 16px; padding-top: 12px; border-top: 1px dashed #d4c9a8;">
+        <div class="form-group"><label>¿Condición Médica?</label><select id="p_cond_medica" required onchange="toggleCampo(this, 'det-cond')"><option value="false">No</option><option value="true">Sí</option></select></div>
+        <div id="det-cond" class="hidden-field" style="grid-column: span 2;"><label>Describa condición</label><input type="text" id="txt_cond"></div>
+    </div>
 
-            <div class="form-grid" style="margin-top:12px;">
-                <div class="form-group"><label>¿Condición Médica?</label><select id="p_cond_medica" required onchange="toggleCampo(this, 'det-cond')"><option value="false">No</option><option value="true">Sí</option></select></div>
-                <div id="det-cond" class="hidden-field" style="grid-column: span 2;"><label>Describa condición</label><input type="text" id="txt_cond"></div>
-            </div>
-
-            <div class="form-grid" style="margin-top:12px;">
-                <div class="form-group"><label>¿Consume Medicamento?</label><select id="p_medicamento" required onchange="toggleCampo(this, 'det-med')"><option value="false">No</option><option value="true">Sí</option></select></div>
-                <div id="det-med" class="hidden-field" style="grid-column: span 2;"><label>Nombre del medicamento</label><input type="text" id="txt_med"></div>
-            </div>
-        </fieldset> <!-- ✅ AQUÍ FALTABA ESTE CIERRE -->
-
+    <div class="form-grid" style="margin-top: 12px;">
+        <div class="form-group"><label>¿Consume Medicamento?</label><select id="p_medicamento" required onchange="toggleCampo(this, 'det-med')"><option value="false">No</option><option value="true">Sí</option></select></div>
+        <div id="det-med" class="hidden-field" style="grid-column: span 2;"><label>Nombre del medicamento</label><input type="text" id="txt_med"></div>
+    </div>
+</fieldset>
         <fieldset>
             <legend>⚖️ Antecedentes Judiciales</legend>
             <div class="form-group"><label>¿Problema judicial, penal, paga condena o bajo presentación?</label><select id="p_judicial" required onchange="toggleCampo(this, 'det-jud')"><option value="false">No</option><option value="true">Sí</option></select></div>
