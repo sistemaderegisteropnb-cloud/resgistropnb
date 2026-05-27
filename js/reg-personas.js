@@ -89,7 +89,7 @@ window.initRegPersonas = function() {
     if (tlfNumInput) tlfNumInput.addEventListener('input', e => e.target.value = e.target.value.replace(/\D/g, '').slice(0, 7));
 
     // ========================================================================
-    // 🔹 3. VALIDACIÓN EN TIEMPO REAL DE CÉDULA
+    // 🔹 3. VALIDACIÓN EN TIEMPO REAL DE CÉDULA (7 u 8 dígitos)
     // ========================================================================
     const cedulaStatus = document.getElementById('cedula-status');
     let cedulaCheckTimeout = null;
@@ -129,8 +129,9 @@ window.initRegPersonas = function() {
 
     if (cedulaInput) {
         cedulaInput.addEventListener('input', function() {
-            const val = this.value.trim();
-            if (val.length < 8) {
+            const val = this.value.trim().replace(/\D/g, '');
+            // Activar verificación a partir de 7 dígitos
+            if (val.length < 7) {
                 if (cedulaStatus) { cedulaStatus.className = 'cedula-status'; cedulaStatus.textContent = ''; }
                 this.classList.remove('cedula-duplicate');
                 return;
@@ -139,7 +140,8 @@ window.initRegPersonas = function() {
             cedulaCheckTimeout = setTimeout(() => verificarCedula(val), 600);
         });
         cedulaInput.addEventListener('blur', function() {
-            if (this.value.trim().length === 8) verificarCedula(this.value.trim());
+            const val = this.value.trim().replace(/\D/g, '');
+            if (val.length >= 7) verificarCedula(val);
         });
     }
 
@@ -150,7 +152,6 @@ window.initRegPersonas = function() {
     const btn = form?.querySelector('.btn-submit');
     const msg = document.getElementById('msg-reg-personas');
 
-    // Helper para mostrar errores
     const mostrarError = (texto) => {
         if (msg) {
             msg.textContent = '❌ ' + texto;
@@ -165,10 +166,10 @@ window.initRegPersonas = function() {
         e.preventDefault();
         if (!form.checkValidity()) { form.reportValidity(); return; }
 
-        // ✅ 1. VALIDACIONES PREVIAS (Evitan errores de BD)
+        // ✅ 1. VALIDACIONES PREVIAS
         const cedulaLimpia = cedulaInput?.value.trim().replace(/\D/g, '');
-        if (cedulaLimpia.length !== 8) {
-            mostrarError('La cédula debe contener exactamente 8 números. Por favor, verifica el dato.');
+        if (cedulaLimpia.length < 7 || cedulaLimpia.length > 8) {
+            mostrarError('La cédula debe contener entre 7 y 8 números. Por favor, verifica el dato.');
             cedulaInput?.focus();
             return;
         }
@@ -242,7 +243,7 @@ window.initRegPersonas = function() {
                 segundo_nombre: document.getElementById('p_nombre2')?.value.trim() || null,
                 primer_apellido: document.getElementById('p_apellido1')?.value.trim(),
                 segundo_apellido: document.getElementById('p_apellido2')?.value.trim() || null,
-                cedula: cedulaLimpia, // ✅ Solo 8 dígitos, sin letras ni guiones
+                cedula: cedulaLimpia, // ✅ 7 u 8 dígitos limpios
                 fecha_nacimiento: document.getElementById('p_fecha_nac')?.value,
                 edad: edad,
                 tlf_codigo: (tlfCod && tlfNum.length === 7) ? tlfCod : null,
@@ -268,8 +269,7 @@ window.initRegPersonas = function() {
             };
 
             const { error } = await window.supabaseClient.from('registro_personas').insert([data]);
-            
-            if (error) throw error; // Lanzar al catch para mapeo amigable
+            if (error) throw error;
 
             // ✅ ÉXITO
             if (msg) {
@@ -288,13 +288,11 @@ window.initRegPersonas = function() {
 
         } catch (err) {
             console.error('Error registro:', err);
-            
-            // 🎯 TRADUCTOR DE ERRORES DB → MENSAJES AMIGABLES
             const rawMsg = err.message || err.code || '';
             let mensajeFinal = 'Ocurrió un error inesperado al guardar. Por favor, verifica tu conexión e intenta nuevamente.';
 
             if (rawMsg.includes('cedula_check') || rawMsg.includes('23514')) {
-                mensajeFinal = 'El formato de la cédula no es válido. Debe contener exactamente 8 números.';
+                mensajeFinal = 'El formato de la cédula no es válido. Debe contener entre 7 y 8 números.';
             } else if (rawMsg.includes('unique_cedula') || rawMsg.includes('23505')) {
                 mensajeFinal = 'Esta cédula ya se encuentra registrada en nuestro sistema.';
             } else if (rawMsg.includes('edad') || rawMsg.includes('not-null') || rawMsg.includes('23502')) {
