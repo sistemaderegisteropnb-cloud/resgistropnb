@@ -25,11 +25,26 @@
     background: #f8fafc; 
     box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
+  .status-badge {
+    background: #dcfce7; color: #15803d; font-weight: 700; padding: 6px 12px;
+    border-radius: 6px; border: 1px solid #86efac; font-size: 0.85rem; letter-spacing: 0.5px;
+    display: inline-block;
+}
+.img-preview { 
+    width: 100%; height: auto; max-height: 240px; object-fit: contain;
+    border: 1px solid var(--beige-border); border-radius: 5px; margin-top: 8px;
+    display: none; background: #f8fafc; box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
 </style>
 
 <div class="card">
     <h3>📝 Registro Completo de Persona</h3>
     <form id="form-reg-personas" class="registro-form" novalidate>
+      <div style="margin-bottom: 18px; display: flex; align-items: center; gap: 10px;">
+    <label style="font-weight: 600; font-size: 0.95rem;">Estatus:</label>
+    <span class="status-badge">✅ VERIFICACIÓN</span>
+    <input type="hidden" id="p_estatus" value="Verificación">
+</div>
    <fieldset>
     <legend>📸 Fotografías Requeridas</legend>
     <div class="form-grid">
@@ -137,5 +152,43 @@
 
         <button type="submit" class="btn-submit">✅ Registrar Persona</button>
         <div id="msg-reg-personas" class="msg"></div>
+      <fieldset>
+    <legend>🏛️ Datos del Registro</legend>
+    <div class="form-grid">
+        <div class="form-group" style="grid-column: span 2;">
+            <label>Estación policial del registro</label>
+            <select id="p_estacion" required>
+                <option value="">Seleccione estación...</option>
+                <option value="EPM MARACAIBO">EPM MARACAIBO</option>
+                <option value="EPM SAN FRANCISCO">EPM SAN FRANCISCO</option>
+                <option value="EPM LA CAÑADA">EPM LA CAÑADA</option>
+                <option value="EPM ESTACION POLICIAL JESUS E. LOSADA">EPM ESTACION POLICIAL JESUS E. LOSADA</option>
+                <option value="EPP CRISTO DE ARANZA">EPP CRISTO DE ARANZA</option>
+                <option value="EPP LUIS HURTADO">EPP LUIS HURTADO</option>
+                <option value="EPP DAGNINO">EPP DAGNINO</option>
+                <option value="EPP OLEGARIO VILLALOBOS">EPP OLEGARIO VILLALOBOS</option>
+                <option value="EPP CHIQUINQUIRA">EPP CHIQUINQUIRA</option>
+                <option value="EPP FRANCISCO EUGENIO">EPP FRANCISCO EUGENIO</option>
+                <option value="EPP CARACCIOLO">EPP CARACCIOLO</option>
+                <option value="EPP IDELFONSO">EPP IDELFONSO</option>
+                <option value="EPP VENANCIO PULGAR">EPP VENANCIO PULGAR</option>
+                <option value="EPP COQUIVACOA-ZAPARA">EPP COQUIVACOA-ZAPARA</option>
+                <option value="EPP RAUL LEONI">EPP RAUL LEONI</option>
+                <option value="EPP ANTONIO BORJAS ROMERO">EPP ANTONIO BORJAS ROMERO</option>
+                <option value="EPP JUANA DE AVILA">EPP JUANA DE AVILA</option>
+                <option value="EPP SAN ISIDRO">EPP SAN ISIDRO</option>
+                <option value="EPP CASIQUE MARA">EPP CASIQUE MARA</option>
+                <option value="EPP BOLIVAR">EPP BOLIVAR</option>
+                <option value="EPP EL BAJO">EPP EL BAJO</option>
+                <option value="EPP DOMITILA">EPP DOMITILA</option>
+                <option value="EPP CORTIJOS">EPP CORTIJOS</option>
+                <option value="EPP MARCIAL HERNANDEZ">EPP MARCIAL HERNANDEZ</option>
+                <option value="EPP POTRERITO">EPP POTRERITO</option>
+                <option value="EPP ANDRES BELLO">EPP ANDRES BELLO</option>
+                <option value="EPP SANTA LUCIA">EPP SANTA LUCIA</option>
+            </select>
+        </div>
+    </div>
+</fieldset>
     </form>
 </div>
