@@ -129,7 +129,7 @@ window.initRegPersonas = function() {
     const cedulaInput = document.getElementById('p_cedula');
     const tlfNumInput = document.getElementById('p_tlf_num');
     if (cedulaInput) cedulaInput.addEventListener('input', e => e.target.value = e.target.value.replace(/\D/g, '').slice(0, 8));
-    if (tlfNumInput) tlfNumInput.addEventListener('input', e => e.target.value = e.target.value.replace(/\D/g, '').slice(0, 15));
+    if (tlfPais && tlfNum.length < 1) { mostrarError('Ingrese al menos un dígito para el número.'); document.getElementById('p_tlf_num')?.focus(); return; }
 
     const estaturaInput = document.getElementById('p_estatura');
     if (estaturaInput) {
