@@ -19,8 +19,25 @@ window.initModPersonas = function() {
         const val = parseFloat(m);
         return (!isNaN(val) && val >= 0.50 && val <= 2.30) ? Math.round(val * 100) : null;
     };
+
+    // 🔹 Listeners en tiempo real
     const estInput = document.getElementById('p_estatura');
     if (estInput) estInput.addEventListener('input', window.convertirEstatura);
+
+    // ✅ NUEVO: Recalcular edad al cambiar fecha de nacimiento
+    const fechaNacMod = document.getElementById('p_fecha_nac');
+    const edadInputMod = document.getElementById('p_edad');
+    if (fechaNacMod && edadInputMod) {
+        fechaNacMod.addEventListener('change', () => {
+            if (!fechaNacMod.value) { edadInputMod.value = ''; return; }
+            const hoy = new Date();
+            const nac = new Date(fechaNacMod.value);
+            let edad = hoy.getFullYear() - nac.getFullYear();
+            const mesDif = hoy.getMonth() - nac.getMonth();
+            if (mesDif < 0 || (mesDif === 0 && hoy.getDate() < nac.getDate())) edad--;
+            edadInputMod.value = (edad >= 0 && edad <= 120) ? edad : '';
+        });
+    }
 
     // 🔹 Vista previa de imágenes
     const setupPreview = (idIn, idImg) => {
@@ -178,7 +195,6 @@ window.initModPersonas = function() {
                     observaciones: document.getElementById('p_observaciones').value.trim() || null
                 };
 
-                // ✅ .select() confirma que realmente se modificó la fila
                 const { data, error } = await window.supabaseClient
                     .from('registro_personas')
                     .update(updateData)
@@ -194,7 +210,6 @@ window.initModPersonas = function() {
                     msgForm.style.display = 'block';
                 }
 
-                // Auto-reset después de 4s para limpiar la sesión de edición
                 setTimeout(() => {
                     form.style.display = 'none';
                     buscarInput.value = '';
