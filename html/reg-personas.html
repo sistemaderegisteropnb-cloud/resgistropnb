@@ -145,14 +145,10 @@
             <div id="det-jud" class="hidden-field"><label>Detalle</label><input type="text" id="txt_jud"></div>
         </fieldset>
 
-        <fieldset>
-            <legend>📝 Observaciones (Opcional)</legend>
-            <textarea id="p_observaciones" rows="2" placeholder="Notas adicionales..."></textarea>
-        </fieldset>
+       <!-- ... (todos los fieldsets anteriores siguen igual) ... -->
 
-        <button type="submit" class="btn-submit">✅ Registrar Persona</button>
-        <div id="msg-reg-personas" class="msg"></div>
-      <fieldset>
+<!-- ✅ 1. ESTACIÓN POLICIAL (DEBE IR ARRIBA DEL BOTÓN) -->
+<fieldset>
     <legend>🏛️ Datos del Registro</legend>
     <div class="form-grid">
         <div class="form-group" style="grid-column: span 2;">
@@ -190,5 +186,15 @@
         </div>
     </div>
 </fieldset>
+
+<!-- ✅ 2. OBSERVACIONES (Opcional) -->
+<fieldset>
+    <legend>📝 Observaciones</legend>
+    <textarea id="p_observaciones" rows="2" placeholder="Notas adicionales..."></textarea>
+</fieldset>
+
+<!-- ✅ 3. BOTÓN DE REGISTRO (SIEMPRE AL FINAL) -->
+<button type="submit" class="btn-submit">✅ Registrar Persona</button>
+<div id="msg-reg-personas" class="msg"></div>
     </form>
 </div>
