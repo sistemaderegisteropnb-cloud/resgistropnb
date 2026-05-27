@@ -2,31 +2,51 @@ window.initRegPersonas = function() {
     // 🔹 Helper para campos condicionales genéricos
     window.toggleCampo = function(select, targetId) {
         const el = document.getElementById(targetId);
-        const input = el.querySelector('input');
+        const input = el?.querySelector('input');
         if (select.value === 'true') {
-            el.style.display = 'block';
+            if (el) el.style.display = 'block';
             if (input) input.required = true;
         } else {
-            el.style.display = 'none';
+            if (el) el.style.display = 'none';
             if (input) { input.value = ''; input.required = false; }
         }
     };
 
-    // 🔹 Función ESPECÍFICA para perforaciones (con ID correcto)
-window.activarCampoPerforacion = function(select) {
-    const caja = document.getElementById('box-lugar-perforacion');
-    const input = document.getElementById('txt_lugar_perforacion');
-    if (!caja || !input) return;
-    
-    if (select.value === 'true') {
-        caja.style.display = 'block';
-        input.required = true;
-    } else {
-        caja.style.display = 'none';
-        input.value = '';
-        input.required = false;
+    // 🔹 Función GLOBAL para perforaciones (accesible desde HTML onchange)
+    window.activarCampoPerforacion = function(select) {
+        const caja = document.getElementById('box-lugar-perforacion');
+        const input = document.getElementById('txt_lugar_perforacion');
+        if (!caja || !input) return;
+        if (select.value === 'true') {
+            caja.style.display = 'block';
+            input.required = true;
+        } else {
+            caja.style.display = 'none';
+            input.value = '';
+            input.required = false;
+        }
+    };
+
+    // 🔹 Función para convertir estatura: metros (1.60) → cm (160)
+    window.convertirEstatura = function() {
+        const inputM = document.getElementById('p_estatura');
+        const inputCm = document.getElementById('p_estatura_cm');
+        if (!inputM) return null;
+        const metros = parseFloat(inputM.value);
+        if (!isNaN(metros) && metros >= 0.50 && metros <= 2.30) {
+            const cm = Math.round(metros * 100);
+            if (inputCm) inputCm.value = cm;
+            return cm;
+        }
+        return null;
+    };
+
+    // 🔹 Listener para estatura en tiempo real
+    const estaturaInput = document.getElementById('p_estatura');
+    if (estaturaInput) {
+        estaturaInput.addEventListener('input', window.convertirEstatura);
+        estaturaInput.addEventListener('blur', window.convertirEstatura);
     }
-};
 
     // 🔹 Vista previa de imágenes
     const setupPreview = (inputId, previewId) => {
@@ -120,7 +140,7 @@ window.activarCampoPerforacion = function(select) {
                 der: await uploadFile(files.der, paths.der)
             };
 
-            // 2️⃣ Preparar datos (IDs corregidos)
+            // 2️⃣ Preparar datos (con conversión de estatura)
             const data = {
                 estatus: document.getElementById('p_estatus')?.value || 'Verificación',
                 estacion_policial: document.getElementById('p_estacion')?.value,
@@ -139,7 +159,7 @@ window.activarCampoPerforacion = function(select) {
                 marca_corporal: document.getElementById('p_marca')?.value.trim() || null,
                 nacionalidad: document.getElementById('p_nacionalidad')?.value,
                 sexo: document.getElementById('p_sexo')?.value,
-                estatura_cm: parseFloat(document.getElementById('p_estatura')?.value || 0),
+                estatura_cm: window.convertirEstatura(), // ✅ Conversión automática: 1.60 → 160
                 color_piel: document.getElementById('p_color_piel')?.value,
                 color_ojos: document.getElementById('p_color_ojos')?.value,
                 color_cabello: document.getElementById('p_color_cabello')?.value,
@@ -147,7 +167,7 @@ window.activarCampoPerforacion = function(select) {
                 usa_lentes: document.getElementById('p_lentes')?.value === 'true',
                 detalle_lentes: document.getElementById('p_lentes')?.value === 'true' ? document.getElementById('txt_lentes')?.value.trim() : null,
                 perforaciones: document.getElementById('p_perforaciones')?.value === 'true',
-                detalle_perforaciones: document.getElementById('p_perforaciones')?.value === 'true' ? document.getElementById('txt_lugar_perforacion')?.value.trim() : null, // ✅ ID corregido
+                detalle_perforaciones: document.getElementById('p_perforaciones')?.value === 'true' ? document.getElementById('txt_lugar_perforacion')?.value.trim() : null,
                 condicion_medica: document.getElementById('p_cond_medica')?.value === 'true' ? document.getElementById('txt_cond')?.value : null,
                 consume_medicamento: document.getElementById('p_medicamento')?.value === 'true' ? document.getElementById('txt_med')?.value : null,
                 problema_judicial: document.getElementById('p_judicial')?.value === 'true' ? document.getElementById('txt_jud')?.value : null,
@@ -167,6 +187,9 @@ window.activarCampoPerforacion = function(select) {
             if (edadInput) edadInput.value = '';
             document.querySelectorAll('.hidden-field').forEach(el => el.style.display = 'none');
             document.querySelectorAll('.img-preview').forEach(img => img.style.display = 'none');
+            // Resetear estatura
+            const estaturaCmHidden = document.getElementById('p_estatura_cm');
+            if (estaturaCmHidden) estaturaCmHidden.value = '';
         } catch (err) {
             console.error('Error registro:', err);
             if (msg) {
