@@ -1,5 +1,5 @@
 window.initRegPersonas = function() {
-    // 🔹 Helper para campos condicionales
+    // 🔹 Helper para campos condicionales genéricos
     window.toggleCampo = function(select, targetId) {
         const el = document.getElementById(targetId);
         const input = el.querySelector('input');
@@ -12,10 +12,24 @@ window.initRegPersonas = function() {
         }
     };
 
+    // 🔹 Función ESPECÍFICA para perforaciones (con ID correcto)
+    function activarCampoPerforacion(select) {
+        const caja = document.getElementById('box-lugar-perforacion');
+        const input = document.getElementById('txt_lugar_perforacion');
+        if (select.value === 'true') {
+            caja.style.display = 'block';
+            if (input) input.required = true;
+        } else {
+            caja.style.display = 'none';
+            if (input) { input.value = ''; input.required = false; }
+        }
+    }
+
     // 🔹 Vista previa de imágenes
     const setupPreview = (inputId, previewId) => {
         const input = document.getElementById(inputId);
         const preview = document.getElementById(previewId);
+        if (!input || !preview) return;
         input.addEventListener('change', function() {
             const file = this.files[0];
             if (file) {
@@ -37,24 +51,33 @@ window.initRegPersonas = function() {
     // 🔹 Calcular edad automáticamente
     const fechaNac = document.getElementById('p_fecha_nac');
     const edadInput = document.getElementById('p_edad');
-    fechaNac.addEventListener('change', () => {
-        if (!fechaNac.value) return;
-        const hoy = new Date();
-        const nac = new Date(fechaNac.value);
-        let edad = hoy.getFullYear() - nac.getFullYear();
-        const m = hoy.getMonth() - nac.getMonth();
-        if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
-        edadInput.value = edad >= 0 ? edad : '';
-    });
+    if (fechaNac && edadInput) {
+        fechaNac.addEventListener('change', () => {
+            if (!fechaNac.value) return;
+            const hoy = new Date();
+            const nac = new Date(fechaNac.value);
+            let edad = hoy.getFullYear() - nac.getFullYear();
+            const m = hoy.getMonth() - nac.getMonth();
+            if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
+            edadInput.value = edad >= 0 ? edad : '';
+        });
+    }
 
     // 🔹 Validaciones de entrada (solo números)
-    document.getElementById('p_cedula').addEventListener('input', e => e.target.value = e.target.value.replace(/\D/g, '').slice(0, 8));
-    document.getElementById('p_tlf_num').addEventListener('input', e => e.target.value = e.target.value.replace(/\D/g, '').slice(0, 7));
+    const cedulaInput = document.getElementById('p_cedula');
+    const tlfNumInput = document.getElementById('p_tlf_num');
+    if (cedulaInput) cedulaInput.addEventListener('input', e => e.target.value = e.target.value.replace(/\D/g, '').slice(0, 8));
+    if (tlfNumInput) tlfNumInput.addEventListener('input', e => e.target.value = e.target.value.replace(/\D/g, '').slice(0, 7));
 
     // 🔹 Envío del formulario
     const form = document.getElementById('form-reg-personas');
-    const btn = form.querySelector('.btn-submit');
+    const btn = form?.querySelector('.btn-submit');
     const msg = document.getElementById('msg-reg-personas');
+
+    if (!form || !btn) {
+        console.error('❌ Formulario o botón no encontrado');
+        return;
+    }
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -62,7 +85,7 @@ window.initRegPersonas = function() {
 
         btn.disabled = true;
         btn.textContent = '⏳ Subiendo fotos y registrando...';
-        msg.style.display = 'none';
+        if (msg) msg.style.display = 'none';
 
         try {
             // 1️⃣ Subir fotos
@@ -72,6 +95,8 @@ window.initRegPersonas = function() {
                 izq: document.getElementById('foto_perfil_izq').files[0],
                 der: document.getElementById('foto_perfil_der').files[0]
             };
+            if (!files.front || !files.izq || !files.der) throw new Error('Las 3 fotografías son obligatorias.');
+
             const uid = sessionStorage.getItem('pnb_user_id') || 'user';
             const ts = Date.now();
             const paths = {
@@ -92,56 +117,60 @@ window.initRegPersonas = function() {
                 der: await uploadFile(files.der, paths.der)
             };
 
-            // 2️⃣ Preparar datos
+            // 2️⃣ Preparar datos (IDs corregidos)
             const data = {
-                estatus: document.getElementById('p_estatus').value, // ✅ Siempre "Verificación"
-    estacion_policial: document.getElementById('p_estacion').value, // ✅ Nueva estación
+                estatus: document.getElementById('p_estatus')?.value || 'Verificación',
+                estacion_policial: document.getElementById('p_estacion')?.value,
                 foto_frontal: urls.front, foto_perfil_izq: urls.izq, foto_perfil_der: urls.der,
-                primer_nombre: document.getElementById('p_nombre1').value.trim(),
-                segundo_nombre: document.getElementById('p_nombre2').value.trim() || null,
-                primer_apellido: document.getElementById('p_apellido1').value.trim(),
-                segundo_apellido: document.getElementById('p_apellido2').value.trim() || null,
-                cedula: document.getElementById('p_cedula').value,
-                fecha_nacimiento: document.getElementById('p_fecha_nac').value,
-                edad: parseInt(edadInput.value),
-                tlf_codigo: document.getElementById('p_tlf_cod').value,
-                tlf_numero: document.getElementById('p_tlf_num').value,
-                direccion: document.getElementById('p_direccion').value.trim(),
-                apodo: document.getElementById('p_apodo').value.trim() || null,
-                marca_corporal: document.getElementById('p_marca').value.trim() || null,
-                nacionalidad: document.getElementById('p_nacionalidad').value,
-                sexo: document.getElementById('p_sexo').value,
-                estatura_cm: parseFloat(document.getElementById('p_estatura').value),
-                color_piel: document.getElementById('p_color_piel').value,
-                color_ojos: document.getElementById('p_color_ojos').value,
-                color_cabello: document.getElementById('p_color_cabello').value,
-                complexion: document.getElementById('p_complexion').value,
-                usa_lentes: document.getElementById('p_lentes').value === 'true',
-                detalle_lentes: document.getElementById('p_lentes').value === 'true' ? document.getElementById('txt_lentes').value.trim() : null,
-                perforaciones: document.getElementById('p_perforaciones').value === 'true',
-                detalle_perforaciones: document.getElementById('p_perforaciones').value === 'true' ? document.getElementById('txt_perforaciones').value.trim() : null,
-                condicion_medica: document.getElementById('p_cond_medica').value === 'true' ? document.getElementById('txt_cond').value : null,
-                consume_medicamento: document.getElementById('p_medicamento').value === 'true' ? document.getElementById('txt_med').value : null,
-                problema_judicial: document.getElementById('p_judicial').value === 'true' ? document.getElementById('txt_jud').value : null,
-                observaciones: document.getElementById('p_observaciones').value.trim() || null
+                primer_nombre: document.getElementById('p_nombre1')?.value.trim(),
+                segundo_nombre: document.getElementById('p_nombre2')?.value.trim() || null,
+                primer_apellido: document.getElementById('p_apellido1')?.value.trim(),
+                segundo_apellido: document.getElementById('p_apellido2')?.value.trim() || null,
+                cedula: document.getElementById('p_cedula')?.value,
+                fecha_nacimiento: document.getElementById('p_fecha_nac')?.value,
+                edad: parseInt(document.getElementById('p_edad')?.value || 0),
+                tlf_codigo: document.getElementById('p_tlf_cod')?.value,
+                tlf_numero: document.getElementById('p_tlf_num')?.value,
+                direccion: document.getElementById('p_direccion')?.value.trim(),
+                apodo: document.getElementById('p_apodo')?.value.trim() || null,
+                marca_corporal: document.getElementById('p_marca')?.value.trim() || null,
+                nacionalidad: document.getElementById('p_nacionalidad')?.value,
+                sexo: document.getElementById('p_sexo')?.value,
+                estatura_cm: parseFloat(document.getElementById('p_estatura')?.value || 0),
+                color_piel: document.getElementById('p_color_piel')?.value,
+                color_ojos: document.getElementById('p_color_ojos')?.value,
+                color_cabello: document.getElementById('p_color_cabello')?.value,
+                complexion: document.getElementById('p_complexion')?.value,
+                usa_lentes: document.getElementById('p_lentes')?.value === 'true',
+                detalle_lentes: document.getElementById('p_lentes')?.value === 'true' ? document.getElementById('txt_lentes')?.value.trim() : null,
+                perforaciones: document.getElementById('p_perforaciones')?.value === 'true',
+                detalle_perforaciones: document.getElementById('p_perforaciones')?.value === 'true' ? document.getElementById('txt_lugar_perforacion')?.value.trim() : null, // ✅ ID corregido
+                condicion_medica: document.getElementById('p_cond_medica')?.value === 'true' ? document.getElementById('txt_cond')?.value : null,
+                consume_medicamento: document.getElementById('p_medicamento')?.value === 'true' ? document.getElementById('txt_med')?.value : null,
+                problema_judicial: document.getElementById('p_judicial')?.value === 'true' ? document.getElementById('txt_jud')?.value : null,
+                observaciones: document.getElementById('p_observaciones')?.value.trim() || null
             };
 
             // 3️⃣ Guardar en Supabase
             const { error } = await window.supabaseClient.from('registro_personas').insert([data]);
             if (error) throw new Error(error.message || 'Error al guardar en BD.');
 
-            msg.textContent = '✅ Persona registrada exitosamente';
-            msg.className = 'msg success';
-            msg.style.display = 'block';
+            if (msg) {
+                msg.textContent = '✅ Persona registrada exitosamente';
+                msg.className = 'msg success';
+                msg.style.display = 'block';
+            }
             form.reset();
-            edadInput.value = '';
+            if (edadInput) edadInput.value = '';
             document.querySelectorAll('.hidden-field').forEach(el => el.style.display = 'none');
             document.querySelectorAll('.img-preview').forEach(img => img.style.display = 'none');
         } catch (err) {
             console.error('Error registro:', err);
-            msg.textContent = '❌ ' + (err.message || 'Error desconocido');
-            msg.className = 'msg error';
-            msg.style.display = 'block';
+            if (msg) {
+                msg.textContent = '❌ ' + (err.message || 'Error desconocido');
+                msg.className = 'msg error';
+                msg.style.display = 'block';
+            }
         } finally {
             btn.disabled = false;
             btn.textContent = '✅ Registrar Persona';
