@@ -19,8 +19,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         iniciarReloj(); // ⏰ Iniciar reloj en tiempo real
         
         // Cargar primer módulo por defecto
-        const primerModulo = document.querySelector('.menu-btn[data-src]');
-        if (primerModulo) cargarModulo(primerModulo.dataset.src, primerModulo.dataset.js, primerModulo.dataset.init);
+     // Cargar módulo por defecto (solo si existe)
+const primerModulo = document.querySelector('.menu-btn[data-src="html/consulta-personas.html"]') || 
+                     document.querySelector('.menu-btn[data-src]');
+if (primerModulo) cargarModulo(primerModulo.dataset.src, primerModulo.dataset.js, primerModulo.dataset.init);
     }
 
     // 🔒 Matriz de permisos estricta
