@@ -13,17 +13,20 @@ window.initRegPersonas = function() {
     };
 
     // 🔹 Función ESPECÍFICA para perforaciones (con ID correcto)
-    function activarCampoPerforacion(select) {
-        const caja = document.getElementById('box-lugar-perforacion');
-        const input = document.getElementById('txt_lugar_perforacion');
-        if (select.value === 'true') {
-            caja.style.display = 'block';
-            if (input) input.required = true;
-        } else {
-            caja.style.display = 'none';
-            if (input) { input.value = ''; input.required = false; }
-        }
+window.activarCampoPerforacion = function(select) {
+    const caja = document.getElementById('box-lugar-perforacion');
+    const input = document.getElementById('txt_lugar_perforacion');
+    if (!caja || !input) return;
+    
+    if (select.value === 'true') {
+        caja.style.display = 'block';
+        input.required = true;
+    } else {
+        caja.style.display = 'none';
+        input.value = '';
+        input.required = false;
     }
+};
 
     // 🔹 Vista previa de imágenes
     const setupPreview = (inputId, previewId) => {
