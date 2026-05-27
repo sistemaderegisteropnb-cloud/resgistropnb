@@ -1,5 +1,5 @@
 window.initModPersonas = function() {
-    // 🔹 Helpers globales (mismos que en registro)
+    // 🔹 Helpers globales
     window.toggleCampo = function(select, targetId) {
         const el = document.getElementById(targetId);
         const input = el?.querySelector('input');
@@ -15,7 +15,6 @@ window.initModPersonas = function() {
     };
     window.convertirEstatura = function() {
         const m = document.getElementById('p_estatura')?.value;
-        const cm = document.getElementById('p_estatura_cm');
         if (!m) return null;
         const val = parseFloat(m);
         return (!isNaN(val) && val >= 0.50 && val <= 2.30) ? Math.round(val * 100) : null;
@@ -23,7 +22,7 @@ window.initModPersonas = function() {
     const estInput = document.getElementById('p_estatura');
     if (estInput) estInput.addEventListener('input', window.convertirEstatura);
 
-    // 🔹 Vista previa de imágenes (inicial)
+    // 🔹 Vista previa de imágenes
     const setupPreview = (idIn, idImg) => {
         const inp = document.getElementById(idIn);
         const img = document.getElementById(idImg);
@@ -38,7 +37,7 @@ window.initModPersonas = function() {
     setupPreview('foto_perfil_izq', 'prev_izq');
     setupPreview('foto_perfil_der', 'prev_der');
 
-    // 🔹 Lógica de búsqueda
+    // 🔹 Búsqueda
     const buscarBtn = document.getElementById('btn-buscar');
     const buscarInput = document.getElementById('buscar-cedula');
     const form = document.getElementById('form-mod-personas');
@@ -62,7 +61,6 @@ window.initModPersonas = function() {
             currentUrls = { front: data.foto_frontal, izq: data.foto_perfil_izq, der: data.foto_perfil_der };
             document.getElementById('mod_record_id').value = currentId;
 
-            // Llenar campos
             document.getElementById('p_cedula').value = data.cedula;
             document.getElementById('p_nombre1').value = data.primer_nombre || '';
             document.getElementById('p_nombre2').value = data.segundo_nombre || '';
@@ -85,7 +83,6 @@ window.initModPersonas = function() {
             document.getElementById('p_estacion').value = data.estacion_policial || '';
             document.getElementById('p_observaciones').value = data.observaciones || '';
 
-            // Condicionales
             const setCond = (selId, txtId, showId, val, detail) => {
                 document.getElementById(selId).value = val ? 'true' : 'false';
                 toggleCampo(document.getElementById(selId), showId);
@@ -97,14 +94,13 @@ window.initModPersonas = function() {
             setCond('p_medicamento', 'txt_med', 'det-med', data.consume_medicamento !== null, data.consume_medicamento);
             setCond('p_judicial', 'txt_jud', 'det-jud', data.problema_judicial !== null, data.problema_judicial);
 
-            // Imágenes existentes
             ['front', 'izq', 'der'].forEach(k => {
                 const el = document.getElementById(k === 'front' ? 'prev_frontal' : k === 'izq' ? 'prev_izq' : 'prev_der');
                 if (currentUrls[k]) { el.src = currentUrls[k]; el.style.display = 'block'; }
             });
 
             form.style.display = 'block';
-            showBuscarMsg('✅ Registro encontrado. Modifique los datos necesarios y guarde.', 'success');
+            showBuscarMsg('✅ Registro cargado. Modifique y guarde.', 'success');
         } catch (err) {
             console.error(err);
             showBuscarMsg('❌ Error de conexión al buscar.', 'error');
@@ -124,6 +120,9 @@ window.initModPersonas = function() {
             if (!form.checkValidity()) { form.reportValidity(); return; }
             if (!currentId) { mostrarError('Busque un registro primero.'); return; }
 
+            const estCm = window.convertirEstatura();
+            if (!estCm) { mostrarError('La estatura es obligatoria y debe estar entre 0.50 y 2.30 m.'); return; }
+
             submitBtn.disabled = true;
             submitBtn.textContent = '⏳ Guardando cambios...';
             if (msgForm) msgForm.style.display = 'none';
@@ -132,7 +131,7 @@ window.initModPersonas = function() {
                 const bucket = window.supabaseClient.storage.from('fotos_personas');
                 const uploadIfChanged = async (fileInput, originalUrl) => {
                     const f = document.getElementById(fileInput).files[0];
-                    if (!f) return originalUrl; // Mantener existente
+                    if (!f) return originalUrl;
                     const uid = sessionStorage.getItem('pnb_user_id') || 'user';
                     const path = `${uid}/${Date.now()}_${fileInput}.jpg`;
                     const { error } = await bucket.upload(path, f, { cacheControl: '3600' });
@@ -163,7 +162,7 @@ window.initModPersonas = function() {
                     marca_corporal: document.getElementById('p_marca').value.trim() || null,
                     nacionalidad: document.getElementById('p_nacionalidad').value,
                     sexo: document.getElementById('p_sexo').value,
-                    estatura_cm: window.convertirEstatura(),
+                    estatura_cm: estCm,
                     color_piel: document.getElementById('p_color_piel').value,
                     color_ojos: document.getElementById('p_color_ojos').value,
                     color_cabello: document.getElementById('p_color_cabello').value,
@@ -179,18 +178,41 @@ window.initModPersonas = function() {
                     observaciones: document.getElementById('p_observaciones').value.trim() || null
                 };
 
-                const { error } = await window.supabaseClient.from('registro_personas').update(updateData).eq('id', currentId);
-                if (error) throw error;
+                // ✅ .select() confirma que realmente se modificó la fila
+                const { data, error } = await window.supabaseClient
+                    .from('registro_personas')
+                    .update(updateData)
+                    .eq('id', currentId)
+                    .select('id');
 
-                if (msgForm) { msgForm.textContent = '✅ Registro actualizado exitosamente.'; msgForm.className = 'msg success'; msgForm.style.display = 'block'; setTimeout(() => msgForm.style.display = 'none', 5000); }
+                if (error) throw error;
+                if (!data || data.length === 0) throw new Error('No se pudo aplicar la actualización. Verifique permisos o conexión.');
+
+                if (msgForm) {
+                    msgForm.textContent = '✅ Cambios guardados correctamente en la base de datos.';
+                    msgForm.className = 'msg success';
+                    msgForm.style.display = 'block';
+                }
+
+                // Auto-reset después de 4s para limpiar la sesión de edición
+                setTimeout(() => {
+                    form.style.display = 'none';
+                    buscarInput.value = '';
+                    msgBuscar.style.display = 'none';
+                    if (msgForm) msgForm.style.display = 'none';
+                    currentId = null;
+                }, 4000);
+
             } catch (err) {
                 console.error('Error actualización:', err);
                 let mensaje = 'Error al guardar cambios. Intente nuevamente.';
                 if (err.message.includes('storage') || err.message.includes('upload')) mensaje = 'No se pudieron subir las fotografías nuevas.';
-                else if (err.message.includes('cedula') || err.message.includes('23505')) mensaje = 'La cédula ya existe en otro registro.';
+                else if (err.message.includes('cedula') || err.message.includes('23505')) mensaje = 'Conflicto con cédula existente.';
+                else if (err.message.includes('not-null')) mensaje = 'Falta completar un campo obligatorio marcado.';
                 mostrarError(mensaje);
             } finally {
-                submitBtn.disabled = false; submitBtn.textContent = '💾 Guardar Cambios';
+                submitBtn.disabled = false;
+                submitBtn.textContent = '💾 Guardar Cambios';
             }
         });
     }
