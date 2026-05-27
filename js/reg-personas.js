@@ -94,6 +94,8 @@ window.initRegPersonas = function() {
 
             // 2️⃣ Preparar datos
             const data = {
+                estatus: document.getElementById('p_estatus').value, // ✅ Siempre "Verificación"
+    estacion_policial: document.getElementById('p_estacion').value, // ✅ Nueva estación
                 foto_frontal: urls.front, foto_perfil_izq: urls.izq, foto_perfil_der: urls.der,
                 primer_nombre: document.getElementById('p_nombre1').value.trim(),
                 segundo_nombre: document.getElementById('p_nombre2').value.trim() || null,
