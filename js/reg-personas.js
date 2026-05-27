@@ -1,5 +1,9 @@
 window.initRegPersonas = function() {
-    // 🔹 1. Helper para campos condicionales (GLOBAL para HTML onchange)
+    // ========================================================================
+    // 🔹 1. FUNCIONES GLOBALES (para onchange en HTML)
+    // ========================================================================
+    
+    // Helper para campos condicionales genéricos
     window.toggleCampo = function(select, targetId) {
         const el = document.getElementById(targetId);
         const input = el?.querySelector('input');
@@ -12,7 +16,7 @@ window.initRegPersonas = function() {
         }
     };
 
-    // 🔹 2. Función GLOBAL para perforaciones
+    // Función específica para perforaciones
     window.activarCampoPerforacion = function(select) {
         const caja = document.getElementById('box-lugar-perforacion');
         const input = document.getElementById('txt_lugar_perforacion');
@@ -27,7 +31,7 @@ window.initRegPersonas = function() {
         }
     };
 
-    // 🔹 3. Función para convertir estatura: metros (1.60) → cm (160)
+    // Función para convertir estatura: metros (1.60) → cm (160)
     window.convertirEstatura = function() {
         const inputM = document.getElementById('p_estatura');
         const inputCm = document.getElementById('p_estatura_cm');
@@ -41,14 +45,18 @@ window.initRegPersonas = function() {
         return null;
     };
 
-    // 🔹 4. Listeners para estatura
+    // ========================================================================
+    // 🔹 2. LISTENERS DE ENTRADA Y VISTA PREVIA
+    // ========================================================================
+    
+    // Listener para estatura en tiempo real
     const estaturaInput = document.getElementById('p_estatura');
     if (estaturaInput) {
         estaturaInput.addEventListener('input', window.convertirEstatura);
         estaturaInput.addEventListener('blur', window.convertirEstatura);
     }
 
-    // 🔹 5. Vista previa de imágenes
+    // Vista previa de imágenes
     const setupPreview = (inputId, previewId) => {
         const input = document.getElementById(inputId);
         const preview = document.getElementById(previewId);
@@ -71,7 +79,7 @@ window.initRegPersonas = function() {
     setupPreview('foto_perfil_izq', 'prev_izq');
     setupPreview('foto_perfil_der', 'prev_der');
 
-    // 🔹 6. Calcular edad automáticamente
+    // Calcular edad automáticamente
     const fechaNac = document.getElementById('p_fecha_nac');
     const edadInput = document.getElementById('p_edad');
     if (fechaNac && edadInput) {
@@ -86,13 +94,16 @@ window.initRegPersonas = function() {
         });
     }
 
-    // 🔹 7. Validaciones de entrada (solo números)
+    // Validaciones de entrada (solo números)
     const cedulaInput = document.getElementById('p_cedula');
     const tlfNumInput = document.getElementById('p_tlf_num');
     if (cedulaInput) cedulaInput.addEventListener('input', e => e.target.value = e.target.value.replace(/\D/g, '').slice(0, 8));
     if (tlfNumInput) tlfNumInput.addEventListener('input', e => e.target.value = e.target.value.replace(/\D/g, '').slice(0, 7));
 
-    // ✅ 8. VALIDACIÓN EN TIEMPO REAL DE CÉDULA DUPLICADA
+    // ========================================================================
+    // 🔹 3. VALIDACIÓN EN TIEMPO REAL DE CÉDULA DUPLICADA
+    // ========================================================================
+    
     const cedulaStatus = document.getElementById('cedula-status');
     let cedulaCheckTimeout = null;
 
@@ -150,7 +161,10 @@ window.initRegPersonas = function() {
         });
     }
 
-    // 🔹 9. Envío del formulario
+    // ========================================================================
+    // 🔹 4. ENVÍO DEL FORMULARIO
+    // ========================================================================
+    
     const form = document.getElementById('form-reg-personas');
     const btn = form?.querySelector('.btn-submit');
     const msg = document.getElementById('msg-reg-personas');
@@ -184,7 +198,7 @@ window.initRegPersonas = function() {
         if (msg) msg.style.display = 'none';
 
         try {
-            // 1️⃣ Subir fotos
+            // 1️⃣ Subir fotos a Supabase Storage
             const bucket = window.supabaseClient.storage.from('fotos_personas');
             const files = {
                 front: document.getElementById('foto_frontal').files[0],
@@ -213,24 +227,29 @@ window.initRegPersonas = function() {
                 der: await uploadFile(files.der, paths.der)
             };
 
-            // 2️⃣ Preparar datos (Teléfono y Observaciones opcionales → null)
-            const tlfCod = document.getElementById('p_tlf_cod')?.value;
-            const tlfNum = document.getElementById('p_tlf_num')?.value.trim();
-            const telefonoValido = tlfCod && tlfNum;
+            // 2️⃣ Preparar datos con manejo seguro de opcionales
+            const tlfCodRaw = document.getElementById('p_tlf_cod')?.value;
+            const tlfNumRaw = document.getElementById('p_tlf_num')?.value.trim();
+            // Si falta código O número, ambos son NULL (evita datos huérfanos)
+            const tlfCodigo = (tlfCodRaw && tlfNumRaw) ? tlfCodRaw : null;
+            const tlfNumero = (tlfCodRaw && tlfNumRaw) ? tlfNumRaw : null;
 
             const data = {
                 estatus: document.getElementById('p_estatus')?.value || 'Verificación',
-                estacion_policial: document.getElementById('p_estacion')?.value,
-                foto_frontal: urls.front, foto_perfil_izq: urls.izq, foto_perfil_der: urls.der,
+                estacion_policial: document.getElementById('p_estacion')?.value || null,
+                foto_frontal: urls.front,
+                foto_perfil_izq: urls.izq,
+                foto_perfil_der: urls.der,
                 primer_nombre: document.getElementById('p_nombre1')?.value.trim(),
                 segundo_nombre: document.getElementById('p_nombre2')?.value.trim() || null,
                 primer_apellido: document.getElementById('p_apellido1')?.value.trim(),
                 segundo_apellido: document.getElementById('p_apellido2')?.value.trim() || null,
                 cedula: cedulaInput?.value,
                 fecha_nacimiento: document.getElementById('p_fecha_nac')?.value,
-                edad: parseInt(document.getElementById('p_edad')?.value || 0),
-                tlf_codigo: telefonoValido ? tlfCod : null,
-                tlf_numero: telefonoValido ? tlfNum : null,
+                edad: parseInt(document.getElementById('p_edad')?.value) || null,
+                // ✅ Teléfono: o tiene los 2 valores, o es null
+                tlf_codigo: tlfCodigo,
+                tlf_numero: tlfNumero,
                 direccion: document.getElementById('p_direccion')?.value.trim(),
                 apodo: document.getElementById('p_apodo')?.value.trim() || null,
                 marca_corporal: document.getElementById('p_marca')?.value.trim() || null,
@@ -254,16 +273,23 @@ window.initRegPersonas = function() {
             // 3️⃣ Guardar en Supabase
             const { error } = await window.supabaseClient.from('registro_personas').insert([data]);
             if (error) {
-                if (error.code === '23505' || error.message?.includes('unique_cedula')) {
+                // Manejo específico de errores de restricción
+                if (error.code === '23505' || error.message?.includes('unique_cedula') || error.message?.includes('registro_personas_cedula_key')) {
                     throw new Error('Esta cédula ya está registrada en el sistema.');
                 }
-                throw new Error(error.message || 'Error al guardar en BD.');
+                if (error.message?.includes('tlf_numero_check')) {
+                    throw new Error('Formato de teléfono inválido. Debe tener 7 dígitos o dejarse vacío.');
+                }
+                throw new Error(error.message || 'Error al guardar en la base de datos.');
             }
 
+            // ✅ Éxito
             if (msg) {
                 msg.textContent = '✅ Persona registrada exitosamente';
                 msg.className = 'msg success';
                 msg.style.display = 'block';
+                // Auto-ocultar mensaje después de 4 segundos
+                setTimeout(() => { if (msg) msg.style.display = 'none'; }, 4000);
             }
             form.reset();
             if (edadInput) edadInput.value = '';
