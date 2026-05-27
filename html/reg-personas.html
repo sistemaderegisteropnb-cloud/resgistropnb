@@ -121,11 +121,19 @@
             <legend>🏥 Salud y Marcas</legend>
             <div class="form-grid">
                 <div class="form-group"><label>¿Usa Lentes?</label><select id="p_lentes" required onchange="toggleCampo(this, 'det-lentes')"><option value="false">No</option><option value="true">Sí</option></select></div>
-                <div class="form-group"><label>¿Perforaciones?</label>
-        <select id="p_perforaciones" required onchange="toggleCampo(this, 'det-perforaciones')">
-            <option value="false">No</option><option value="true">Sí</option>
-        </select></div>
-            </div>
+                <div class="form-group">
+    <label>¿Perforaciones?</label>
+    <select id="p_perforaciones" required onchange="activarCampoPerforacion(this)">
+        <option value="false">No</option>
+        <option value="true">Sí</option>
+    </select>
+</div>
+
+<!-- Este contenedor está OCULTO por defecto -->
+<div id="box-lugar-perforacion" style="display: none; margin-top: 8px;">
+    <label>Lugar de la perforación</label>
+    <input type="text" id="txt_lugar_perforacion" placeholder="Ej: Lóbulo, septum, ombligo, ceja...">
+</div>
             <div id="det-lentes" class="hidden-field"><label>Tipo/Descripción</label><input type="text" id="txt_lentes"></div>
 
             <div class="form-grid" style="margin-top:12px;">
