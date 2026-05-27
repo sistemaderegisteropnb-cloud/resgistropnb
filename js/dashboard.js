@@ -4,120 +4,93 @@ document.addEventListener('DOMContentLoaded', async () => {
     const btnLogout = document.getElementById('btn-logout');
     const menuToggle = document.getElementById('menuToggle');
     const sidebar = document.getElementById('sidebar');
+    const appContent = document.getElementById('app-content');
 
     async function initDashboard() {
-        try {
-            const { data: { session } } = await window.supabaseClient.auth.getSession();
-            if (!session) { window.location.href = 'index.html'; return; }
+        const { data: { session } } = await window.supabaseClient.auth.getSession();
+        if (!session) { window.location.href = 'index.html'; return; }
 
-            userEmailEl.textContent = session.user.email;
-            const rol = sessionStorage.getItem('pnb_user_nivel') || 'consultor';
-            userRoleEl.textContent = rol;
+        userEmailEl.textContent = session.user.email;
+        const rol = sessionStorage.getItem('pnb_user_nivel') || 'consultor';
+        userRoleEl.textContent = rol;
 
-            // 🔐 Aplicar reglas de visibilidad por nivel
-            aplicarPermisos(rol);
-            configurarMenu();
-        } catch (error) {
-            console.error('Error iniciando dashboard:', error);
-            window.location.href = 'index.html';
-        }
+        aplicarPermisos(rol);
+        configurarMenu();
+        
+        // Cargar módulo por defecto
+        const primerModulo = document.querySelector('.menu-btn[data-src]');
+        if (primerModulo) cargarModulo(primerModulo.dataset.src, primerModulo.dataset.js, primerModulo.dataset.init);
     }
 
-    // 🔒 Matriz de permisos según tu indicación
     function aplicarPermisos(rol) {
-        const allMenuItems = document.querySelectorAll('.menu-item');
-        const allSubItems = document.querySelectorAll('.submenu-item');
-
-        // 🔹 CONSULTOR: SOLO ve "Consulta"
+        const gestionItem = document.getElementById('menu-gestion-usuarios');
         if (rol === 'consultor') {
-            allMenuItems.forEach(item => item.style.display = 'none');
-            const consultaBtn = document.querySelector('[data-section="consulta"]');
-            if (consultaBtn) consultaBtn.closest('.menu-item').style.display = 'block';
+            document.querySelectorAll('.menu-btn:not([data-src="html/consulta.html"])').forEach(b => b.closest('.menu-item').classList.add('hidden'));
             return;
         }
-
-        // 🔹 MODERADOR: Ve "Consulta", "Registrar" (en los 3 módulos) y "Procesar"
-        // ❌ NO ve: Modificar, Eliminar, Gestión de Usuarios
-        if (rol === 'moderador') {
-            // Ocultar Gestión de Usuarios
-            const gestionItem = document.getElementById('menu-gestion-usuarios');
-            if (gestionItem) gestionItem.style.display = 'none';
-
-            // Ocultar todas las opciones de modificar y eliminar
-            allSubItems.forEach(item => {
-                const action = item.dataset.action || '';
-                if (action.includes('modificar') || action.includes('eliminar')) {
-                    item.style.display = 'none';
-                }
-            });
-            return;
-        }
-
-        // 🔹 ADMINISTRADOR: Ve todo (no se oculta nada)
+        if (rol === 'moderador' && gestionItem) gestionItem.classList.add('hidden');
     }
 
-    // 🎛️ Navegación y eventos
-    function configurarMenu() {
-        // Submenús desplegables
-        document.querySelectorAll('[data-toggle]').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                const submenu = document.getElementById(btn.dataset.toggle);
-                
-                document.querySelectorAll('.submenu').forEach(sm => {
-                    if (sm.id !== btn.dataset.toggle) {
-                        sm.classList.remove('show');
-                        document.querySelector(`[data-toggle="${sm.id}"]`)?.classList.remove('expanded');
+    // 🔹 MOTOR DE CARGA DINÁMICA
+    async function cargarModulo(htmlPath, jsPath, initFnName) {
+        appContent.innerHTML = '<div class="loading">⏳ Cargando módulo...</div>';
+        try {
+            const res = await fetch(htmlPath + '?v=' + Date.now()); // Cache-buster
+            if (!res.ok) throw new Error('Archivo no encontrado');
+            
+            appContent.innerHTML = await res.text();
+
+            if (jsPath) {
+                const script = document.createElement('script');
+                script.src = jsPath + '?v=' + Date.now();
+                script.onload = () => {
+                    if (initFnName && typeof window[initFnName] === 'function') {
+                        window[initFnName]();
                     }
-                });
-                
+                };
+                document.head.appendChild(script);
+            }
+        } catch (err) {
+            appContent.innerHTML = `<div class="card"><div class="placeholder error">❌ Error al cargar: ${err.message}</div></div>`;
+        }
+    }
+
+    function configurarMenu() {
+        // Toggle submenús
+        document.querySelectorAll('[data-toggle]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const submenu = document.getElementById(btn.dataset.toggle);
+                document.querySelectorAll('.submenu').forEach(sm => sm !== submenu && sm.classList.remove('show'));
                 submenu.classList.toggle('show');
-                btn.classList.toggle('expanded');
             });
         });
 
-        // Cambio de sección
-        document.querySelectorAll('[data-section], [data-action]').forEach(el => {
-            el.addEventListener('click', (e) => {
-                e.preventDefault();
-                const targetId = el.dataset.section || el.dataset.action;
-                
-                document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
-                const targetSection = document.getElementById(targetId);
-                if (targetSection) {
-                    targetSection.classList.add('active');
-                    // Marcar botón activo
-                    document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
-                    if (el.classList.contains('menu-btn')) el.classList.add('active');
-                }
+        // Navegación por módulos
+        document.addEventListener('click', async (e) => {
+            const btn = e.target.closest('[data-src]');
+            if (!btn) return;
+            e.preventDefault();
 
-                if (window.innerWidth <= 900) sidebar.classList.remove('open');
-            });
+            document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            await cargarModulo(btn.dataset.src, btn.dataset.js, btn.dataset.init);
+            if (window.innerWidth <= 900) sidebar.classList.remove('open');
         });
 
-        // Toggle sidebar móvil
         if (menuToggle) {
             menuToggle.addEventListener('click', () => sidebar.classList.toggle('open'));
             document.addEventListener('click', (e) => {
-                if (window.innerWidth <= 900 && !sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
-                    sidebar.classList.remove('open');
-                }
+                if (window.innerWidth <= 900 && !sidebar.contains(e.target) && !menuToggle.contains(e.target)) sidebar.classList.remove('open');
             });
         }
     }
 
-    // 🚪 Cerrar sesión
     btnLogout.addEventListener('click', async () => {
-        try {
-            await window.supabaseClient.auth.signOut();
-            sessionStorage.clear();
-            window.location.href = 'index.html';
-        } catch (err) {
-            sessionStorage.clear();
-            window.location.href = 'index.html';
-        }
+        await window.supabaseClient.auth.signOut();
+        sessionStorage.clear();
+        window.location.href = 'index.html';
     });
 
-    // ▶️ Iniciar
     initDashboard();
 });
