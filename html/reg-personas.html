@@ -13,19 +13,36 @@
   .msg.success { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
   .msg.error { background: #fde2e2; color: #b91c1c; border: 1px solid #fca5a5; }
   @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+  .img-preview { 
+    width: 100%; height: 110px; object-fit: cover; 
+    border: 1px solid var(--beige-border); border-radius: 5px; 
+    margin-top: 6px; display: none; background: #f8fafc; 
+}
 </style>
 
 <div class="card">
     <h3>📝 Registro Completo de Persona</h3>
     <form id="form-reg-personas" class="registro-form" novalidate>
-        <fieldset>
-            <legend>📸 Fotografías Requeridas</legend>
-            <div class="form-grid">
-                <div class="form-group"><label>Frontal</label><input type="file" id="foto_frontal" accept="image/*" required></div>
-                <div class="form-group"><label>Perfil Izquierdo</label><input type="file" id="foto_perfil_izq" accept="image/*" required></div>
-                <div class="form-group"><label>Perfil Derecho</label><input type="file" id="foto_perfil_der" accept="image/*" required></div>
-            </div>
-        </fieldset>
+   <fieldset>
+    <legend>📸 Fotografías Requeridas</legend>
+    <div class="form-grid">
+        <div class="form-group">
+            <label>Frontal</label>
+            <input type="file" id="foto_frontal" accept="image/*" required>
+            <img id="prev_frontal" class="img-preview" alt="Vista previa">
+        </div>
+        <div class="form-group">
+            <label>Perfil Izquierdo</label>
+            <input type="file" id="foto_perfil_izq" accept="image/*" required>
+            <img id="prev_izq" class="img-preview" alt="Vista previa">
+        </div>
+        <div class="form-group">
+            <label>Perfil Derecho</label>
+            <input type="file" id="foto_perfil_der" accept="image/*" required>
+            <img id="prev_der" class="img-preview" alt="Vista previa">
+        </div>
+    </div>
+</fieldset>
 
         <fieldset>
             <legend>👤 Datos Personales</legend>
@@ -82,7 +99,10 @@
             <legend>🏥 Salud y Marcas</legend>
             <div class="form-grid">
                 <div class="form-group"><label>¿Usa Lentes?</label><select id="p_lentes" required onchange="toggleCampo(this, 'det-lentes')"><option value="false">No</option><option value="true">Sí</option></select></div>
-                <div class="form-group"><label>¿Perforaciones?</label><select id="p_perforaciones" required><option value="false">No</option><option value="true">Sí</option></select></div>
+                <div class="form-group"><label>¿Perforaciones?</label>
+        <select id="p_perforaciones" required onchange="toggleCampo(this, 'det-perforaciones')">
+            <option value="false">No</option><option value="true">Sí</option>
+        </select></div>
             </div>
             <div id="det-lentes" class="hidden-field"><label>Tipo/Descripción</label><input type="text" id="txt_lentes"></div>
 
