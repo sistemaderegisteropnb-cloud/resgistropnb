@@ -12,6 +12,28 @@ window.initRegPersonas = function() {
         }
     };
 
+    // 🔹 Vista previa de imágenes
+    const setupPreview = (inputId, previewId) => {
+        const input = document.getElementById(inputId);
+        const preview = document.getElementById(previewId);
+        input.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                preview.style.display = 'none';
+            }
+        });
+    };
+    setupPreview('foto_frontal', 'prev_frontal');
+    setupPreview('foto_perfil_izq', 'prev_izq');
+    setupPreview('foto_perfil_der', 'prev_der');
+
     // 🔹 Calcular edad automáticamente
     const fechaNac = document.getElementById('p_fecha_nac');
     const edadInput = document.getElementById('p_edad');
@@ -36,26 +58,20 @@ window.initRegPersonas = function() {
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        // Validación manual rápida para asegurar que no se salten campos
-        if (!form.checkValidity()) {
-            form.reportValidity();
-            return;
-        }
+        if (!form.checkValidity()) { form.reportValidity(); return; }
 
         btn.disabled = true;
         btn.textContent = '⏳ Subiendo fotos y registrando...';
         msg.style.display = 'none';
 
         try {
-            // 1️⃣ Subir fotos a Supabase Storage
+            // 1️⃣ Subir fotos
             const bucket = window.supabaseClient.storage.from('fotos_personas');
             const files = {
                 front: document.getElementById('foto_frontal').files[0],
                 izq: document.getElementById('foto_perfil_izq').files[0],
                 der: document.getElementById('foto_perfil_der').files[0]
             };
-            if (!files.front || !files.izq || !files.der) throw new Error('Las 3 fotografías son obligatorias.');
-
             const uid = sessionStorage.getItem('pnb_user_id') || 'user';
             const ts = Date.now();
             const paths = {
@@ -65,7 +81,7 @@ window.initRegPersonas = function() {
             };
 
             const uploadFile = async (file, path) => {
-                const { error } = await bucket.upload(path, file, { cacheControl: '3600', upsert: false });
+                const { error } = await bucket.upload(path, file, { cacheControl: '3600' });
                 if (error) throw new Error('Error subiendo imagen: ' + error.message);
                 return bucket.getPublicUrl(path).data.publicUrl;
             };
@@ -99,7 +115,9 @@ window.initRegPersonas = function() {
                 color_cabello: document.getElementById('p_color_cabello').value,
                 complexion: document.getElementById('p_complexion').value,
                 usa_lentes: document.getElementById('p_lentes').value === 'true',
+                detalle_lentes: document.getElementById('p_lentes').value === 'true' ? document.getElementById('txt_lentes').value.trim() : null,
                 perforaciones: document.getElementById('p_perforaciones').value === 'true',
+                detalle_perforaciones: document.getElementById('p_perforaciones').value === 'true' ? document.getElementById('txt_perforaciones').value.trim() : null,
                 condicion_medica: document.getElementById('p_cond_medica').value === 'true' ? document.getElementById('txt_cond').value : null,
                 consume_medicamento: document.getElementById('p_medicamento').value === 'true' ? document.getElementById('txt_med').value : null,
                 problema_judicial: document.getElementById('p_judicial').value === 'true' ? document.getElementById('txt_jud').value : null,
@@ -116,6 +134,7 @@ window.initRegPersonas = function() {
             form.reset();
             edadInput.value = '';
             document.querySelectorAll('.hidden-field').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.img-preview').forEach(img => img.style.display = 'none');
         } catch (err) {
             console.error('Error registro:', err);
             msg.textContent = '❌ ' + (err.message || 'Error desconocido');
