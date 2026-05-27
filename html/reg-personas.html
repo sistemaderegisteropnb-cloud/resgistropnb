@@ -12,59 +12,41 @@
   .msg { padding: 10px; margin-top: 12px; border-radius: 5px; text-align: center; display: none; }
   .msg.success { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
   .msg.error { background: #fde2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+  .img-preview { width: 100%; height: auto; max-height: 240px; object-fit: contain; border: 1px solid var(--beige-border); border-radius: 5px; margin-top: 8px; display: none; background: #f8fafc; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+  .status-badge { background: #dcfce7; color: #15803d; font-weight: 700; padding: 6px 12px; border-radius: 6px; border: 1px solid #86efac; font-size: 0.85rem; letter-spacing: 0.5px; display: inline-block; }
   @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
- .img-preview { 
-    width: 100%; 
-    height: auto; 
-    max-height: 240px;           /* Altura máxima para no romper el layout */
-    object-fit: contain;         /* ✅ Muestra la foto COMPLETA sin recortar */
-    border: 1px solid var(--beige-border); 
-    border-radius: 5px; 
-    margin-top: 8px; 
-    display: none; 
-    background: #f8fafc; 
-    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-}
-  .status-badge {
-    background: #dcfce7; color: #15803d; font-weight: 700; padding: 6px 12px;
-    border-radius: 6px; border: 1px solid #86efac; font-size: 0.85rem; letter-spacing: 0.5px;
-    display: inline-block;
-}
-.img-preview { 
-    width: 100%; height: auto; max-height: 240px; object-fit: contain;
-    border: 1px solid var(--beige-border); border-radius: 5px; margin-top: 8px;
-    display: none; background: #f8fafc; box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-}
 </style>
 
 <div class="card">
     <h3>📝 Registro Completo de Persona</h3>
     <form id="form-reg-personas" class="registro-form" novalidate>
-      <div style="margin-bottom: 18px; display: flex; align-items: center; gap: 10px;">
-    <label style="font-weight: 600; font-size: 0.95rem;">Estatus:</label>
-    <span class="status-badge">✅ VERIFICACIÓN</span>
-    <input type="hidden" id="p_estatus" value="Verificación">
-</div>
-   <fieldset>
-    <legend>📸 Fotografías Requeridas</legend>
-    <div class="form-grid">
-        <div class="form-group">
-            <label>Frontal</label>
-            <input type="file" id="foto_frontal" accept="image/*" required>
-            <img id="prev_frontal" class="img-preview" alt="Vista previa">
+        <!-- ✅ ESTATUS (Siempre arriba) -->
+        <div style="margin-bottom: 18px; display: flex; align-items: center; gap: 10px;">
+            <label style="font-weight: 600; font-size: 0.95rem;">Estatus:</label>
+            <span class="status-badge">✅ VERIFICACIÓN</span>
+            <input type="hidden" id="p_estatus" value="Verificación">
         </div>
-        <div class="form-group">
-            <label>Perfil Izquierdo</label>
-            <input type="file" id="foto_perfil_izq" accept="image/*" required>
-            <img id="prev_izq" class="img-preview" alt="Vista previa">
-        </div>
-        <div class="form-group">
-            <label>Perfil Derecho</label>
-            <input type="file" id="foto_perfil_der" accept="image/*" required>
-            <img id="prev_der" class="img-preview" alt="Vista previa">
-        </div>
-    </div>
-</fieldset>
+
+        <fieldset>
+            <legend>📸 Fotografías Requeridas</legend>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Frontal</label>
+                    <input type="file" id="foto_frontal" accept="image/*" required>
+                    <img id="prev_frontal" class="img-preview" alt="Vista previa">
+                </div>
+                <div class="form-group">
+                    <label>Perfil Izquierdo</label>
+                    <input type="file" id="foto_perfil_izq" accept="image/*" required>
+                    <img id="prev_izq" class="img-preview" alt="Vista previa">
+                </div>
+                <div class="form-group">
+                    <label>Perfil Derecho</label>
+                    <input type="file" id="foto_perfil_der" accept="image/*" required>
+                    <img id="prev_der" class="img-preview" alt="Vista previa">
+                </div>
+            </div>
+        </fieldset>
 
         <fieldset>
             <legend>👤 Datos Personales</legend>
@@ -117,24 +99,19 @@
             </div>
         </fieldset>
 
+        <!-- ✅ SALUD Y MARCAS (CORREGIDO: cierre de fieldset y campo perforaciones integrado) -->
         <fieldset>
             <legend>🏥 Salud y Marcas</legend>
             <div class="form-grid">
                 <div class="form-group"><label>¿Usa Lentes?</label><select id="p_lentes" required onchange="toggleCampo(this, 'det-lentes')"><option value="false">No</option><option value="true">Sí</option></select></div>
-                <div class="form-group">
-    <label>¿Perforaciones?</label>
-    <select id="p_perforaciones" required onchange="activarCampoPerforacion(this)">
-        <option value="false">No</option>
-        <option value="true">Sí</option>
-    </select>
-</div>
+                <div class="form-group"><label>¿Perforaciones?</label><select id="p_perforaciones" required onchange="activarCampoPerforacion(this)"><option value="false">No</option><option value="true">Sí</option></select></div>
+            </div>
 
-<!-- Este contenedor está OCULTO por defecto -->
-<div id="box-lugar-perforacion" style="display: none; margin-top: 8px;">
-    <label>Lugar de la perforación</label>
-    <input type="text" id="txt_lugar_perforacion" placeholder="Ej: Lóbulo, septum, ombligo, ceja...">
-</div>
             <div id="det-lentes" class="hidden-field"><label>Tipo/Descripción</label><input type="text" id="txt_lentes"></div>
+            <div id="box-lugar-perforacion" class="hidden-field" style="margin-top: 10px;">
+                <label>Lugar de la perforación</label>
+                <input type="text" id="txt_lugar_perforacion" placeholder="Ej: Lóbulo, septum, ombligo, ceja...">
+            </div>
 
             <div class="form-grid" style="margin-top:12px;">
                 <div class="form-group"><label>¿Condición Médica?</label><select id="p_cond_medica" required onchange="toggleCampo(this, 'det-cond')"><option value="false">No</option><option value="true">Sí</option></select></div>
@@ -145,7 +122,7 @@
                 <div class="form-group"><label>¿Consume Medicamento?</label><select id="p_medicamento" required onchange="toggleCampo(this, 'det-med')"><option value="false">No</option><option value="true">Sí</option></select></div>
                 <div id="det-med" class="hidden-field" style="grid-column: span 2;"><label>Nombre del medicamento</label><input type="text" id="txt_med"></div>
             </div>
-        </fieldset>
+        </fieldset> <!-- ✅ AQUÍ FALTABA ESTE CIERRE -->
 
         <fieldset>
             <legend>⚖️ Antecedentes Judiciales</legend>
@@ -153,56 +130,51 @@
             <div id="det-jud" class="hidden-field"><label>Detalle</label><input type="text" id="txt_jud"></div>
         </fieldset>
 
-       <!-- ... (todos los fieldsets anteriores siguen igual) ... -->
+        <fieldset>
+            <legend>🏛️ Datos del Registro</legend>
+            <div class="form-grid">
+                <div class="form-group" style="grid-column: span 2;">
+                    <label>Estación policial del registro</label>
+                    <select id="p_estacion" required>
+                        <option value="">Seleccione estación...</option>
+                        <option value="EPM MARACAIBO">EPM MARACAIBO</option>
+                        <option value="EPM SAN FRANCISCO">EPM SAN FRANCISCO</option>
+                        <option value="EPM LA CAÑADA">EPM LA CAÑADA</option>
+                        <option value="EPM ESTACION POLICIAL JESUS E. LOSADA">EPM ESTACION POLICIAL JESUS E. LOSADA</option>
+                        <option value="EPP CRISTO DE ARANZA">EPP CRISTO DE ARANZA</option>
+                        <option value="EPP LUIS HURTADO">EPP LUIS HURTADO</option>
+                        <option value="EPP DAGNINO">EPP DAGNINO</option>
+                        <option value="EPP OLEGARIO VILLALOBOS">EPP OLEGARIO VILLALOBOS</option>
+                        <option value="EPP CHIQUINQUIRA">EPP CHIQUINQUIRA</option>
+                        <option value="EPP FRANCISCO EUGENIO">EPP FRANCISCO EUGENIO</option>
+                        <option value="EPP CARACCIOLO">EPP CARACCIOLO</option>
+                        <option value="EPP IDELFONSO">EPP IDELFONSO</option>
+                        <option value="EPP VENANCIO PULGAR">EPP VENANCIO PULGAR</option>
+                        <option value="EPP COQUIVACOA-ZAPARA">EPP COQUIVACOA-ZAPARA</option>
+                        <option value="EPP RAUL LEONI">EPP RAUL LEONI</option>
+                        <option value="EPP ANTONIO BORJAS ROMERO">EPP ANTONIO BORJAS ROMERO</option>
+                        <option value="EPP JUANA DE AVILA">EPP JUANA DE AVILA</option>
+                        <option value="EPP SAN ISIDRO">EPP SAN ISIDRO</option>
+                        <option value="EPP CASIQUE MARA">EPP CASIQUE MARA</option>
+                        <option value="EPP BOLIVAR">EPP BOLIVAR</option>
+                        <option value="EPP EL BAJO">EPP EL BAJO</option>
+                        <option value="EPP DOMITILA">EPP DOMITILA</option>
+                        <option value="EPP CORTIJOS">EPP CORTIJOS</option>
+                        <option value="EPP MARCIAL HERNANDEZ">EPP MARCIAL HERNANDEZ</option>
+                        <option value="EPP POTRERITO">EPP POTRERITO</option>
+                        <option value="EPP ANDRES BELLO">EPP ANDRES BELLO</option>
+                        <option value="EPP SANTA LUCIA">EPP SANTA LUCIA</option>
+                    </select>
+                </div>
+            </div>
+        </fieldset>
 
-<!-- ✅ 1. ESTACIÓN POLICIAL (DEBE IR ARRIBA DEL BOTÓN) -->
-<fieldset>
-    <legend>🏛️ Datos del Registro</legend>
-    <div class="form-grid">
-        <div class="form-group" style="grid-column: span 2;">
-            <label>Estación policial del registro</label>
-            <select id="p_estacion" required>
-                <option value="">Seleccione estación...</option>
-                <option value="EPM MARACAIBO">EPM MARACAIBO</option>
-                <option value="EPM SAN FRANCISCO">EPM SAN FRANCISCO</option>
-                <option value="EPM LA CAÑADA">EPM LA CAÑADA</option>
-                <option value="EPM ESTACION POLICIAL JESUS E. LOSADA">EPM ESTACION POLICIAL JESUS E. LOSADA</option>
-                <option value="EPP CRISTO DE ARANZA">EPP CRISTO DE ARANZA</option>
-                <option value="EPP LUIS HURTADO">EPP LUIS HURTADO</option>
-                <option value="EPP DAGNINO">EPP DAGNINO</option>
-                <option value="EPP OLEGARIO VILLALOBOS">EPP OLEGARIO VILLALOBOS</option>
-                <option value="EPP CHIQUINQUIRA">EPP CHIQUINQUIRA</option>
-                <option value="EPP FRANCISCO EUGENIO">EPP FRANCISCO EUGENIO</option>
-                <option value="EPP CARACCIOLO">EPP CARACCIOLO</option>
-                <option value="EPP IDELFONSO">EPP IDELFONSO</option>
-                <option value="EPP VENANCIO PULGAR">EPP VENANCIO PULGAR</option>
-                <option value="EPP COQUIVACOA-ZAPARA">EPP COQUIVACOA-ZAPARA</option>
-                <option value="EPP RAUL LEONI">EPP RAUL LEONI</option>
-                <option value="EPP ANTONIO BORJAS ROMERO">EPP ANTONIO BORJAS ROMERO</option>
-                <option value="EPP JUANA DE AVILA">EPP JUANA DE AVILA</option>
-                <option value="EPP SAN ISIDRO">EPP SAN ISIDRO</option>
-                <option value="EPP CASIQUE MARA">EPP CASIQUE MARA</option>
-                <option value="EPP BOLIVAR">EPP BOLIVAR</option>
-                <option value="EPP EL BAJO">EPP EL BAJO</option>
-                <option value="EPP DOMITILA">EPP DOMITILA</option>
-                <option value="EPP CORTIJOS">EPP CORTIJOS</option>
-                <option value="EPP MARCIAL HERNANDEZ">EPP MARCIAL HERNANDEZ</option>
-                <option value="EPP POTRERITO">EPP POTRERITO</option>
-                <option value="EPP ANDRES BELLO">EPP ANDRES BELLO</option>
-                <option value="EPP SANTA LUCIA">EPP SANTA LUCIA</option>
-            </select>
-        </div>
-    </div>
-</fieldset>
+        <fieldset>
+            <legend>📝 Observaciones</legend>
+            <textarea id="p_observaciones" rows="2" placeholder="Notas adicionales..."></textarea>
+        </fieldset>
 
-<!-- ✅ 2. OBSERVACIONES (Opcional) -->
-<fieldset>
-    <legend>📝 Observaciones</legend>
-    <textarea id="p_observaciones" rows="2" placeholder="Notas adicionales..."></textarea>
-</fieldset>
-
-<!-- ✅ 3. BOTÓN DE REGISTRO (SIEMPRE AL FINAL) -->
-<button type="submit" class="btn-submit">✅ Registrar Persona</button>
-<div id="msg-reg-personas" class="msg"></div>
+        <button type="submit" class="btn-submit">✅ Registrar Persona</button>
+        <div id="msg-reg-personas" class="msg"></div>
     </form>
 </div>
