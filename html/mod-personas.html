@@ -1,0 +1,146 @@
+<style>
+  .registro-form fieldset { border: 1px solid var(--beige-border); border-radius: 8px; padding: 16px; margin-bottom: 18px; background: #fafbfc; }
+  .registro-form legend { font-weight: 600; color: var(--primary); font-size: 0.95rem; padding: 0 8px; }
+  .hidden-field { display: none; margin-top: 8px; }
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+  .registro-form label { font-weight: 500; font-size: 0.85rem; margin-bottom: 4px; display: block; }
+  .registro-form input, .registro-form select, .registro-form textarea { width: 100%; padding: 9px 10px; border: 1.5px solid var(--beige-border); border-radius: 5px; font-size: 0.9rem; background: #fff; }
+  .registro-form input:focus, .registro-form select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(0,43,92,0.1); }
+  .btn-submit { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; margin-top: 15px; }
+  .btn-submit:hover { background: var(--secondary); }
+  .btn-submit:disabled { background: #9ca3af; cursor: not-allowed; }
+  .msg { padding: 10px; margin-top: 12px; border-radius: 5px; text-align: center; display: none; }
+  .msg.success { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+  .msg.error { background: #fde2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+  .img-preview { width: 100%; height: auto; max-height: 200px; object-fit: contain; border: 1px solid var(--beige-border); border-radius: 5px; margin-top: 8px; display: none; background: #f8fafc; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+  .status-badge { background: #dcfce7; color: #15803d; font-weight: 700; padding: 6px 12px; border-radius: 6px; border: 1px solid #86efac; font-size: 0.85rem; letter-spacing: 0.5px; display: inline-block; }
+  .search-box { padding: 16px; background: #f8fafc; border: 1.5px dashed var(--beige-border); border-radius: 8px; margin-bottom: 20px; }
+  .search-box label { font-weight: 600; margin-bottom: 6px; display: block; }
+  .search-row { display: flex; gap: 10px; }
+  .search-row input { flex: 1; padding: 10px; border: 1.5px solid var(--beige-border); border-radius: 5px; }
+  .search-row button { padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 600; }
+  .search-msg { margin-top: 8px; font-size: 0.85rem; display: none; }
+  .search-msg.error { color: #dc2626; }
+  .search-msg.success { color: #15803d; }
+  @media (max-width: 600px) { .form-grid, .search-row { grid-template-columns: 1fr; flex-direction: column; } }
+</style>
+
+<div class="card">
+    <h3>✏️ Modificar Registro de Persona</h3>
+    
+    <!-- 🔍 BARRA DE BÚSQUEDA -->
+    <div class="search-box">
+        <label>Buscar por Cédula:</label>
+        <div class="search-row">
+            <input type="text" id="buscar-cedula" placeholder="Ingrese 7 u 8 dígitos numéricos" maxlength="8">
+            <button id="btn-buscar">🔍 Buscar</button>
+        </div>
+        <div id="buscar-msg" class="search-msg"></div>
+    </div>
+
+    <!-- 📝 FORMULARIO (Oculto hasta encontrar registro) -->
+    <form id="form-mod-personas" class="registro-form" novalidate style="display: none;">
+        <input type="hidden" id="mod_record_id">
+        
+        <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+            <label style="font-weight: 600;">Estatus:</label>
+            <span class="status-badge">✅ VERIFICACIÓN</span>
+        </div>
+
+        <fieldset>
+            <legend>📸 Fotografías</legend>
+            <div class="form-grid">
+                <div class="form-group"><label>Frontal</label><input type="file" id="foto_frontal" accept="image/*"><img id="prev_frontal" class="img-preview"></div>
+                <div class="form-group"><label>Perfil Izq.</label><input type="file" id="foto_perfil_izq" accept="image/*"><img id="prev_izq" class="img-preview"></div>
+                <div class="form-group"><label>Perfil Der.</label><input type="file" id="foto_perfil_der" accept="image/*"><img id="prev_der" class="img-preview"></div>
+            </div>
+            <small style="color:#64748b; display:block; margin-top:6px;">Deje vacío para mantener la foto actual. Suba una nueva para reemplazarla.</small>
+        </fieldset>
+
+        <fieldset>
+            <legend>👤 Datos Personales</legend>
+            <div class="form-grid">
+                <div class="form-group"><label>Primer Nombre</label><input type="text" id="p_nombre1" required></div>
+                <div class="form-group"><label>Segundo Nombre</label><input type="text" id="p_nombre2"></div>
+                <div class="form-group"><label>Primer Apellido</label><input type="text" id="p_apellido1" required></div>
+                <div class="form-group"><label>Segundo Apellido</label><input type="text" id="p_apellido2"></div>
+                <div class="form-group"><label>Cédula</label><input type="text" id="p_cedula" maxlength="8" readonly style="background:#f1f5f9; cursor:not-allowed;"></div>
+                <div class="form-group"><label>Fecha de Nacimiento</label><input type="date" id="p_fecha_nac" required></div>
+                <div class="form-group"><label>Edad</label><input type="number" id="p_edad" readonly></div>
+                <div class="form-group"><label>Apodo</label><input type="text" id="p_apodo"></div>
+                <div class="form-group"><label>Marca Corporal</label><input type="text" id="p_marca"></div>
+                <div class="form-group">
+                    <label>Nacionalidad</label>
+                    <select id="p_nacionalidad" required>
+                        <option value="">Seleccione...</option>
+                        <option value="Venezolana">Venezolana</option><option value="Colombiana">Colombiana</option><option value="Argentina">Argentina</option><option value="Brasileña">Brasileña</option><option value="Chilena">Chilena</option><option value="Peruana">Peruana</option><option value="Ecuatoriana">Ecuatoriana</option><option value="Boliviana">Boliviana</option><option value="Paraguaya">Paraguaya</option><option value="Uruguaya">Uruguaya</option><option value="Mexicana">Mexicana</option><option value="Española">Española</option><option value="Estadounidense">Estadounidense</option><option value="Cubana">Cubana</option><option value="Dominicana">Dominicana</option><option value="Otra">Otra</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Sexo</label>
+                    <select id="p_sexo" required><option value="">Seleccione...</option><option value="Masculino">Masculino</option><option value="Femenino">Femenino</option><option value="Otro">Otro</option></select>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>📞 Contacto y Ubicación</legend>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Teléfono <span style="color:#64748b; font-weight:400;">(Opcional)</span></label>
+                    <div style="display:flex; gap:6px;">
+                        <select id="p_tlf_cod" style="width:90px;"><option value="">--</option><option value="0424">0424</option><option value="0414">0414</option><option value="0422">0422</option><option value="0416">0416</option><option value="0412">0412</option></select>
+                        <input type="text" id="p_tlf_num" maxlength="7" placeholder="7 dígitos" style="flex:1;">
+                    </div>
+                </div>
+                <div class="form-group"><label>Dirección</label><input type="text" id="p_direccion" required></div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>📏 Características Físicas</legend>
+            <div class="form-grid">
+                <div class="form-group"><label>Estatura</label><input type="number" id="p_estatura" min="0.50" max="2.30" step="0.01" placeholder="Ej: 1.60" required><small style="color:#64748b; font-size:0.75rem; display:block; margin-top:4px;">Ingrese en metros (1.60 = 160 cm)</small><input type="hidden" id="p_estatura_cm"></div>
+                <div class="form-group"><label>Color de Piel</label><select id="p_color_piel" required><option value="">Seleccione...</option><option value="Clara">Clara</option><option value="Morena">Morena</option><option value="Trigueña">Trigueña</option><option value="Oscura">Oscura</option></select></div>
+                <div class="form-group"><label>Color de Ojos</label><select id="p_color_ojos" required><option value="">Seleccione...</option><option value="Negros">Negros</option><option value="Café">Café</option><option value="Verdes">Verdes</option><option value="Azules">Azules</option><option value="Gris">Gris</option></select></div>
+                <div class="form-group"><label>Color de Cabello</label><select id="p_color_cabello" required><option value="">Seleccione...</option><option value="Negro">Negro</option><option value="Castaño">Castaño</option><option value="Rubio">Rubio</option><option value="Pelirrojo">Pelirrojo</option><option value="Gris/Canoso">Gris/Canoso</option><option value="Calvo">Calvo</option></select></div>
+                <div class="form-group"><label>Complexión</label><select id="p_complexion" required><option value="">Seleccione...</option><option value="Delgada">Delgada</option><option value="Media">Media</option><option value="Atlética">Atlética</option><option value="Robusta">Robusta</option><option value="Obesa">Obesa</option></select></div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>🏥 Salud y Marcas</legend>
+            <div class="form-group"><label>¿Usa Lentes?</label><select id="p_lentes" required onchange="toggleCampo(this, 'det-lentes')"><option value="false">No</option><option value="true">Sí</option></select></div>
+            <div id="det-lentes" class="hidden-field"><label>Tipo/Descripción</label><input type="text" id="txt_lentes"></div>
+            <div class="form-group" style="margin-top:14px;"><label>¿Perforaciones?</label><select id="p_perforaciones" required onchange="activarCampoPerforacion(this)"><option value="false">No</option><option value="true">Sí</option></select></div>
+            <div id="box-lugar-perforacion" class="hidden-field" style="margin-top:10px;"><label>Lugar de la perforación</label><input type="text" id="txt_lugar_perforacion"></div>
+            <div class="form-grid" style="margin-top:16px; padding-top:12px; border-top:1px dashed #d4c9a8;">
+                <div class="form-group"><label>¿Condición Médica?</label><select id="p_cond_medica" required onchange="toggleCampo(this, 'det-cond')"><option value="false">No</option><option value="true">Sí</option></select></div>
+                <div id="det-cond" class="hidden-field" style="grid-column: span 2;"><label>Describa condición</label><input type="text" id="txt_cond"></div>
+            </div>
+            <div class="form-grid" style="margin-top:12px;">
+                <div class="form-group"><label>¿Consume Medicamento?</label><select id="p_medicamento" required onchange="toggleCampo(this, 'det-med')"><option value="false">No</option><option value="true">Sí</option></select></div>
+                <div id="det-med" class="hidden-field" style="grid-column: span 2;"><label>Nombre del medicamento</label><input type="text" id="txt_med"></div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>⚖️ Antecedentes Judiciales</legend>
+            <div class="form-group"><label>¿Problema judicial, penal, paga condena o bajo presentación?</label><select id="p_judicial" required onchange="toggleCampo(this, 'det-jud')"><option value="false">No</option><option value="true">Sí</option></select></div>
+            <div id="det-jud" class="hidden-field"><label>Detalle</label><input type="text" id="txt_jud"></div>
+        </fieldset>
+
+        <fieldset>
+            <legend>🏛️ Datos del Registro</legend>
+            <div class="form-group" style="grid-column: span 2;"><label>Estación policial</label><select id="p_estacion" required><option value="">Seleccione estación...</option><option value="EPM MARACAIBO">EPM MARACAIBO</option><option value="EPM SAN FRANCISCO">EPM SAN FRANCISCO</option><option value="EPM LA CAÑADA">EPM LA CAÑADA</option><option value="EPM ESTACION POLICIAL JESUS E. LOSADA">EPM ESTACION POLICIAL JESUS E. LOSADA</option><option value="EPP CRISTO DE ARANZA">EPP CRISTO DE ARANZA</option><option value="EPP LUIS HURTADO">EPP LUIS HURTADO</option><option value="EPP DAGNINO">EPP DAGNINO</option><option value="EPP OLEGARIO VILLALOBOS">EPP OLEGARIO VILLALOBOS</option><option value="EPP CHIQUINQUIRA">EPP CHIQUINQUIRA</option><option value="EPP FRANCISCO EUGENIO">EPP FRANCISCO EUGENIO</option><option value="EPP CARACCIOLO">EPP CARACCIOLO</option><option value="EPP IDELFONSO">EPP IDELFONSO</option><option value="EPP VENANCIO PULGAR">EPP VENANCIO PULGAR</option><option value="EPP COQUIVACOA-ZAPARA">EPP COQUIVACOA-ZAPARA</option><option value="EPP RAUL LEONI">EPP RAUL LEONI</option><option value="EPP ANTONIO BORJAS ROMERO">EPP ANTONIO BORJAS ROMERO</option><option value="EPP JUANA DE AVILA">EPP JUANA DE AVILA</option><option value="EPP SAN ISIDRO">EPP SAN ISIDRO</option><option value="EPP CASIQUE MARA">EPP CASIQUE MARA</option><option value="EPP BOLIVAR">EPP BOLIVAR</option><option value="EPP EL BAJO">EPP EL BAJO</option><option value="EPP DOMITILA">EPP DOMITILA</option><option value="EPP CORTIJOS">EPP CORTIJOS</option><option value="EPP MARCIAL HERNANDEZ">EPP MARCIAL HERNANDEZ</option><option value="EPP POTRERITO">EPP POTRERITO</option><option value="EPP ANDRES BELLO">EPP ANDRES BELLO</option><option value="EPP SANTA LUCIA">EPP SANTA LUCIA</option></select></div>
+        </fieldset>
+
+        <fieldset>
+            <legend>📝 Observaciones</legend>
+            <textarea id="p_observaciones" rows="2"></textarea>
+        </fieldset>
+
+        <button type="submit" class="btn-submit">💾 Guardar Cambios</button>
+        <div id="msg-mod-personas" class="msg"></div>
+    </form>
+</div>
