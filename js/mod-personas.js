@@ -1,5 +1,7 @@
 window.initModPersonas = function() {
-    // 🔹 Helpers globales
+    // ==========================================
+    // 🔹 1. FUNCIONES GLOBALES
+    // ==========================================
     window.toggleCampo = function(select, targetId) {
         const el = document.getElementById(targetId);
         const input = el?.querySelector('input');
@@ -20,41 +22,79 @@ window.initModPersonas = function() {
         return (!isNaN(val) && val >= 0.50 && val <= 2.30) ? Math.round(val * 100) : null;
     };
 
-    // 🔹 Listeners en tiempo real
-    const estInput = document.getElementById('p_estatura');
-    if (estInput) estInput.addEventListener('input', window.convertirEstatura);
+    // ==========================================
+    // 🔹 2. DROPDOWN DE BANDERAS
+    // ==========================================
+    const nativeSelect = document.getElementById('p_tlf_pais');
+    const displayBox = document.querySelector('.phone-display');
+    const optionsBox = document.querySelector('.phone-options');
+    const flagImg = document.getElementById('tlf-flag-img');
+    const codeText = document.getElementById('tlf-code-text');
+    const countryText = document.getElementById('tlf-country-text');
 
-    // ✅ NUEVO: Recalcular edad al cambiar fecha de nacimiento
-    const fechaNacMod = document.getElementById('p_fecha_nac');
-    const edadInputMod = document.getElementById('p_edad');
-    if (fechaNacMod && edadInputMod) {
-        fechaNacMod.addEventListener('change', () => {
-            if (!fechaNacMod.value) { edadInputMod.value = ''; return; }
-            const hoy = new Date();
-            const nac = new Date(fechaNacMod.value);
-            let edad = hoy.getFullYear() - nac.getFullYear();
-            const mesDif = hoy.getMonth() - nac.getMonth();
-            if (mesDif < 0 || (mesDif === 0 && hoy.getDate() < nac.getDate())) edad--;
-            edadInputMod.value = (edad >= 0 && edad <= 120) ? edad : '';
+    const isoMap = { "Afganistán":"af","Albania":"al","Alemania":"de","Andorra":"ad","Angola":"ao","Antigua y Barbuda":"ag","Arabia Saudita":"sa","Argelia":"dz","Argentina":"ar","Armenia":"am","Australia":"au","Austria":"at","Azerbaiyán":"az","Bahamas":"bs","Baréin":"bh","Bangladés":"bd","Barbados":"bb","Bélgica":"be","Belice":"bz","Benín":"bj","Bielorrusia":"by","Birmania":"mm","Bolivia":"bo","Bosnia y Herzegovina":"ba","Botsuana":"bw","Brasil":"br","Brunéi":"bn","Bulgaria":"bg","Burkina Faso":"bf","Burundi":"bi","Bután":"bt","Cabo Verde":"cv","Camboya":"kh","Camerún":"cm","Canadá":"ca","Catar":"qa","Rep. Centroafricana":"cf","Chad":"td","Rep. Checa":"cz","Chile":"cl","China":"cn","Chipre":"cy","Colombia":"co","Comoras":"km","Corea del Norte":"kp","Corea del Sur":"kr","Costa de Marfil":"ci","Costa Rica":"cr","Croacia":"hr","Cuba":"cu","Dinamarca":"dk","Dominica":"dm","Ecuador":"ec","Egipto":"eg","El Salvador":"sv","Emiratos Árabes":"ae","Eritrea":"er","Eslovaquia":"sk","Eslovenia":"si","España":"es","Estados Unidos":"us","Estonia":"ee","Etiopía":"et","Filipinas":"ph","Finlandia":"fi","Fiyi":"fj","Francia":"fr","Gabón":"ga","Gambia":"gm","Georgia":"ge","Ghana":"gh","Granada":"gd","Grecia":"gr","Guatemala":"gt","Guinea":"gn","Guinea Ecuatorial":"gq","Guinea-Bisáu":"gw","Guyana":"gy","Haití":"ht","Honduras":"hn","Hungría":"hu","India":"in","Indonesia":"id","Irak":"iq","Irán":"ir","Irlanda":"ie","Islandia":"is","Israel":"il","Italia":"it","Jamaica":"jm","Japón":"jp","Jordania":"jo","Kazajistán":"kz","Kenia":"ke","Kirguistán":"kg","Kiribati":"ki","Kuwait":"kw","Laos":"la","Lesoto":"ls","Letonia":"lv","Líbano":"lb","Liberia":"lr","Libia":"ly","Liechtenstein":"li","Lituania":"lt","Luxemburgo":"lu","Macedonia del Norte":"mk","Madagascar":"mg","Malasia":"my","Malaui":"mw","Maldivas":"mv","Malí":"ml","Malta":"mt","Marruecos":"ma","Mauricio":"mu","Mauritania":"mr","México":"mx","Micronesia":"fm","Moldavia":"md","Mónaco":"mc","Mongolia":"mn","Montenegro":"me","Mozambique":"mz","Namibia":"na","Nauru":"nr","Nepal":"np","Nicaragua":"ni","Níger":"ne","Nigeria":"ng","Nueva Zelanda":"nz","Noruega":"no","Omán":"om","Países Bajos":"nl","Pakistán":"pk","Palaos":"pw","Palestina":"ps","Panamá":"pa","Papúa Nueva Guinea":"pg","Paraguay":"py","Perú":"pe","Polonia":"pl","Portugal":"pt","Reino Unido":"gb","Puerto Rico":"pr","Ruanda":"rw","Rumania":"ro","Rusia":"ru","Samoa":"ws","San Marino":"sm","Santa Lucía":"lc","Santo Tomé y Príncipe":"st","San Vicente y las Granadinas":"vc","Senegal":"sn","Serbia":"rs","Seychelles":"sc","Sierra Leona":"sl","Singapur":"sg","Siria":"sy","Somalia":"so","Sudáfrica":"za","Sudán":"sd","Sudán del Sur":"ss","Suecia":"se","Suiza":"ch","Surinam":"sr","Esuatini":"sz","Tayikistán":"tj","Tanzania":"tz","Tailandia":"th","Timor Oriental":"tl","Togo":"tg","Tonga":"to","Trinidad y Tobago":"tt","Túnez":"tn","Turquía":"tr","Turkmenistán":"tm","Tuvalu":"tv","Ucrania":"ua","Uganda":"ug","Uruguay":"uy","Uzbekistán":"uz","Vanuatu":"vu","Vaticano":"va","Venezuela":"ve","Vietnam":"vn","Yemen":"ye","Yibuti":"dj","Zambia":"zm","Zimbabue":"zw" };
+
+    if (optionsBox && nativeSelect && displayBox) {
+        optionsBox.innerHTML = '';
+        Array.from(nativeSelect.options).forEach(opt => {
+            if (!opt.value) return;
+            const iso = isoMap[opt.text] || opt.value.replace('+','').toLowerCase();
+            const div = document.createElement('div');
+            div.className = 'phone-option';
+            div.innerHTML = `<img src="https://flagcdn.com/w20/${iso}.png"><span class="code">${opt.value}</span><span class="country">${opt.text}</span>`;
+            div.style.cssText = 'display:flex;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;border-bottom:1px solid #f1f5f9;';
+            div.addEventListener('click', () => {
+                nativeSelect.value = opt.value;
+                flagImg.src = `https://flagcdn.com/w20/${iso}.png`;
+                codeText.textContent = opt.value;
+                countryText.textContent = opt.text;
+                optionsBox.style.display = 'none';
+            });
+            optionsBox.appendChild(div);
         });
+        displayBox.addEventListener('click', (e) => { e.stopPropagation(); optionsBox.style.display = optionsBox.style.display === 'block' ? 'none' : 'block'; });
+        document.addEventListener('click', (e) => { if (!e.target.closest('.phone-dropdown-wrapper')) optionsBox.style.display = 'none'; });
     }
 
-    // 🔹 Vista previa de imágenes
+    // ==========================================
+    // 🔹 3. VISTA PREVIA + EDAD + MÁSCARAS
+    // ==========================================
     const setupPreview = (idIn, idImg) => {
-        const inp = document.getElementById(idIn);
-        const img = document.getElementById(idImg);
-        if (!inp || !img) return;
-        inp.addEventListener('change', function() {
+        const input = document.getElementById(idIn), preview = document.getElementById(idImg);
+        if (!input || !preview) return;
+        input.addEventListener('change', function() {
             const f = this.files[0];
-            if (f) { const r = new FileReader(); r.onload = e => { img.src = e.target.result; img.style.display = 'block'; }; r.readAsDataURL(f); }
-            else img.style.display = 'none';
+            if (f) { const r = new FileReader(); r.onload = e => { preview.src = e.target.result; preview.style.display = 'block'; }; r.readAsDataURL(f); }
+            else preview.style.display = 'none';
         });
     };
     setupPreview('foto_frontal', 'prev_frontal');
     setupPreview('foto_perfil_izq', 'prev_izq');
     setupPreview('foto_perfil_der', 'prev_der');
 
-    // 🔹 Búsqueda
+    const fechaNac = document.getElementById('p_fecha_nac');
+    const edadInput = document.getElementById('p_edad');
+    if (fechaNac && edadInput) {
+        fechaNac.addEventListener('change', () => {
+            if (!fechaNac.value) { edadInput.value = ''; return; }
+            const hoy = new Date(), nac = new Date(fechaNac.value);
+            let edad = hoy.getFullYear() - nac.getFullYear();
+            const m = hoy.getMonth() - nac.getMonth();
+            if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
+            edadInput.value = (edad >= 0 && edad <= 120) ? edad : '';
+        });
+    }
+
+    const cedulaInput = document.getElementById('p_cedula');
+    const tlfNumInput = document.getElementById('p_tlf_num');
+    if (cedulaInput) cedulaInput.addEventListener('input', e => e.target.value = e.target.value.replace(/\D/g, '').slice(0, 8));
+    if (tlfNumInput) tlfNumInput.addEventListener('input', e => e.target.value = e.target.value.replace(/\D/g, '').slice(0, 20));
+    const estInput = document.getElementById('p_estatura');
+    if (estInput) { estInput.addEventListener('input', window.convertirEstatura); estInput.addEventListener('blur', window.convertirEstatura); }
+
+    // ==========================================
+    // 🔹 4. BÚSQUEDA POR CÉDULA
+    // ==========================================
     const buscarBtn = document.getElementById('btn-buscar');
     const buscarInput = document.getElementById('buscar-cedula');
     const form = document.getElementById('form-mod-personas');
@@ -78,6 +118,7 @@ window.initModPersonas = function() {
             currentUrls = { front: data.foto_frontal, izq: data.foto_perfil_izq, der: data.foto_perfil_der };
             document.getElementById('mod_record_id').value = currentId;
 
+            // Llenar campos básicos
             document.getElementById('p_cedula').value = data.cedula;
             document.getElementById('p_nombre1').value = data.primer_nombre || '';
             document.getElementById('p_nombre2').value = data.segundo_nombre || '';
@@ -89,8 +130,6 @@ window.initModPersonas = function() {
             document.getElementById('p_marca').value = data.marca_corporal || '';
             document.getElementById('p_nacionalidad').value = data.nacionalidad || '';
             document.getElementById('p_sexo').value = data.sexo || '';
-            document.getElementById('p_tlf_cod').value = data.tlf_codigo || '';
-            document.getElementById('p_tlf_num').value = data.tlf_numero || '';
             document.getElementById('p_direccion').value = data.direccion || '';
             document.getElementById('p_estatura').value = data.estatura_cm ? (data.estatura_cm / 100).toFixed(2) : '';
             document.getElementById('p_color_piel').value = data.color_piel || '';
@@ -98,8 +137,20 @@ window.initModPersonas = function() {
             document.getElementById('p_color_cabello').value = data.color_cabello || '';
             document.getElementById('p_complexion').value = data.complexion || '';
             document.getElementById('p_estacion').value = data.estacion_policial || '';
+            document.getElementById('p_direccion_detencion').value = data.direccion_detencion || '';
             document.getElementById('p_observaciones').value = data.observaciones || '';
 
+            // Teléfono
+            if (data.tlf_pais) {
+                nativeSelect.value = data.tlf_pais;
+                const iso = isoMap[Array.from(nativeSelect.options).find(o => o.value === data.tlf_pais)?.text] || data.tlf_pais.replace('+','').toLowerCase();
+                flagImg.src = `https://flagcdn.com/w20/${iso}.png`;
+                codeText.textContent = data.tlf_pais;
+                countryText.textContent = Array.from(nativeSelect.options).find(o => o.value === data.tlf_pais)?.text || '';
+            }
+            if (data.tlf_numero) document.getElementById('p_tlf_num').value = data.tlf_numero;
+
+            // Condicionales
             const setCond = (selId, txtId, showId, val, detail) => {
                 document.getElementById(selId).value = val ? 'true' : 'false';
                 toggleCampo(document.getElementById(selId), showId);
@@ -111,6 +162,7 @@ window.initModPersonas = function() {
             setCond('p_medicamento', 'txt_med', 'det-med', data.consume_medicamento !== null, data.consume_medicamento);
             setCond('p_judicial', 'txt_jud', 'det-jud', data.problema_judicial !== null, data.problema_judicial);
 
+            // Imágenes existentes
             ['front', 'izq', 'der'].forEach(k => {
                 const el = document.getElementById(k === 'front' ? 'prev_frontal' : k === 'izq' ? 'prev_izq' : 'prev_der');
                 if (currentUrls[k]) { el.src = currentUrls[k]; el.style.display = 'block'; }
@@ -126,7 +178,9 @@ window.initModPersonas = function() {
         }
     });
 
-    // 🔹 Envío / Actualización
+    // ==========================================
+    // 🔹 5. ENVÍO / ACTUALIZACIÓN
+    // ==========================================
     const submitBtn = form?.querySelector('.btn-submit');
     const msgForm = document.getElementById('msg-mod-personas');
     const mostrarError = (txt) => { if(msgForm) { msgForm.textContent = '❌ ' + txt; msgForm.className = 'msg error'; msgForm.style.display = 'block'; } };
@@ -160,9 +214,10 @@ window.initModPersonas = function() {
                 const newIzq = await uploadIfChanged('foto_perfil_izq', currentUrls.izq);
                 const newDer = await uploadIfChanged('foto_perfil_der', currentUrls.der);
 
-                const tlfCod = document.getElementById('p_tlf_cod').value;
-                const tlfNum = document.getElementById('p_tlf_num').value.trim();
-                const tlfValido = tlfCod && tlfNum.length === 7;
+                const tlfPais = document.getElementById('p_tlf_pais')?.value;
+                const tlfNumRaw = (document.getElementById('p_tlf_num')?.value.trim().replace(/\D/g, '') || '').slice(0, 20);
+                const tlfCodigoFinal = (tlfPais && tlfNumRaw.length >= 1) ? tlfPais : null;
+                const tlfNumeroFinal = (tlfPais && tlfNumRaw.length >= 1) ? tlfNumRaw : null;
 
                 const updateData = {
                     foto_frontal: newFront, foto_perfil_izq: newIzq, foto_perfil_der: newDer,
@@ -172,8 +227,8 @@ window.initModPersonas = function() {
                     segundo_apellido: document.getElementById('p_apellido2').value.trim() || null,
                     fecha_nacimiento: document.getElementById('p_fecha_nac').value,
                     edad: parseInt(document.getElementById('p_edad').value) || null,
-                    tlf_codigo: tlfValido ? tlfCod : null,
-                    tlf_numero: tlfValido ? tlfNum : null,
+                    tlf_pais: tlfCodigoFinal,
+                    tlf_numero: tlfNumeroFinal,
                     direccion: document.getElementById('p_direccion').value.trim(),
                     apodo: document.getElementById('p_apodo').value.trim() || null,
                     marca_corporal: document.getElementById('p_marca').value.trim() || null,
@@ -192,38 +247,28 @@ window.initModPersonas = function() {
                     consume_medicamento: document.getElementById('p_medicamento').value === 'true' ? document.getElementById('txt_med').value : null,
                     problema_judicial: document.getElementById('p_judicial').value === 'true' ? document.getElementById('txt_jud').value : null,
                     estacion_policial: document.getElementById('p_estacion').value,
+                    direccion_detencion: document.getElementById('p_direccion_detencion')?.value.trim() || null,
                     observaciones: document.getElementById('p_observaciones').value.trim() || null
                 };
 
-                const { data, error } = await window.supabaseClient
-                    .from('registro_personas')
-                    .update(updateData)
-                    .eq('id', currentId)
-                    .select('id');
-
+                const { data, error } = await window.supabaseClient.from('registro_personas').update(updateData).eq('id', currentId).select('id');
                 if (error) throw error;
-                if (!data || data.length === 0) throw new Error('No se pudo aplicar la actualización. Verifique permisos o conexión.');
+                if (!data || data.length === 0) throw new Error('No se pudo aplicar la actualización.');
 
                 if (msgForm) {
-                    msgForm.textContent = '✅ Cambios guardados correctamente en la base de datos.';
+                    msgForm.textContent = '✅ Cambios guardados correctamente.';
                     msgForm.className = 'msg success';
                     msgForm.style.display = 'block';
+                    setTimeout(() => msgForm.style.display = 'none', 4000);
                 }
-
-                setTimeout(() => {
-                    form.style.display = 'none';
-                    buscarInput.value = '';
-                    msgBuscar.style.display = 'none';
-                    if (msgForm) msgForm.style.display = 'none';
-                    currentId = null;
-                }, 4000);
+                setTimeout(() => { form.style.display = 'none'; buscarInput.value = ''; msgBuscar.style.display = 'none'; currentId = null; }, 4000);
 
             } catch (err) {
                 console.error('Error actualización:', err);
                 let mensaje = 'Error al guardar cambios. Intente nuevamente.';
-                if (err.message.includes('storage') || err.message.includes('upload')) mensaje = 'No se pudieron subir las fotografías nuevas.';
+                if (err.message.includes('storage')) mensaje = 'No se pudieron subir las fotografías nuevas.';
                 else if (err.message.includes('cedula') || err.message.includes('23505')) mensaje = 'Conflicto con cédula existente.';
-                else if (err.message.includes('not-null')) mensaje = 'Falta completar un campo obligatorio marcado.';
+                else if (err.message.includes('22001') || err.message.includes('too long')) mensaje = 'El número de teléfono es demasiado largo (máx. 20 dígitos).';
                 mostrarError(mensaje);
             } finally {
                 submitBtn.disabled = false;
