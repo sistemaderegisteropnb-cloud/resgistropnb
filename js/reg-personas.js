@@ -1,6 +1,6 @@
 window.initRegPersonas = function() {
     // ==========================================
-    // 🔹 1. FUNCIONES GLOBALES (para onchange en HTML)
+    // 1. FUNCIONES GLOBALES (para onchange en HTML)
     // ==========================================
     window.toggleCampo = function(select, targetId) {
         const el = document.getElementById(targetId);
@@ -35,7 +35,7 @@ window.initRegPersonas = function() {
     };
 
     // ==========================================
-    // 🔹 2. ELEMENTOS DEL DOM
+    //  2. ELEMENTOS DEL DOM
     // ==========================================
     const form = document.getElementById('form-reg-personas');
     const cedulaInput = document.getElementById('p_cedula');
@@ -46,7 +46,7 @@ window.initRegPersonas = function() {
     const edadInput = document.getElementById('p_edad');
 
     // ==========================================
-    // 🔹 3. DROPDOWN DE BANDERAS
+    //  3. DROPDOWN DE BANDERAS
     // ==========================================
     const nativeSelect = document.getElementById('p_tlf_pais');
     const displayBox = document.querySelector('.phone-display');
@@ -80,7 +80,7 @@ window.initRegPersonas = function() {
     }
 
     // ==========================================
-    // 🔹 4. VISTA PREVIA IMÁGENES + EDAD + MÁSCARAS
+    //  4. VISTA PREVIA IMÁGENES + EDAD + MÁSCARAS
     // ==========================================
     const setupPreview = (idIn, idImg) => {
         const input = document.getElementById(idIn), preview = document.getElementById(idImg);
@@ -112,7 +112,7 @@ window.initRegPersonas = function() {
     }
 
     // ==========================================
-    // 🔹 5. VALIDACIÓN CÉDULA EN TIEMPO REAL
+    //  5. VALIDACIÓN CÉDULA EN TIEMPO REAL
     // ==========================================
     let cedulaCheckTimeout = null;
 
@@ -159,7 +159,7 @@ window.initRegPersonas = function() {
     }
 
     // ==========================================
-    // 🔹 6. ENVÍO DEL FORMULARIO
+    //  6. ENVÍO DEL FORMULARIO
     // ==========================================
     const btn = form?.querySelector('.btn-submit');
     const msg = document.getElementById('msg-reg-personas');
@@ -171,7 +171,7 @@ window.initRegPersonas = function() {
         e.preventDefault();
         if (!form.checkValidity()) { form.reportValidity(); return; }
 
-        // ✅ TODAS LAS VARIABLES SE DECLARAN AQUÍ, DENTRO DEL SCOPE
+        //  TODAS LAS VARIABLES SE DECLARAN AQUÍ, DENTRO DEL SCOPE
         const cedula = cedulaInput?.value.trim().replace(/\D/g, '') || '';
         const edad = parseInt(edadInput?.value) || 0;
         const tlfPais = document.getElementById('p_tlf_pais')?.value;
