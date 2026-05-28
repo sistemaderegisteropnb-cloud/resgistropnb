@@ -149,15 +149,36 @@ window.initRegPersonas = function() {
     }
 
     if (cedulaInput && cedulaStatus) {
-        cedulaInput.addEventListener('input', function() {
-            const val = this.value.trim();
-            if (val.length < 7) { cedulaStatus.className = 'cedula-status'; cedulaStatus.textContent = ''; this.classList.remove('cedula-duplicate'); return; }
-            if (cedulaCheckTimeout) clearTimeout(cedulaCheckTimeout);
-            cedulaCheckTimeout = setTimeout(() => verificarCedula(val), 600);
-        });
-        cedulaInput.addEventListener('blur', function() { if(this.value.trim().length >= 7) verificarCedula(this.value.trim()); });
-    }
+           cedulaInput.addEventListener('input', function() {
+        const val = this.value.trim();
+        // ✅ 1 a 6 dígitos: Muestra advertencia
+        if (val.length > 0 && val.length < 7) {
+            cedulaStatus.className = 'cedula-status error';
+            cedulaStatus.textContent = '⚠️ Faltan dígitos (mínimo 7)';
+            this.classList.remove('cedula-duplicate');
+            return;
+        }
+        // ✅ Vacío: Limpia mensaje
+        if (val.length === 0) {
+            cedulaStatus.className = 'cedula-status';
+            cedulaStatus.textContent = '';
+            this.classList.remove('cedula-duplicate');
+            return;
+        }
+        // ✅ 7 u 8 dígitos: Verifica en Supabase
+        if (cedulaCheckTimeout) clearTimeout(cedulaCheckTimeout);
+        cedulaCheckTimeout = setTimeout(() => verificarCedula(val), 600);
+    });
 
+    cedulaInput.addEventListener('blur', function() { 
+        const val = this.value.trim();
+        if (val.length > 0 && val.length < 7) {
+            cedulaStatus.className = 'cedula-status error';
+            cedulaStatus.textContent = '⚠️ Faltan dígitos (mínimo 7)';
+        } else if (val.length >= 7) {
+            verificarCedula(val); 
+        }
+    });
     // ==========================================
     //  6. ENVÍO DEL FORMULARIO
     // ==========================================
