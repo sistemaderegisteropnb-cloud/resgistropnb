@@ -23,20 +23,21 @@
   .msg { padding: 12px; margin-top: 15px; border-radius: 5px; text-align: center; display: none; }
   .msg.success { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
   .msg.error { background: #fde2e2; color: #b91c1c; border: 1px solid #fca5a5; }
-  .archived-banner { background: #fef3c7; border: 1px solid #fcd34d; border-radius: 6px; padding: 12px; margin-bottom: 16px; display: none; }
+  .archived-banner { background: #fef3c7; border: 1px solid #fcd34d; border-radius: 6px; padding: 12px; margin-bottom: 16px; display: none; text-align: center; }
   .archived-banner strong { color: #92400e; }
-  /* Modal */
-  .elim-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
-  .elim-modal-box { background: #fff; padding: 24px; border-radius: 8px; width: 90%; max-width: 420px; text-align: center; box-shadow: 0 6px 20px rgba(0,0,0,0.25); }
-  .elim-modal-box h4 { margin: 0 0 10px; color: var(--primary); }
-  .elim-modal-box p { margin: 0 0 20px; color: #475569; line-height: 1.5; }
-  .elim-btns { display: flex; gap: 10px; justify-content: center; }
-  .btn-danger { background: #dc2626; color: #fff; border: none; padding: 10px 16px; border-radius: 5px; cursor: pointer; font-weight: 600; }
-  .btn-cancel { background: #94a3b8; color: #fff; border: none; padding: 10px 16px; border-radius: 5px; cursor: pointer; font-weight: 600; }
-  .btn-success { background: #059669; color: #fff; border: none; padding: 10px 16px; border-radius: 5px; cursor: pointer; font-weight: 600; }
-  .btn-danger:hover { background: #b91c1c; }
-  .btn-cancel:hover { background: #64748b; }
-  .btn-success:hover { background: #047857; }
+  /* Modal mejorado */
+  .elim-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; animation: fadeIn 0.2s; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .elim-modal-box { background: #fff; padding: 24px; border-radius: 10px; width: 90%; max-width: 440px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border-top: 4px solid var(--primary); }
+  .elim-modal-box h4 { margin: 0 0 12px; color: var(--primary); font-size: 1.1rem; }
+  .elim-modal-box p { margin: 0 0 24px; color: #475569; line-height: 1.6; font-size: 0.95rem; }
+  .elim-btns { display: flex; gap: 12px; justify-content: center; }
+  .btn-modal-danger { background: #dc2626; color: #fff; border: none; padding: 11px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; flex: 1; max-width: 140px; }
+  .btn-modal-cancel { background: #e2e8f0; color: #334155; border: none; padding: 11px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; flex: 1; max-width: 140px; }
+  .btn-modal-success { background: #059669; color: #fff; border: none; padding: 11px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; flex: 1; max-width: 140px; }
+  .btn-modal-danger:hover { background: #b91c1c; }
+  .btn-modal-cancel:hover { background: #cbd5e1; }
+  .btn-modal-success:hover { background: #047857; }
   @media (max-width: 600px) { .search-row, .form-grid { flex-direction: column; grid-template-columns: 1fr; } }
 </style>
 
@@ -51,17 +52,15 @@
         </div>
         <div id="buscar-msg-elim" class="search-msg"></div>
         <div id="archived-notice" class="search-msg archived">
-            ⚠️ Esta persona ya fue eliminada del sistema. Puede <strong>reintegrarla</strong> si lo necesita.
+            🔒 Sujeto eliminado anteriormente. Use el botón <strong>Reintegrar</strong> si desea volver a activarlo.
         </div>
     </div>
 
     <div id="elim-data-container" style="display: none;">
         <!-- Banner para registros ya eliminados -->
-        <div id="archived-banner" class="archived-banner" style="display: none;">
-            🔒 <strong>Registro Archivado</strong><br>
-            Esta persona fue eliminada el <span id="archived-date">-</span> por <span id="archived-by">-</span>.
-            <br><br>
-            <small>Para volver a registrarla, primero reintégrela o use el módulo de Registro con la misma cédula.</small>
+        <div id="archived-banner" class="archived-banner">
+            <strong>🗄️ Registro Archivado</strong><br>
+            Eliminado el <span id="archived-date">-</span> por <span id="archived-by">-</span>
         </div>
 
         <fieldset style="border:1px solid var(--beige-border); border-radius:8px; padding:16px; margin-bottom:18px; background:#fafbfc;">
@@ -144,14 +143,14 @@
     </div>
 </div>
 
-<!-- ✅ Modal de Confirmación (reutilizable) -->
+<!-- ✅ Modal de Confirmación (único, reutilizable) -->
 <div id="elim-modal" class="elim-modal">
     <div class="elim-modal-box">
         <h4 id="modal-title">⚠️ Confirmar Acción</h4>
         <p id="modal-text">¿Está seguro?</p>
         <div class="elim-btns">
-            <button id="btn-confirm-yes" class="btn-danger">✅ Confirmar</button>
-            <button id="btn-confirm-no" class="btn-cancel">❌ Cancelar</button>
+            <button id="btn-modal-yes" class="btn-modal-danger">✅ Confirmar</button>
+            <button id="btn-modal-no" class="btn-modal-cancel">❌ Cancelar</button>
         </div>
     </div>
 </div>
