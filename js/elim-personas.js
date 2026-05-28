@@ -39,12 +39,10 @@ window.initElimPersonas = function() {
 
     // 🔹 Mostrar datos + UI según estado
     function renderUI(data, isArchived) {
-        // Fotos
         setPhoto('elim-foto-frontal', data.foto_frontal);
         setPhoto('elim-foto-izq', data.foto_perfil_izq);
         setPhoto('elim-foto-der', data.foto_perfil_der);
 
-        // Campos
         ['n1','n2','a1','a2','cedula','fnac','edad','apodo','marca','nac','sexo'].forEach(k => 
             setVal(`elim-${k}`, data[k === 'fnac' ? 'fecha_nacimiento' : k === 'nac' ? 'nacionalidad' : k]));
         
@@ -53,9 +51,11 @@ window.initElimPersonas = function() {
         setVal('elim-dir', data.direccion);
         setVal('elim-dir-det', data.direccion_detencion);
         setVal('elim-est', data.estatura_cm);
-        ['piel','ojos','cabello','comp'].forEach(k => setVal(`elim-${k}`, data[`color_${k}` === 'color_piel' ? 'color_piel' : k]));
+        setVal('elim-piel', data.color_piel);
+        setVal('elim-ojos', data.color_ojos);
+        setVal('elim-cabello', data.color_cabello);
+        setVal('elim-comp', data.complexion);
         
-        // Salud / Judicial
         setVal('elim-lentes', data.usa_lentes ? 'Sí' : 'No');
         if (data.usa_lentes && data.detalle_lentes) { showField('box-lentes-det'); setVal('elim-lentes-det', data.detalle_lentes); } else { hideField('box-lentes-det'); }
         setVal('elim-perf', data.perforaciones ? 'Sí' : 'No');
@@ -70,12 +70,11 @@ window.initElimPersonas = function() {
         setVal('elim-estacion', data.estacion_policial);
         setVal('elim-obs', data.observaciones);
 
-        // 🔁 Cambiar interfaz según estado
         if (isArchived) {
             archivedBanner.style.display = 'block';
             archivedNotice.style.display = 'block';
             document.getElementById('archived-date').textContent = data.eliminado_en ? new Date(data.eliminado_en).toLocaleDateString() : '-';
-            document.getElementById('archived-by').textContent = data.eliminado_por || 'Sistema';
+            document.getElementById('archived-by').textContent = data.eliminado_por || 'Sistema'; // ✅ Ahora muestra el correo
             btnEliminar.style.display = 'none';
             btnReintegrar.style.display = 'block';
         } else {
@@ -86,7 +85,7 @@ window.initElimPersonas = function() {
         }
     }
 
-    // 🔹 Búsqueda principal (Activa → Archivados)
+    // 🔹 Búsqueda principal
     async function buscarPersona() {
         const cedula = buscarInput.value.trim().replace(/\D/g, '');
         if (cedula.length < 7) return showMsg(msgBuscar, '⚠️ Ingrese entre 7 y 8 dígitos', 'error');
@@ -98,40 +97,30 @@ window.initElimPersonas = function() {
         archivedNotice.style.display = 'none';
 
         try {
-            // 1. Buscar en tabla activa
             let { data: activo } = await window.supabaseClient.from('registro_personas').select('*').eq('cedula', cedula).maybeSingle();
             if (activo) {
-                currentData = activo;
-                currentId = activo.id;
-                renderUI(activo, false); // Activo
-                dataContainer.style.display = 'block';
-                hideMsg(msgBuscar);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                return;
+                currentData = activo; currentId = activo.id;
+                renderUI(activo, false);
+                dataContainer.style.display = 'block'; hideMsg(msgBuscar);
+                window.scrollTo({ top: 0, behavior: 'smooth' }); return;
             }
 
-            // 2. Buscar en eliminados
             let { data: archivado } = await window.supabaseClient.from('eliminados').select('*').eq('cedula', cedula).maybeSingle();
             if (archivado) {
-                currentData = archivado;
-                currentId = archivado.id_original || archivado.id;
-                renderUI(archivado, true); // Archivado
-                dataContainer.style.display = 'block';
-                hideMsg(msgBuscar);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                return;
+                currentData = archivado; currentId = archivado.id_original || archivado.id;
+                renderUI(archivado, true);
+                dataContainer.style.display = 'block'; hideMsg(msgBuscar);
+                window.scrollTo({ top: 0, behavior: 'smooth' }); return;
             }
 
             showMsg(msgBuscar, '❌ Persona no encontrada en el sistema.', 'error');
         } catch (err) {
             console.error('Error búsqueda:', err);
             showMsg(msgBuscar, '❌ Error de conexión.', 'error');
-        } finally {
-            buscarBtn.disabled = false;
-        }
+        } finally { buscarBtn.disabled = false; }
     }
 
-    // 🔹 Modal: abrir con acción pendiente
+    // 🔹 Modal
     function showModal(titulo, texto, accion, tipo) {
         pendingAction = accion;
         modalTitle.textContent = titulo;
@@ -140,14 +129,7 @@ window.initElimPersonas = function() {
         btnModalYes.textContent = tipo === 'danger' ? '✅ Sí, Eliminar' : '✅ Sí, Reintegrar';
         modal.style.display = 'flex';
     }
-
-    // 🔹 Modal: cerrar limpio
-    function closeModal() {
-        modal.style.display = 'none';
-        pendingAction = null;
-    }
-
-    // 🔹 Ejecutar acción
+    function closeModal() { modal.style.display = 'none'; pendingAction = null; }
     async function ejecutarAccion() {
         if (pendingAction === 'delete') await eliminarRegistro();
         else if (pendingAction === 'reintegrate') await reintegrarRegistro();
@@ -156,14 +138,14 @@ window.initElimPersonas = function() {
 
     // 🔹 Eliminar (Activa → Eliminados)
     async function eliminarRegistro() {
-        btnEliminar.disabled = true;
-        btnEliminar.textContent = '⏳ Procesando...';
-        hideMsgElim();
-
+        btnEliminar.disabled = true; btnEliminar.textContent = '⏳ Procesando...'; hideMsgElim();
         try {
-            const userId = sessionStorage.getItem('pnb_user_id') || 'user';
+            // ✅ OBTENER EMAIL DEL USUARIO ACTUAL DESDE SUPABASE AUTH
+            const { data: { user } } = await window.supabaseClient.auth.getUser();
+            const eliminadoPor = user?.email || 'usuario@sistema';
+
             const dataToArchive = {
-                id_original: currentId, eliminado_por: userId,
+                id_original: currentId, eliminado_por: eliminadoPor, // ✅ Guarda el correo
                 estatus: currentData.estatus, estacion_policial: currentData.estacion_policial, direccion_detencion: currentData.direccion_detencion,
                 foto_frontal: currentData.foto_frontal, foto_perfil_izq: currentData.foto_perfil_izq, foto_perfil_der: currentData.foto_perfil_der,
                 primer_nombre: currentData.primer_nombre, segundo_nombre: currentData.segundo_nombre, primer_apellido: currentData.primer_apellido, segundo_apellido: currentData.segundo_apellido,
@@ -178,33 +160,21 @@ window.initElimPersonas = function() {
             const { error: insErr } = await window.supabaseClient.from('eliminados').insert([dataToArchive]);
             if (insErr) throw new Error('Error archivando: ' + insErr.message);
 
-            // ✅ Verificación explícita de eliminación
-            const { data: delData, error: delErr } = await window.supabaseClient
-                .from('registro_personas')
-                .delete()
-                .eq('id', currentData.id)
-                .select('id');
-            
+            const { data: delData, error: delErr } = await window.supabaseClient.from('registro_personas').delete().eq('id', currentData.id).select('id');
             if (delErr) throw new Error('Error eliminando: ' + delErr.message);
-            if (!delData || delData.length === 0) throw new Error('No se encontró el registro para eliminar. Puede que ya haya sido borrado.');
+            if (!delData || delData.length === 0) throw new Error('No se encontró el registro para eliminar.');
 
-            showMsgElim('✅ Persona eliminada y archivada correctamente. Ya no aparece en el sistema activo.', 'success');
+            showMsgElim('✅ Persona eliminada y archivada correctamente.', 'success');
             setTimeout(() => { dataContainer.style.display = 'none'; buscarInput.value = ''; hideMsg(msgBuscar); hideMsgElim(); archivedNotice.style.display = 'none'; }, 5000);
         } catch (err) {
             console.error('Error eliminando:', err);
             showMsgElim('❌ ' + err.message, 'error');
-        } finally {
-            btnEliminar.disabled = false;
-            btnEliminar.textContent = '🗑️ Eliminar Persona del Sistema';
-        }
+        } finally { btnEliminar.disabled = false; btnEliminar.textContent = '🗑️ Eliminar Persona del Sistema'; }
     }
 
     // 🔹 Reintegrar (Eliminados → Activa)
     async function reintegrarRegistro() {
-        btnReintegrar.disabled = true;
-        btnReintegrar.textContent = '⏳ Procesando...';
-        hideMsgElim();
-
+        btnReintegrar.disabled = true; btnReintegrar.textContent = '⏳ Procesando...'; hideMsgElim();
         try {
             const dataToRestore = {
                 estatus: currentData.estatus, estacion_policial: currentData.estacion_policial, direccion_detencion: currentData.direccion_detencion,
@@ -221,21 +191,16 @@ window.initElimPersonas = function() {
             const { error: insErr } = await window.supabaseClient.from('registro_personas').insert([dataToRestore]);
             if (insErr) throw new Error('Error restaurando: ' + insErr.message);
 
-            // Limpiar de tabla eliminados
             await window.supabaseClient.from('eliminados').delete().eq('id', currentData.id);
-
-            showMsgElim('✅ Persona reintegrada al sistema activo. Ya puede consultarse o eliminarse normalmente.', 'success');
+            showMsgElim('✅ Persona reintegrada al sistema activo.', 'success');
             setTimeout(() => { dataContainer.style.display = 'none'; buscarInput.value = ''; hideMsg(msgBuscar); hideMsgElim(); archivedNotice.style.display = 'none'; }, 5000);
         } catch (err) {
             console.error('Error reintegrando:', err);
             let msg = 'Error al reintegrar.';
-            if (err.message.includes('23505') || err.message.includes('unique')) msg = 'Esta cédula ya existe en el sistema activo. No se puede reintegrar.';
+            if (err.message.includes('23505') || err.message.includes('unique')) msg = 'Esta cédula ya existe en el sistema activo.';
             else msg = err.message;
             showMsgElim('❌ ' + msg, 'error');
-        } finally {
-            btnReintegrar.disabled = false;
-            btnReintegrar.textContent = '♻️ Reintegrar al Sistema Activo';
-        }
+        } finally { btnReintegrar.disabled = false; btnReintegrar.textContent = '♻️ Reintegrar al Sistema Activo'; }
     }
 
     // 🔹 Listeners
