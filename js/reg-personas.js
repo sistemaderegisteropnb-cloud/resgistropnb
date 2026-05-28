@@ -1,6 +1,6 @@
 window.initRegPersonas = function() {
     // ==========================================
-    // 🔹 1. FUNCIONES GLOBALES (para onchange en HTML)
+    // 🔹 1. FUNCIONES GLOBALES
     // ==========================================
     window.toggleCampo = function(select, targetId) {
         const el = document.getElementById(targetId);
@@ -48,7 +48,7 @@ window.initRegPersonas = function() {
     const msg = document.getElementById('msg-reg-personas');
 
     // ==========================================
-    // 🔹 3. DROPDOWN DE BANDERAS (CON IMÁGENES REALES)
+    // 🔹 3. DROPDOWN DE BANDERAS
     // ==========================================
     const nativeSelect = document.getElementById('p_tlf_pais');
     const displayBox = document.querySelector('.phone-display');
@@ -79,13 +79,12 @@ window.initRegPersonas = function() {
             });
             optionsBox.appendChild(div);
         });
-
         displayBox.addEventListener('click', (e) => { e.stopPropagation(); optionsBox.style.display = optionsBox.style.display === 'block' ? 'none' : 'block'; });
         document.addEventListener('click', (e) => { if (!e.target.closest('.phone-dropdown-wrapper')) optionsBox.style.display = 'none'; });
     }
 
     // ==========================================
-    // 🔹 4. VISTA PREVIA DE IMÁGENES
+    // 🔹 4. VISTA PREVIA + EDAD + MÁSCARAS
     // ==========================================
     const setupPreview = (idIn, idImg) => {
         const input = document.getElementById(idIn), preview = document.getElementById(idImg);
@@ -100,9 +99,6 @@ window.initRegPersonas = function() {
     setupPreview('foto_perfil_izq', 'prev_izq');
     setupPreview('foto_perfil_der', 'prev_der');
 
-    // ==========================================
-    // 🔹 5. CÁLCULO AUTOMÁTICO DE EDAD
-    // ==========================================
     if (fechaNac && edadInput) {
         fechaNac.addEventListener('change', () => {
             if (!fechaNac.value) { edadInput.value = ''; return; }
@@ -114,230 +110,117 @@ window.initRegPersonas = function() {
         });
     }
 
-    // ==========================================
-    // 🔹 6. MÁSCARAS DE ENTRADA
-    // ==========================================
     if (cedulaInput) cedulaInput.addEventListener('input', e => e.target.value = e.target.value.replace(/\D/g, '').slice(0, 8));
-    if (tlfNumInput) tlfNumInput.addEventListener('input', e => e.target.value = e.target.value.replace(/\D/g, '')); // ✅ SIN LÍMITE DE DÍGITOS
+    if (tlfNumInput) tlfNumInput.addEventListener('input', e => e.target.value = e.target.value.replace(/\D/g, '').slice(0, 20)); // ✅ Máximo 20 dígitos para coincidir con BD
     if (estaturaInput) {
         estaturaInput.addEventListener('input', window.convertirEstatura);
         estaturaInput.addEventListener('blur', window.convertirEstatura);
     }
 
     // ==========================================
-    // 🔹 7. VALIDACIÓN DE CÉDULA EN TIEMPO REAL
+    // 🔹 5. VALIDACIÓN DE CÉDULA
     // ==========================================
     let cedulaCheckTimeout = null;
-
     async function verificarCedula(cedula) {
         if (!cedulaStatus || !window.supabaseClient) return false;
         cedulaStatus.className = 'cedula-status checking';
-        cedulaStatus.textContent = '🔍 Verificando en sistema...';
+        cedulaStatus.textContent = '🔍 Verificando...';
         cedulaInput?.classList.remove('cedula-duplicate');
-
         try {
-            const { data, error } = await window.supabaseClient
-                .from('registro_personas')
-                .select('cedula')
-                .eq('cedula', cedula)
-                .maybeSingle();
-            
+            const { data, error } = await window.supabaseClient.from('registro_personas').select('cedula').eq('cedula', cedula).maybeSingle();
             if (error) throw error;
-            if (data) {
-                cedulaStatus.className = 'cedula-status error';
-                cedulaStatus.textContent = '⚠️ Cédula ya registrada';
-                cedulaInput?.classList.add('cedula-duplicate');
-                return true;
-            } else {
-                cedulaStatus.className = 'cedula-status success';
-                cedulaStatus.textContent = '✅ Cédula disponible';
-                cedulaInput?.classList.remove('cedula-duplicate');
-                return false;
-            }
-        } catch (e) {
-            console.warn('⚠️ Error verificando cédula:', e.message);
-            cedulaStatus.className = 'cedula-status'; cedulaStatus.textContent = '';
-            return false;
-        }
+            if (data) { cedulaStatus.className = 'cedula-status error'; cedulaStatus.textContent = '⚠️ Cédula ya registrada'; cedulaInput?.classList.add('cedula-duplicate'); return true; }
+            else { cedulaStatus.className = 'cedula-status success'; cedulaStatus.textContent = '✅ Cédula disponible'; cedulaInput?.classList.remove('cedula-duplicate'); return false; }
+        } catch (e) { console.warn('⚠️ Error:', e.message); cedulaStatus.className = 'cedula-status'; cedulaStatus.textContent = ''; return false; }
     }
-
     if (cedulaInput && cedulaStatus) {
-        // ✅ Listener INPUT: muestra advertencia si faltan dígitos
         cedulaInput.addEventListener('input', function() {
             const val = this.value.trim();
-            if (val.length > 0 && val.length < 7) {
-                cedulaStatus.className = 'cedula-status error';
-                cedulaStatus.textContent = '⚠️ Faltan dígitos (mínimo 7)';
-                this.classList.remove('cedula-duplicate');
-                return;
-            }
-            if (val.length === 0) {
-                cedulaStatus.className = 'cedula-status';
-                cedulaStatus.textContent = '';
-                this.classList.remove('cedula-duplicate');
-                return;
-            }
+            if (val.length > 0 && val.length < 7) { cedulaStatus.className = 'cedula-status error'; cedulaStatus.textContent = '⚠️ Faltan dígitos (mínimo 7)'; this.classList.remove('cedula-duplicate'); return; }
+            if (val.length === 0) { cedulaStatus.className = 'cedula-status'; cedulaStatus.textContent = ''; this.classList.remove('cedula-duplicate'); return; }
             if (cedulaCheckTimeout) clearTimeout(cedulaCheckTimeout);
             cedulaCheckTimeout = setTimeout(() => verificarCedula(val), 600);
         });
-
-        // ✅ Listener BLUR: valida al perder el foco
         cedulaInput.addEventListener('blur', function() { 
             const val = this.value.trim();
-            if (val.length > 0 && val.length < 7) {
-                cedulaStatus.className = 'cedula-status error';
-                cedulaStatus.textContent = '⚠️ Faltan dígitos (mínimo 7)';
-            } else if (val.length >= 7) {
-                verificarCedula(val); 
-            }
+            if (val.length > 0 && val.length < 7) { cedulaStatus.className = 'cedula-status error'; cedulaStatus.textContent = '⚠️ Faltan dígitos (mínimo 7)'; }
+            else if (val.length >= 7) verificarCedula(val); 
         });
     }
 
     // ==========================================
-    // 🔹 8. ENVÍO DEL FORMULARIO
+    // 🔹 6. ENVÍO DEL FORMULARIO
     // ==========================================
     const mostrarError = (t) => { if(msg){msg.textContent='❌ '+t; msg.className='msg error'; msg.style.display='block';} };
-
     if (!form || !btn) { console.error('❌ Formulario no encontrado'); return; }
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!form.checkValidity()) { form.reportValidity(); return; }
 
-        // ✅ DECLARAR VARIABLES DENTRO DEL SCOPE DEL SUBMIT
         const cedula = cedulaInput?.value.trim().replace(/\D/g, '') || '';
         const edad = parseInt(edadInput?.value) || 0;
         const tlfPais = document.getElementById('p_tlf_pais')?.value;
-        // ✅ Limpiar y validar número de teléfono
-        const tlfNumRaw = document.getElementById('p_tlf_num')?.value.trim().replace(/\D/g, '') || '';
+        const tlfNumRaw = (document.getElementById('p_tlf_num')?.value.trim().replace(/\D/g, '') || '').slice(0, 20); // ✅ Máximo 20 dígitos
         const estCm = window.convertirEstatura();
 
-        // 🔹 Validaciones previas estrictas
-        if (cedula.length < 7 || cedula.length > 8) { 
-            mostrarError('Faltan dígitos. La cédula debe tener entre 7 y 8 números.'); 
-            cedulaInput?.focus(); 
-            return; 
-        }
-        if (!document.getElementById('p_fecha_nac')?.value || edad < 0 || edad > 120) { 
-            mostrarError('Verifique la fecha de nacimiento.'); 
-            document.getElementById('p_fecha_nac')?.focus(); 
-            return; 
-        }
-        if (!estCm || estCm < 50 || estCm > 230) { 
-            mostrarError('Estatura inválida (0.50m - 2.30m).'); 
-            document.getElementById('p_estatura')?.focus(); 
-            return; 
-        }
-        // ✅ Validación de teléfono: si hay país, debe haber al menos 1 dígito
-        if (tlfPais && tlfNumRaw.length < 1) { 
-            mostrarError('Ingrese al menos un dígito para el número telefónico.'); 
-            document.getElementById('p_tlf_num')?.focus(); 
-            return; 
-        }
-        if (await verificarCedula(cedula)) { 
-            mostrarError('Esta cédula ya está registrada.'); 
-            cedulaInput?.focus(); 
-            return; 
-        }
+        // Validaciones
+        if (cedula.length < 7 || cedula.length > 8) { mostrarError('La cédula debe tener entre 7 y 8 dígitos.'); cedulaInput?.focus(); return; }
+        if (!document.getElementById('p_fecha_nac')?.value || edad < 0 || edad > 120) { mostrarError('Verifique la fecha de nacimiento.'); document.getElementById('p_fecha_nac')?.focus(); return; }
+        if (!estCm || estCm < 50 || estCm > 230) { mostrarError('Estatura inválida (0.50m - 2.30m).'); document.getElementById('p_estatura')?.focus(); return; }
+        if (tlfPais && tlfNumRaw.length < 1) { mostrarError('Ingrese al menos un dígito para el teléfono.'); document.getElementById('p_tlf_num')?.focus(); return; }
+        if (await verificarCedula(cedula)) { mostrarError('Esta cédula ya está registrada.'); cedulaInput?.focus(); return; }
 
-        // 🔹 Iniciar proceso de guardado
-        btn.disabled = true; 
-        btn.textContent = '⏳ Guardando...'; 
-        if(msg) msg.style.display='none';
+        btn.disabled = true; btn.textContent = '⏳ Guardando...'; if(msg) msg.style.display='none';
 
         try {
-            // 1. Subir fotos a Supabase Storage
             const bucket = window.supabaseClient.storage.from('fotos_personas');
-            const files = { 
-                f: document.getElementById('foto_frontal').files[0], 
-                i: document.getElementById('foto_perfil_izq').files[0], 
-                d: document.getElementById('foto_perfil_der').files[0] 
-            };
+            const files = { f: document.getElementById('foto_frontal').files[0], i: document.getElementById('foto_perfil_izq').files[0], d: document.getElementById('foto_perfil_der').files[0] };
             if (!files.f || !files.i || !files.d) throw new Error('Las 3 fotografías son obligatorias.');
-
-            const uid = sessionStorage.getItem('pnb_user_id') || 'user';
-            const ts = Date.now();
+            const uid = sessionStorage.getItem('pnb_user_id') || 'user', ts = Date.now();
             const paths = { f: `${uid}/${ts}_f.jpg`, i: `${uid}/${ts}_i.jpg`, d: `${uid}/${ts}_d.jpg` };
-            
-            const upload = async (file, path) => { 
-                const { error } = await bucket.upload(path, file, { cacheControl: '3600' }); 
-                if(error) throw new Error('Error subiendo imágenes.'); 
-                return bucket.getPublicUrl(path).data.publicUrl; 
-            };
+            const upload = async (file, path) => { const { error } = await bucket.upload(path, file, { cacheControl: '3600' }); if(error) throw new Error('Error subiendo imágenes.'); return bucket.getPublicUrl(path).data.publicUrl; };
             const urls = { f: await upload(files.f, paths.f), i: await upload(files.i, paths.i), d: await upload(files.d, paths.d) };
 
-            // ✅ 2. Preparar datos para la base de datos (CORRECCIÓN CLAVE DE TELÉFONO)
-            // Si hay país PERO no hay número válido, enviamos NULL para ambos
+            // ✅ Preparar datos con teléfono seguro
             const tlfCodigoFinal = (tlfPais && tlfNumRaw.length >= 1) ? tlfPais : null;
             const tlfNumeroFinal = (tlfPais && tlfNumRaw.length >= 1) ? tlfNumRaw : null;
 
             const data = {
-                estatus: 'Verificación', 
-                estacion_policial: document.getElementById('p_estacion')?.value || null,
+                estatus: 'Verificación', estacion_policial: document.getElementById('p_estacion')?.value || null,
                 direccion_detencion: document.getElementById('p_direccion_detencion')?.value.trim() || null,
                 foto_frontal: urls.f, foto_perfil_izq: urls.i, foto_perfil_der: urls.d,
-                primer_nombre: document.getElementById('p_nombre1')?.value.trim(), 
-                segundo_nombre: document.getElementById('p_nombre2')?.value.trim() || null,
-                primer_apellido: document.getElementById('p_apellido1')?.value.trim(), 
-                segundo_apellido: document.getElementById('p_apellido2')?.value.trim() || null,
-                cedula, 
-                fecha_nacimiento: document.getElementById('p_fecha_nac')?.value, 
-                edad,
-                // ✅ Enviamos null si falta alguno de los dos, evitando error de constraint
-                tlf_pais: tlfCodigoFinal, 
-                tlf_numero: tlfNumeroFinal,
-                direccion: document.getElementById('p_direccion')?.value.trim(), 
-                apodo: document.getElementById('p_apodo')?.value.trim() || null,
-                marca_corporal: document.getElementById('p_marca')?.value.trim() || null, 
-                nacionalidad: document.getElementById('p_nacionalidad')?.value,
-                sexo: document.getElementById('p_sexo')?.value, 
-                estatura_cm: estCm,
-                color_piel: document.getElementById('p_color_piel')?.value, 
-                color_ojos: document.getElementById('p_color_ojos')?.value,
-                color_cabello: document.getElementById('p_color_cabello')?.value, 
-                complexion: document.getElementById('p_complexion')?.value,
-                usa_lentes: document.getElementById('p_lentes')?.value === 'true', 
-                detalle_lentes: document.getElementById('p_lentes')?.value === 'true' ? document.getElementById('txt_lentes')?.value.trim() : null,
-                perforaciones: document.getElementById('p_perforaciones')?.value === 'true', 
-                detalle_perforaciones: document.getElementById('p_perforaciones')?.value === 'true' ? document.getElementById('txt_lugar_perforacion')?.value.trim() : null,
+                primer_nombre: document.getElementById('p_nombre1')?.value.trim(), segundo_nombre: document.getElementById('p_nombre2')?.value.trim() || null,
+                primer_apellido: document.getElementById('p_apellido1')?.value.trim(), segundo_apellido: document.getElementById('p_apellido2')?.value.trim() || null,
+                cedula, fecha_nacimiento: document.getElementById('p_fecha_nac')?.value, edad,
+                tlf_pais: tlfCodigoFinal, tlf_numero: tlfNumeroFinal,
+                direccion: document.getElementById('p_direccion')?.value.trim(), apodo: document.getElementById('p_apodo')?.value.trim() || null,
+                marca_corporal: document.getElementById('p_marca')?.value.trim() || null, nacionalidad: document.getElementById('p_nacionalidad')?.value,
+                sexo: document.getElementById('p_sexo')?.value, estatura_cm: estCm,
+                color_piel: document.getElementById('p_color_piel')?.value, color_ojos: document.getElementById('p_color_ojos')?.value,
+                color_cabello: document.getElementById('p_color_cabello')?.value, complexion: document.getElementById('p_complexion')?.value,
+                usa_lentes: document.getElementById('p_lentes')?.value === 'true', detalle_lentes: document.getElementById('p_lentes')?.value === 'true' ? document.getElementById('txt_lentes')?.value.trim() : null,
+                perforaciones: document.getElementById('p_perforaciones')?.value === 'true', detalle_perforaciones: document.getElementById('p_perforaciones')?.value === 'true' ? document.getElementById('txt_lugar_perforacion')?.value.trim() : null,
                 condicion_medica: document.getElementById('p_cond_medica')?.value === 'true' ? document.getElementById('txt_cond')?.value : null,
                 consume_medicamento: document.getElementById('p_medicamento')?.value === 'true' ? document.getElementById('txt_med')?.value : null,
                 problema_judicial: document.getElementById('p_judicial')?.value === 'true' ? document.getElementById('txt_jud')?.value : null,
                 observaciones: document.getElementById('p_observaciones')?.value.trim() || null
             };
 
-            // 3. Insertar en Supabase
-            const { error } = await window.supabaseClient.from('registro_personas').insert([data]); 
-            if (error) throw error;
+            const { error } = await window.supabaseClient.from('registro_personas').insert([data]); if (error) throw error;
 
-            // 4. Éxito: mostrar mensaje y limpiar formulario
-            if (msg) { 
-                msg.textContent = '✅ Registro guardado exitosamente.'; 
-                msg.className = 'msg success'; 
-                msg.style.display = 'block'; 
-                setTimeout(() => msg.style.display = 'none', 4000); 
-            }
-            form.reset(); 
-            if(edadInput) edadInput.value = ''; 
-            document.querySelectorAll('.hidden-field').forEach(e=>e.style.display='none'); 
-            document.querySelectorAll('.img-preview').forEach(e=>e.style.display='none');
+            if (msg) { msg.textContent = '✅ Registro guardado exitosamente.'; msg.className = 'msg success'; msg.style.display = 'block'; setTimeout(() => msg.style.display = 'none', 4000); }
+            form.reset(); if(edadInput) edadInput.value = ''; document.querySelectorAll('.hidden-field').forEach(e=>e.style.display='none'); document.querySelectorAll('.img-preview').forEach(e=>e.style.display='none');
             if(cedulaStatus){cedulaStatus.className='cedula-status';cedulaStatus.textContent='';}
-            if(nativeSelect) nativeSelect.value = ''; 
-            flagImg.src = 'https://flagcdn.com/w20/xx.png'; 
-            codeText.textContent = '+XX'; 
-            countryText.textContent = 'País';
-
+            if(nativeSelect) nativeSelect.value = ''; flagImg.src = 'https://flagcdn.com/w20/xx.png'; codeText.textContent = '+XX'; countryText.textContent = 'País';
         } catch (err) {
-            console.error('Error registro:', err);
+            console.error('Error:', err);
             let m = 'Error inesperado. Intente nuevamente.';
             if (err.message.includes('23505') || err.message.includes('cedula')) m = 'Esta cédula ya está registrada.';
-            else if (err.message.includes('storage') || err.message.includes('upload')) m = 'Error subiendo fotografías. Verifique tamaño/conexión.';
-            else if (err.message.includes('not-null')) m = 'Falta completar un campo obligatorio.';
-            else if (err.message.includes('tlf_numero_check')) m = 'Formato de teléfono inválido. Verifique los dígitos.';
+            else if (err.message.includes('storage')) m = 'Error subiendo fotografías.';
+            else if (err.message.includes('22001') || err.message.includes('too long')) m = 'El número de teléfono es demasiado largo (máx. 20 dígitos).';
+            else if (err.message.includes('tlf_numero_check')) m = 'Formato de teléfono inválido.';
             mostrarError(m);
-        } finally { 
-            btn.disabled = false; 
-            btn.textContent = '✅ Registrar Persona'; 
-        }
+        } finally { btn.disabled = false; btn.textContent = '✅ Registrar Persona'; }
     });
 };
