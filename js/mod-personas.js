@@ -21,6 +21,15 @@ window.initModPersonas = function() {
         const val = parseFloat(m);
         return (!isNaN(val) && val >= 0.50 && val <= 2.30) ? Math.round(val * 100) : null;
     };
+    // ✅ NUEVA: Calcular edad desde fecha de nacimiento
+    window.calcularEdad = function(fechaStr) {
+        if (!fechaStr) return null;
+        const hoy = new Date(), nac = new Date(fechaStr);
+        let edad = hoy.getFullYear() - nac.getFullYear();
+        const m = hoy.getMonth() - nac.getMonth();
+        if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
+        return (edad >= 0 && edad <= 120) ? edad : null;
+    };
 
     // ==========================================
     // 🔹 2. DROPDOWN DE BANDERAS
@@ -75,13 +84,11 @@ window.initModPersonas = function() {
     const fechaNac = document.getElementById('p_fecha_nac');
     const edadInput = document.getElementById('p_edad');
     if (fechaNac && edadInput) {
+        // ✅ Recalcular edad al cambiar fecha (también en edición)
         fechaNac.addEventListener('change', () => {
             if (!fechaNac.value) { edadInput.value = ''; return; }
-            const hoy = new Date(), nac = new Date(fechaNac.value);
-            let edad = hoy.getFullYear() - nac.getFullYear();
-            const m = hoy.getMonth() - nac.getMonth();
-            if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
-            edadInput.value = (edad >= 0 && edad <= 120) ? edad : '';
+            const edad = window.calcularEdad(fechaNac.value);
+            edadInput.value = edad !== null ? edad : '';
         });
     }
 
@@ -101,7 +108,6 @@ window.initModPersonas = function() {
     const msgBuscar = document.getElementById('buscar-msg');
     let currentId = null;
     let currentUrls = { front: '', izq: '', der: '' };
-
     const showBuscarMsg = (txt, type) => { msgBuscar.textContent = txt; msgBuscar.className = `search-msg ${type}`; msgBuscar.style.display = 'block'; };
 
     buscarBtn.addEventListener('click', async () => {
@@ -118,14 +124,15 @@ window.initModPersonas = function() {
             currentUrls = { front: data.foto_frontal, izq: data.foto_perfil_izq, der: data.foto_perfil_der };
             document.getElementById('mod_record_id').value = currentId;
 
-            // Llenar campos básicos
+            // Llenar campos
             document.getElementById('p_cedula').value = data.cedula;
             document.getElementById('p_nombre1').value = data.primer_nombre || '';
             document.getElementById('p_nombre2').value = data.segundo_nombre || '';
             document.getElementById('p_apellido1').value = data.primer_apellido || '';
             document.getElementById('p_apellido2').value = data.segundo_apellido || '';
             document.getElementById('p_fecha_nac').value = data.fecha_nacimiento || '';
-            document.getElementById('p_edad').value = data.edad || '';
+            // ✅ Calcular edad desde la BD o recalcular si es necesario
+            document.getElementById('p_edad').value = data.edad || window.calcularEdad(data.fecha_nacimiento) || '';
             document.getElementById('p_apodo').value = data.apodo || '';
             document.getElementById('p_marca').value = data.marca_corporal || '';
             document.getElementById('p_nacionalidad').value = data.nacionalidad || '';
@@ -143,10 +150,11 @@ window.initModPersonas = function() {
             // Teléfono
             if (data.tlf_pais) {
                 nativeSelect.value = data.tlf_pais;
-                const iso = isoMap[Array.from(nativeSelect.options).find(o => o.value === data.tlf_pais)?.text] || data.tlf_pais.replace('+','').toLowerCase();
+                const optText = Array.from(nativeSelect.options).find(o => o.value === data.tlf_pais)?.text || '';
+                const iso = isoMap[optText] || data.tlf_pais.replace('+','').toLowerCase();
                 flagImg.src = `https://flagcdn.com/w20/${iso}.png`;
                 codeText.textContent = data.tlf_pais;
-                countryText.textContent = Array.from(nativeSelect.options).find(o => o.value === data.tlf_pais)?.text || '';
+                countryText.textContent = optText;
             }
             if (data.tlf_numero) document.getElementById('p_tlf_num').value = data.tlf_numero;
 
@@ -162,7 +170,7 @@ window.initModPersonas = function() {
             setCond('p_medicamento', 'txt_med', 'det-med', data.consume_medicamento !== null, data.consume_medicamento);
             setCond('p_judicial', 'txt_jud', 'det-jud', data.problema_judicial !== null, data.problema_judicial);
 
-            // Imágenes existentes
+            // Imágenes
             ['front', 'izq', 'der'].forEach(k => {
                 const el = document.getElementById(k === 'front' ? 'prev_frontal' : k === 'izq' ? 'prev_izq' : 'prev_der');
                 if (currentUrls[k]) { el.src = currentUrls[k]; el.style.display = 'block'; }
@@ -179,7 +187,7 @@ window.initModPersonas = function() {
     });
 
     // ==========================================
-    // 🔹 5. ENVÍO / ACTUALIZACIÓN
+    // 🔹 5. ENVÍO / ACTUALIZACIÓN (CORREGIDO)
     // ==========================================
     const submitBtn = form?.querySelector('.btn-submit');
     const msgForm = document.getElementById('msg-mod-personas');
@@ -191,6 +199,14 @@ window.initModPersonas = function() {
             if (!form.checkValidity()) { form.reportValidity(); return; }
             if (!currentId) { mostrarError('Busque un registro primero.'); return; }
 
+            // ✅ VALIDACIONES PREVIAS
+            const fechaVal = document.getElementById('p_fecha_nac')?.value;
+            const edadCalculada = window.calcularEdad(fechaVal);
+            if (!fechaVal || edadCalculada === null) {
+                mostrarError('Verifique la fecha de nacimiento para calcular la edad correctamente.');
+                document.getElementById('p_fecha_nac')?.focus();
+                return;
+            }
             const estCm = window.convertirEstatura();
             if (!estCm) { mostrarError('La estatura es obligatoria y debe estar entre 0.50 y 2.30 m.'); return; }
 
@@ -219,14 +235,15 @@ window.initModPersonas = function() {
                 const tlfCodigoFinal = (tlfPais && tlfNumRaw.length >= 1) ? tlfPais : null;
                 const tlfNumeroFinal = (tlfPais && tlfNumRaw.length >= 1) ? tlfNumRaw : null;
 
+                // ✅ PREPARAR DATOS CON EDAD CALCULADA (NUNCA NULL)
                 const updateData = {
                     foto_frontal: newFront, foto_perfil_izq: newIzq, foto_perfil_der: newDer,
                     primer_nombre: document.getElementById('p_nombre1').value.trim(),
                     segundo_nombre: document.getElementById('p_nombre2').value.trim() || null,
                     primer_apellido: document.getElementById('p_apellido1').value.trim(),
                     segundo_apellido: document.getElementById('p_apellido2').value.trim() || null,
-                    fecha_nacimiento: document.getElementById('p_fecha_nac').value,
-                    edad: parseInt(document.getElementById('p_edad').value) || null,
+                    fecha_nacimiento: fechaVal,
+                    edad: edadCalculada, // ✅ SIEMPRE tiene valor válido
                     tlf_pais: tlfCodigoFinal,
                     tlf_numero: tlfNumeroFinal,
                     direccion: document.getElementById('p_direccion').value.trim(),
@@ -269,6 +286,7 @@ window.initModPersonas = function() {
                 if (err.message.includes('storage')) mensaje = 'No se pudieron subir las fotografías nuevas.';
                 else if (err.message.includes('cedula') || err.message.includes('23505')) mensaje = 'Conflicto con cédula existente.';
                 else if (err.message.includes('22001') || err.message.includes('too long')) mensaje = 'El número de teléfono es demasiado largo (máx. 20 dígitos).';
+                else if (err.message.includes('edad') || err.message.includes('23502')) mensaje = 'Error con la edad. Verifique la fecha de nacimiento.';
                 mostrarError(mensaje);
             } finally {
                 submitBtn.disabled = false;
