@@ -102,7 +102,7 @@ window.initElimPersonas = function() {
     btnNo.addEventListener('click', () => modal.style.display = 'none');
     modal.addEventListener('click', e => { if (e.target === modal) modal.style.display = 'none'; });
 
-    // 🔹 Lógica de eliminación
+    // 🔹 Lógica de eliminación (MAPEO EXPLÍCITO DE COLUMNAS)
     btnSi.addEventListener('click', async () => {
         modal.style.display = 'none';
         btnEliminar.disabled = true;
@@ -111,7 +111,46 @@ window.initElimPersonas = function() {
 
         try {
             const userId = sessionStorage.getItem('pnb_user_id') || 'user';
-            const registroElim = { ...currentData, id_original: currentId, eliminado_por: userId };
+            
+            // ✅ Mapear EXPLÍCITAMENTE solo las columnas que existen en 'eliminados'
+            const registroElim = {
+                id_original: currentId,
+                estatus: currentData.estatus,
+                estacion_policial: currentData.estacion_policial,
+                direccion_detencion: currentData.direccion_detencion,
+                foto_frontal: currentData.foto_frontal,
+                foto_perfil_izq: currentData.foto_perfil_izq,
+                foto_perfil_der: currentData.foto_perfil_der,
+                primer_nombre: currentData.primer_nombre,
+                segundo_nombre: currentData.segundo_nombre,
+                primer_apellido: currentData.primer_apellido,
+                segundo_apellido: currentData.segundo_apellido,
+                cedula: currentData.cedula,
+                fecha_nacimiento: currentData.fecha_nacimiento,
+                edad: currentData.edad,
+                tlf_pais: currentData.tlf_pais,
+                tlf_numero: currentData.tlf_numero,
+                direccion: currentData.direccion,
+                apodo: currentData.apodo,
+                marca_corporal: currentData.marca_corporal,
+                nacionalidad: currentData.nacionalidad,
+                sexo: currentData.sexo,
+                estatura_cm: currentData.estatura_cm,
+                color_piel: currentData.color_piel,
+                color_ojos: currentData.color_ojos,
+                color_cabello: currentData.color_cabello,
+                complexion: currentData.complexion,
+                usa_lentes: currentData.usa_lentes,
+                detalle_lentes: currentData.detalle_lentes,
+                perforaciones: currentData.perforaciones,
+                detalle_perforaciones: currentData.detalle_perforaciones,
+                condicion_medica: currentData.condicion_medica,
+                consume_medicamento: currentData.consume_medicamento,
+                problema_judicial: currentData.problema_judicial,
+                observaciones: currentData.observaciones,
+                eliminado_por: userId
+                // ✅ eliminado_en se genera automáticamente con DEFAULT NOW()
+            };
             
             // 1. Insertar en tabla eliminados
             const { error: insError } = await window.supabaseClient.from('eliminados').insert([registroElim]);
@@ -126,7 +165,11 @@ window.initElimPersonas = function() {
         } catch (err) {
             console.error('Error eliminando:', err);
             let msg = 'Error al eliminar. Intente nuevamente.';
-            if (err.message.includes('violates')) msg = 'Conflicto de base de datos. Contacte a soporte.';
+            if (err.message.includes('PGRST204') || err.message.includes('column')) {
+                msg = 'Error de estructura de base de datos. Ejecute el SQL de actualización y recargue.';
+            } else if (err.message.includes('violates')) {
+                msg = 'Conflicto de base de datos. Contacte a soporte.';
+            }
             showMsgElim('❌ ' + msg, 'error');
         } finally {
             btnEliminar.disabled = false;
