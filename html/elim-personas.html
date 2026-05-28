@@ -1,15 +1,18 @@
 <style>
   :root { --primary: #002b5c; --secondary: #c5a028; --beige-border: #d4c9a8; }
   .search-box { padding: 16px; background: #f8fafc; border: 1.5px dashed var(--beige-border); border-radius: 8px; margin-bottom: 20px; }
+  .search-box label { font-weight: 700; font-size: 0.95rem; margin-bottom: 8px; display: block; }
   .search-row { display: flex; gap: 10px; }
   .search-row input { flex: 1; padding: 10px; border: 1.5px solid var(--beige-border); border-radius: 5px; }
   .search-row button { padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 600; }
   .search-msg { margin-top: 8px; font-size: 0.85rem; display: none; }
   .search-msg.error { color: #dc2626; }
   .search-msg.success { color: #15803d; }
-  .data-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 14px; }
+  .data-item { margin-bottom: 8px; }
   .data-item label { font-weight: 600; font-size: 0.8rem; color: #64748b; display: block; margin-bottom: 4px; }
-  .data-item input, .data-item select, .data-item textarea { width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 8px; font-size: 0.9rem; pointer-events: none; }
+  .data-item input, .data-item select, .data-item textarea { width: 100%; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 4px; padding: 8px; font-size: 0.9rem; pointer-events: none; color: #334155; }
+  .img-preview-elim { width: 100%; height: auto; max-height: 200px; object-fit: contain; border: 1px solid var(--beige-border); border-radius: 5px; background: #f8fafc; display: none; margin-top: 4px; }
   .btn-eliminar { width: 100%; padding: 14px; background: #dc2626; color: white; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; margin-top: 20px; font-size: 1rem; }
   .btn-eliminar:hover { background: #b91c1c; }
   .btn-eliminar:disabled { background: #fca5a5; cursor: not-allowed; }
@@ -26,7 +29,7 @@
   .btn-cancel { background: #94a3b8; color: #fff; border: none; padding: 10px 16px; border-radius: 5px; cursor: pointer; font-weight: 600; }
   .btn-danger:hover { background: #b91c1c; }
   .btn-cancel:hover { background: #64748b; }
-  @media (max-width: 600px) { .search-row, .data-grid { flex-direction: column; grid-template-columns: 1fr; } }
+  @media (max-width: 600px) { .search-row, .form-grid { flex-direction: column; grid-template-columns: 1fr; } }
 </style>
 
 <div class="card">
@@ -42,10 +45,79 @@
     </div>
 
     <div id="elim-data-container" style="display: none;">
-        <fieldset style="border: 1px solid var(--beige-border); border-radius: 8px; padding: 16px; margin-bottom: 18px; background: #fafbfc;">
-            <legend>📋 Datos Encontrados</legend>
-            <div class="data-grid" id="elim-fields"></div>
+        <fieldset style="border:1px solid var(--beige-border); border-radius:8px; padding:16px; margin-bottom:18px; background:#fafbfc;">
+            <legend>📸 Fotografías</legend>
+            <div class="form-grid">
+                <div class="data-item"><label>Frontal</label><img id="elim-foto-frontal" class="img-preview-elim" alt="Frontal"></div>
+                <div class="data-item"><label>Perfil Izquierdo</label><img id="elim-foto-izq" class="img-preview-elim" alt="Perfil Izq"></div>
+                <div class="data-item"><label>Perfil Derecho</label><img id="elim-foto-der" class="img-preview-elim" alt="Perfil Der"></div>
+            </div>
         </fieldset>
+
+        <fieldset style="border:1px solid var(--beige-border); border-radius:8px; padding:16px; margin-bottom:18px; background:#fafbfc;">
+            <legend>👤 Datos Personales</legend>
+            <div class="form-grid">
+                <div class="data-item"><label>Primer Nombre</label><input id="elim-n1" readonly></div>
+                <div class="data-item"><label>Segundo Nombre</label><input id="elim-n2" readonly></div>
+                <div class="data-item"><label>Primer Apellido</label><input id="elim-a1" readonly></div>
+                <div class="data-item"><label>Segundo Apellido</label><input id="elim-a2" readonly></div>
+                <div class="data-item"><label>Cédula</label><input id="elim-cedula" readonly></div>
+                <div class="data-item"><label>Fecha Nacimiento</label><input id="elim-fnac" readonly></div>
+                <div class="data-item"><label>Edad</label><input id="elim-edad" readonly></div>
+                <div class="data-item"><label>Apodo</label><input id="elim-apodo" readonly></div>
+                <div class="data-item"><label>Marca Corporal</label><input id="elim-marca" readonly></div>
+                <div class="data-item"><label>Nacionalidad</label><input id="elim-nac" readonly></div>
+                <div class="data-item"><label>Sexo</label><input id="elim-sexo" readonly></div>
+            </div>
+        </fieldset>
+
+        <fieldset style="border:1px solid var(--beige-border); border-radius:8px; padding:16px; margin-bottom:18px; background:#fafbfc;">
+            <legend>📞 Contacto y Ubicación</legend>
+            <div class="form-grid">
+                <div class="data-item"><label>Código País</label><input id="elim-tlf-pais" readonly></div>
+                <div class="data-item"><label>Teléfono</label><input id="elim-tlf-num" readonly></div>
+                <div class="data-item" style="grid-column: span 2;"><label>Dirección</label><input id="elim-dir" readonly></div>
+                <div class="data-item" style="grid-column: span 2;"><label>Dirección de Detención</label><input id="elim-dir-det" readonly></div>
+            </div>
+        </fieldset>
+
+        <fieldset style="border:1px solid var(--beige-border); border-radius:8px; padding:16px; margin-bottom:18px; background:#fafbfc;">
+            <legend>📏 Características Físicas</legend>
+            <div class="form-grid">
+                <div class="data-item"><label>Estatura (cm)</label><input id="elim-est" readonly></div>
+                <div class="data-item"><label>Color Piel</label><input id="elim-piel" readonly></div>
+                <div class="data-item"><label>Color Ojos</label><input id="elim-ojos" readonly></div>
+                <div class="data-item"><label>Color Cabello</label><input id="elim-cabello" readonly></div>
+                <div class="data-item"><label>Complexión</label><input id="elim-comp" readonly></div>
+            </div>
+        </fieldset>
+
+        <fieldset style="border:1px solid var(--beige-border); border-radius:8px; padding:16px; margin-bottom:18px; background:#fafbfc;">
+            <legend>🏥 Salud y Antecedentes</legend>
+            <div class="form-grid">
+                <div class="data-item"><label>¿Usa Lentes?</label><input id="elim-lentes" readonly></div>
+                <div class="data-item" id="box-lentes-det" style="display:none;"><label>Detalle Lentes</label><input id="elim-lentes-det" readonly></div>
+                <div class="data-item"><label>¿Perforaciones?</label><input id="elim-perf" readonly></div>
+                <div class="data-item" id="box-perf-det" style="display:none;"><label>Detalle Perforaciones</label><input id="elim-perf-det" readonly></div>
+                <div class="data-item"><label>¿Condición Médica?</label><input id="elim-cond" readonly></div>
+                <div class="data-item" id="box-cond-det" style="display:none;"><label>Detalle Condición</label><input id="elim-cond-det" readonly></div>
+                <div class="data-item"><label>¿Medicamento?</label><input id="elim-med" readonly></div>
+                <div class="data-item" id="box-med-det" style="display:none;"><label>Detalle Medicamento</label><input id="elim-med-det" readonly></div>
+                <div class="data-item"><label>¿Problema Judicial?</label><input id="elim-jud" readonly></div>
+                <div class="data-item" id="box-jud-det" style="display:none;"><label>Detalle Judicial</label><input id="elim-jud-det" readonly></div>
+            </div>
+        </fieldset>
+
+        <fieldset style="border:1px solid var(--beige-border); border-radius:8px; padding:16px; margin-bottom:18px; background:#fafbfc;">
+            <legend>🏛️ Datos del Registro</legend>
+            <div class="data-item"><label>Estación Policial</label><input id="elim-estacion" readonly></div>
+        </fieldset>
+
+        <fieldset style="border:1px solid var(--beige-border); border-radius:8px; padding:16px; margin-bottom:18px; background:#fafbfc;">
+            <legend>📝 Observaciones</legend>
+            <textarea id="elim-obs" rows="2" readonly></textarea>
+        </fieldset>
+
         <button id="btn-eliminar" class="btn-eliminar">🗑️ Eliminar Persona del Sistema</button>
         <div id="msg-elim" class="msg"></div>
     </div>
@@ -55,7 +127,7 @@
 <div id="elim-modal" class="elim-modal">
     <div class="elim-modal-box">
         <h4>⚠️ Confirmar Eliminación</h4>
-        <p id="elim-modal-text">¿Está seguro que desea eliminar esta persona del sistema? El registro se archivarán permanentemente en la tabla de eliminados.</p>
+        <p>¿Está seguro que desea eliminar esta persona del sistema? El registro se archivará permanentemente en la tabla de eliminados.</p>
         <div class="elim-btns">
             <button id="btn-confirm-si" class="btn-danger">✅ Sí, Eliminar</button>
             <button id="btn-confirm-no" class="btn-cancel">❌ Cancelar</button>
