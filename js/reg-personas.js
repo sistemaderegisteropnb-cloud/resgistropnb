@@ -208,7 +208,8 @@ window.initRegPersonas = function() {
         const cedula = cedulaInput?.value.trim().replace(/\D/g, '') || '';
         const edad = parseInt(edadInput?.value) || 0;
         const tlfPais = document.getElementById('p_tlf_pais')?.value;
-        const tlfNum = document.getElementById('p_tlf_num')?.value.trim().replace(/\D/g, '') || '';
+        // ✅ Limpiar y validar número de teléfono
+        const tlfNumRaw = document.getElementById('p_tlf_num')?.value.trim().replace(/\D/g, '') || '';
         const estCm = window.convertirEstatura();
 
         // 🔹 Validaciones previas estrictas
@@ -227,8 +228,9 @@ window.initRegPersonas = function() {
             document.getElementById('p_estatura')?.focus(); 
             return; 
         }
-        if (tlfPais && tlfNum.length < 1) { 
-            mostrarError('Ingrese al menos un dígito para el número.'); 
+        // ✅ Validación de teléfono: si hay país, debe haber al menos 1 dígito
+        if (tlfPais && tlfNumRaw.length < 1) { 
+            mostrarError('Ingrese al menos un dígito para el número telefónico.'); 
             document.getElementById('p_tlf_num')?.focus(); 
             return; 
         }
@@ -264,7 +266,11 @@ window.initRegPersonas = function() {
             };
             const urls = { f: await upload(files.f, paths.f), i: await upload(files.i, paths.i), d: await upload(files.d, paths.d) };
 
-            // 2. Preparar datos para la base de datos
+            // ✅ 2. Preparar datos para la base de datos (CORRECCIÓN CLAVE DE TELÉFONO)
+            // Si hay país PERO no hay número válido, enviamos NULL para ambos
+            const tlfCodigoFinal = (tlfPais && tlfNumRaw.length >= 1) ? tlfPais : null;
+            const tlfNumeroFinal = (tlfPais && tlfNumRaw.length >= 1) ? tlfNumRaw : null;
+
             const data = {
                 estatus: 'Verificación', 
                 estacion_policial: document.getElementById('p_estacion')?.value || null,
@@ -277,8 +283,9 @@ window.initRegPersonas = function() {
                 cedula, 
                 fecha_nacimiento: document.getElementById('p_fecha_nac')?.value, 
                 edad,
-                tlf_pais: tlfPais || null, 
-                tlf_numero: (tlfPais && tlfNum) ? tlfNum : null,
+                // ✅ Enviamos null si falta alguno de los dos, evitando error de constraint
+                tlf_pais: tlfCodigoFinal, 
+                tlf_numero: tlfNumeroFinal,
                 direccion: document.getElementById('p_direccion')?.value.trim(), 
                 apodo: document.getElementById('p_apodo')?.value.trim() || null,
                 marca_corporal: document.getElementById('p_marca')?.value.trim() || null, 
@@ -326,6 +333,7 @@ window.initRegPersonas = function() {
             if (err.message.includes('23505') || err.message.includes('cedula')) m = 'Esta cédula ya está registrada.';
             else if (err.message.includes('storage') || err.message.includes('upload')) m = 'Error subiendo fotografías. Verifique tamaño/conexión.';
             else if (err.message.includes('not-null')) m = 'Falta completar un campo obligatorio.';
+            else if (err.message.includes('tlf_numero_check')) m = 'Formato de teléfono inválido. Verifique los dígitos.';
             mostrarError(m);
         } finally { 
             btn.disabled = false; 
