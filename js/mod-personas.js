@@ -21,7 +21,6 @@ window.initModPersonas = function() {
         const val = parseFloat(m);
         return (!isNaN(val) && val >= 0.50 && val <= 2.30) ? Math.round(val * 100) : null;
     };
-    // ✅ NUEVA: Calcular edad desde fecha de nacimiento
     window.calcularEdad = function(fechaStr) {
         if (!fechaStr) return null;
         const hoy = new Date(), nac = new Date(fechaStr);
@@ -84,7 +83,6 @@ window.initModPersonas = function() {
     const fechaNac = document.getElementById('p_fecha_nac');
     const edadInput = document.getElementById('p_edad');
     if (fechaNac && edadInput) {
-        // ✅ Recalcular edad al cambiar fecha (también en edición)
         fechaNac.addEventListener('change', () => {
             if (!fechaNac.value) { edadInput.value = ''; return; }
             const edad = window.calcularEdad(fechaNac.value);
@@ -100,7 +98,68 @@ window.initModPersonas = function() {
     if (estInput) { estInput.addEventListener('input', window.convertirEstatura); estInput.addEventListener('blur', window.convertirEstatura); }
 
     // ==========================================
-    // 🔹 4. BÚSQUEDA POR CÉDULA
+    // 🔹 4. VALIDACIÓN DE CÉDULA EN TIEMPO REAL
+    // ==========================================
+    let cedulaCheckTimeout = null;
+    let cedulaOriginal = '';
+
+    async function verificarCedulaEdicion(cedula, idActual) {
+        const statusEl = document.getElementById('cedula-status');
+        if (!statusEl || !window.supabaseClient) return { valido: false, mensaje: 'Error de conexión' };
+        if (cedula === cedulaOriginal) {
+            statusEl.className = 'cedula-status success';
+            statusEl.textContent = '✅ Cédula actual';
+            return { valido: true, mensaje: 'ok' };
+        }
+        statusEl.className = 'cedula-status checking';
+        statusEl.textContent = '🔍 Verificando disponibilidad...';
+        try {
+            const { data, error } = await window.supabaseClient
+                .from('registro_personas')
+                .select('id, cedula')
+                .eq('cedula', cedula)
+                .neq('id', idActual)
+                .maybeSingle();
+            if (error) throw error;
+            if (data) {
+                statusEl.className = 'cedula-status error';
+                statusEl.textContent = '⚠️ Cédula ya registrada por otra persona';
+                return { valido: false, mensaje: 'duplicada' };
+            } else {
+                statusEl.className = 'cedula-status success';
+                statusEl.textContent = '✅ Cédula disponible';
+                return { valido: true, mensaje: 'ok' };
+            }
+        } catch (e) {
+            console.warn('⚠️ Error verificando cédula:', e.message);
+            statusEl.className = 'cedula-status'; statusEl.textContent = '';
+            return { valido: true, mensaje: 'error_silencioso' };
+        }
+    }
+
+    if (cedulaInput) {
+        cedulaInput.addEventListener('input', function() {
+            const val = this.value.trim().replace(/\D/g, '');
+            this.value = val;
+            if (val.length > 0 && val.length < 7) {
+                const statusEl = document.getElementById('cedula-status');
+                if (statusEl) { statusEl.className = 'cedula-status error'; statusEl.textContent = '⚠️ Faltan dígitos (mínimo 7)'; }
+                return;
+            }
+            if (val.length === 0) {
+                const statusEl = document.getElementById('cedula-status');
+                if (statusEl) { statusEl.className = 'cedula-status'; statusEl.textContent = ''; }
+                return;
+            }
+            if (val.length >= 7 && val.length <= 8 && currentId) {
+                if (cedulaCheckTimeout) clearTimeout(cedulaCheckTimeout);
+                cedulaCheckTimeout = setTimeout(() => verificarCedulaEdicion(val, currentId), 600);
+            }
+        });
+    }
+
+    // ==========================================
+    // 🔹 5. BÚSQUEDA POR CÉDULA (CON SOPORTE ENTER)
     // ==========================================
     const buscarBtn = document.getElementById('btn-buscar');
     const buscarInput = document.getElementById('buscar-cedula');
@@ -110,7 +169,8 @@ window.initModPersonas = function() {
     let currentUrls = { front: '', izq: '', der: '' };
     const showBuscarMsg = (txt, type) => { msgBuscar.textContent = txt; msgBuscar.className = `search-msg ${type}`; msgBuscar.style.display = 'block'; };
 
-    buscarBtn.addEventListener('click', async () => {
+    // ✅ FUNCIÓN DE BÚSQUEDA REUTILIZABLE
+    async function ejecutarBusqueda() {
         const cedula = buscarInput.value.trim().replace(/\D/g, '');
         if (cedula.length < 7) { showBuscarMsg('⚠️ Ingrese entre 7 y 8 dígitos', 'error'); return; }
         showBuscarMsg('🔍 Buscando...', 'success');
@@ -121,17 +181,20 @@ window.initModPersonas = function() {
             if (error || !data) { showBuscarMsg('❌ Persona no encontrada en el sistema.', 'error'); form.style.display = 'none'; return; }
 
             currentId = data.id;
+            cedulaOriginal = data.cedula;
             currentUrls = { front: data.foto_frontal, izq: data.foto_perfil_izq, der: data.foto_perfil_der };
             document.getElementById('mod_record_id').value = currentId;
 
-            // Llenar campos
             document.getElementById('p_cedula').value = data.cedula;
+            document.getElementById('p_cedula').removeAttribute('readonly');
+            document.getElementById('p_cedula').style.background = '#fff';
+            document.getElementById('p_cedula').style.cursor = 'text';
+            
             document.getElementById('p_nombre1').value = data.primer_nombre || '';
             document.getElementById('p_nombre2').value = data.segundo_nombre || '';
             document.getElementById('p_apellido1').value = data.primer_apellido || '';
             document.getElementById('p_apellido2').value = data.segundo_apellido || '';
             document.getElementById('p_fecha_nac').value = data.fecha_nacimiento || '';
-            // ✅ Calcular edad desde la BD o recalcular si es necesario
             document.getElementById('p_edad').value = data.edad || window.calcularEdad(data.fecha_nacimiento) || '';
             document.getElementById('p_apodo').value = data.apodo || '';
             document.getElementById('p_marca').value = data.marca_corporal || '';
@@ -147,7 +210,6 @@ window.initModPersonas = function() {
             document.getElementById('p_direccion_detencion').value = data.direccion_detencion || '';
             document.getElementById('p_observaciones').value = data.observaciones || '';
 
-            // Teléfono
             if (data.tlf_pais) {
                 nativeSelect.value = data.tlf_pais;
                 const optText = Array.from(nativeSelect.options).find(o => o.value === data.tlf_pais)?.text || '';
@@ -158,7 +220,6 @@ window.initModPersonas = function() {
             }
             if (data.tlf_numero) document.getElementById('p_tlf_num').value = data.tlf_numero;
 
-            // Condicionales
             const setCond = (selId, txtId, showId, val, detail) => {
                 document.getElementById(selId).value = val ? 'true' : 'false';
                 toggleCampo(document.getElementById(selId), showId);
@@ -170,24 +231,36 @@ window.initModPersonas = function() {
             setCond('p_medicamento', 'txt_med', 'det-med', data.consume_medicamento !== null, data.consume_medicamento);
             setCond('p_judicial', 'txt_jud', 'det-jud', data.problema_judicial !== null, data.problema_judicial);
 
-            // Imágenes
             ['front', 'izq', 'der'].forEach(k => {
                 const el = document.getElementById(k === 'front' ? 'prev_frontal' : k === 'izq' ? 'prev_izq' : 'prev_der');
                 if (currentUrls[k]) { el.src = currentUrls[k]; el.style.display = 'block'; }
             });
 
             form.style.display = 'block';
-            showBuscarMsg('✅ Registro cargado. Modifique y guarde.', 'success');
+            showBuscarMsg('✅ Registro cargado. Puede editar la cédula si es necesario.', 'success');
         } catch (err) {
             console.error(err);
             showBuscarMsg('❌ Error de conexión al buscar.', 'error');
         } finally {
             buscarBtn.disabled = false;
         }
-    });
+    }
+
+    // ✅ EVENTO CLICK DEL BOTÓN
+    if (buscarBtn) buscarBtn.addEventListener('click', ejecutarBusqueda);
+
+    // ✅ EVENTO TECLA ENTER EN EL INPUT DE BÚSQUEDA
+    if (buscarInput) {
+        buscarInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.keyCode === 13) {
+                e.preventDefault(); // Evitar comportamiento por defecto del formulario
+                ejecutarBusqueda();
+            }
+        });
+    }
 
     // ==========================================
-    // 🔹 5. ENVÍO / ACTUALIZACIÓN (CORREGIDO)
+    // 🔹 6. ENVÍO / ACTUALIZACIÓN
     // ==========================================
     const submitBtn = form?.querySelector('.btn-submit');
     const msgForm = document.getElementById('msg-mod-personas');
@@ -199,7 +272,20 @@ window.initModPersonas = function() {
             if (!form.checkValidity()) { form.reportValidity(); return; }
             if (!currentId) { mostrarError('Busque un registro primero.'); return; }
 
-            // ✅ VALIDACIONES PREVIAS
+            const nuevaCedula = document.getElementById('p_cedula')?.value.trim().replace(/\D/g, '');
+            if (nuevaCedula.length < 7 || nuevaCedula.length > 8) {
+                mostrarError('La cédula debe tener entre 7 y 8 dígitos.');
+                document.getElementById('p_cedula')?.focus();
+                return;
+            }
+            
+            const verif = await verificarCedulaEdicion(nuevaCedula, currentId);
+            if (!verif.valido) {
+                mostrarError('Esta cédula ya está registrada por otra persona.');
+                document.getElementById('p_cedula')?.focus();
+                return;
+            }
+
             const fechaVal = document.getElementById('p_fecha_nac')?.value;
             const edadCalculada = window.calcularEdad(fechaVal);
             if (!fechaVal || edadCalculada === null) {
@@ -235,15 +321,15 @@ window.initModPersonas = function() {
                 const tlfCodigoFinal = (tlfPais && tlfNumRaw.length >= 1) ? tlfPais : null;
                 const tlfNumeroFinal = (tlfPais && tlfNumRaw.length >= 1) ? tlfNumRaw : null;
 
-                // ✅ PREPARAR DATOS CON EDAD CALCULADA (NUNCA NULL)
                 const updateData = {
+                    cedula: nuevaCedula,
                     foto_frontal: newFront, foto_perfil_izq: newIzq, foto_perfil_der: newDer,
                     primer_nombre: document.getElementById('p_nombre1').value.trim(),
                     segundo_nombre: document.getElementById('p_nombre2').value.trim() || null,
                     primer_apellido: document.getElementById('p_apellido1').value.trim(),
                     segundo_apellido: document.getElementById('p_apellido2').value.trim() || null,
                     fecha_nacimiento: fechaVal,
-                    edad: edadCalculada, // ✅ SIEMPRE tiene valor válido
+                    edad: edadCalculada,
                     tlf_pais: tlfCodigoFinal,
                     tlf_numero: tlfNumeroFinal,
                     direccion: document.getElementById('p_direccion').value.trim(),
@@ -268,25 +354,36 @@ window.initModPersonas = function() {
                     observaciones: document.getElementById('p_observaciones').value.trim() || null
                 };
 
-                const { data, error } = await window.supabaseClient.from('registro_personas').update(updateData).eq('id', currentId).select('id');
+                const { data, error } = await window.supabaseClient
+                    .from('registro_personas')
+                    .update(updateData)
+                    .eq('id', currentId)
+                    .select('id, cedula');
+                
                 if (error) throw error;
                 if (!data || data.length === 0) throw new Error('No se pudo aplicar la actualización.');
 
                 if (msgForm) {
-                    msgForm.textContent = '✅ Cambios guardados correctamente.';
+                    const cedulaCambio = (nuevaCedula !== cedulaOriginal) ? ` (Cédula: ${cedulaOriginal} → ${nuevaCedula})` : '';
+                    msgForm.textContent = `✅ Cambios guardados correctamente.${cedulaCambio}`;
                     msgForm.className = 'msg success';
                     msgForm.style.display = 'block';
-                    setTimeout(() => msgForm.style.display = 'none', 4000);
+                    setTimeout(() => msgForm.style.display = 'none', 5000);
                 }
-                setTimeout(() => { form.style.display = 'none'; buscarInput.value = ''; msgBuscar.style.display = 'none'; currentId = null; }, 4000);
+                setTimeout(() => { form.style.display = 'none'; buscarInput.value = ''; msgBuscar.style.display = 'none'; currentId = null; cedulaOriginal = ''; }, 5000);
 
             } catch (err) {
                 console.error('Error actualización:', err);
                 let mensaje = 'Error al guardar cambios. Intente nuevamente.';
-                if (err.message.includes('storage')) mensaje = 'No se pudieron subir las fotografías nuevas.';
-                else if (err.message.includes('cedula') || err.message.includes('23505')) mensaje = 'Conflicto con cédula existente.';
-                else if (err.message.includes('22001') || err.message.includes('too long')) mensaje = 'El número de teléfono es demasiado largo (máx. 20 dígitos).';
-                else if (err.message.includes('edad') || err.message.includes('23502')) mensaje = 'Error con la edad. Verifique la fecha de nacimiento.';
+                if (err.message.includes('23505') || err.message.includes('unique_cedula') || err.message.includes('cedula_key')) {
+                    mensaje = 'Esta cédula ya está registrada por otra persona. Verifique el número.';
+                } else if (err.message.includes('storage')) {
+                    mensaje = 'No se pudieron subir las fotografías nuevas.';
+                } else if (err.message.includes('22001') || err.message.includes('too long')) {
+                    mensaje = 'El número de teléfono es demasiado largo (máx. 20 dígitos).';
+                } else if (err.message.includes('edad') || err.message.includes('23502')) {
+                    mensaje = 'Error con la edad. Verifique la fecha de nacimiento.';
+                }
                 mostrarError(mensaje);
             } finally {
                 submitBtn.disabled = false;
