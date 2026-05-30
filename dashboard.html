@@ -62,7 +62,17 @@
         .placeholder.error { color: #b91c1c; border-color: #fca5a5; background: #fef2f2; }
         .loading { text-align: center; padding: 30px; color: #64748b; font-weight: 500; }
         .hidden { display: none !important; }
-        
+
+        /* 🔹 Submenú anidado para Historial */
+#submenu-procesar .submenu {
+    background: #f1f5f9; margin: 4px 0 4px 12px; border-left: 2px solid var(--primary); border-radius: 0 4px 4px 0;
+}
+#submenu-procesar .submenu .submenu-item {
+    padding-left: 24px; font-size: 0.82rem; color: #475569;
+}
+#submenu-procesar .submenu .submenu-item:hover {
+    background: #e2e8f0; color: var(--primary); padding-left: 28px;
+}
         /* 🔹 Responsive */
         @media (max-width: 900px) { .sidebar { transform: translateX(-100%); transition: transform 0.3s; } .sidebar.open { transform: translateX(0); } .main-content { margin-left: 0; } .menu-toggle { display: block !important; } .clock-badge { display: none; } }
         .menu-toggle { display: none; background: var(--primary); color: white; border: none; padding: 8px 12px; border-radius: 5px; margin-right: 10px; cursor: pointer; }
@@ -135,12 +145,26 @@
                     </div>
                 </div>
 
-                <div class="menu-item">
-                    <button class="menu-btn" data-src="html/procesar.html" data-js="js/procesar.js" data-init="initProcesar">
-                        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
-                        Procesar
-                    </button>
-                </div>
+           <div class="menu-item">
+    <button class="menu-btn" data-toggle="submenu-procesar">
+        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+        ⚙️ Procesar <span class="arrow">▼</span>
+    </button>
+    <div class="submenu" id="submenu-procesar">
+        <a href="#" class="submenu-item" data-src="html/reg-personas.html" data-js="js/reg-personas.js" data-init="initRegPersonas">📝 Registrar Persona</a>
+        <a href="#" class="submenu-item" data-src="html/mod-personas.html" data-js="js/mod-personas.js" data-init="initModPersonas">✏️ Modificar Persona</a>
+        <a href="#" class="submenu-item danger" data-src="html/elim-personas.html" data-js="js/elim-personas.js" data-init="initElimPersonas">🗑️ Eliminar Persona</a>
+        
+        <!-- 🔹 NUEVO: Historial con submenú -->
+        <a href="#" class="submenu-item" style="border-top: 1px dashed #cbd5e1; margin: 8px 0 4px; padding-top: 12px;" 
+           data-toggle="submenu-historial">
+           📜 Historial <span class="arrow" style="margin-left: auto;">▼</span>
+        </a>
+        <div class="submenu" id="submenu-historial" style="margin-left: 12px; border-left: 2px solid var(--primary);">
+            <a href="#" class="submenu-item" data-src="html/historial.html" data-js="js/historial.js" data-init="initHistorial">👁️ Ver Historial</a>
+        </div>
+    </div>
+</div>
 
                 <div class="menu-item" id="menu-gestion-usuarios">
                     <button class="menu-btn" data-src="html/gestion-usuarios.html" data-js="js/gestion-usuarios.js" data-init="initGestionUsuarios">
