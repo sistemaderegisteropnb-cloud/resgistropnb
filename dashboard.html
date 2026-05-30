@@ -62,7 +62,7 @@
         .loading { text-align: center; padding: 30px; color: #64748b; font-weight: 500; }
         .hidden { display: none !important; }
         
-        /* 🔹 Vista de Bienvenida */
+        /* 🔹 Vista de Bienvenida (DEFAULT) */
         .welcome-card { text-align: center; padding: 40px 30px; }
         .welcome-logo { max-width: 130px; margin-bottom: 20px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1)); }
         .welcome-desc { font-size: 1.05rem; color: #334155; max-width: 750px; margin: 0 auto 25px; line-height: 1.7; }
@@ -145,7 +145,7 @@
                 <div class="menu-item">
                     <button class="menu-btn" data-toggle="submenu-procesar">
                         <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
-                        Procesar <span class="arrow">▼</span>
+                        ⚙️ Procesar <span class="arrow">▼</span>
                     </button>
                     <div class="submenu" id="submenu-procesar">
                         <a href="#" class="submenu-item" data-src="html/reg-personas.html" data-js="js/reg-personas.js" data-init="initRegPersonas">📝 Registrar</a>
@@ -158,7 +158,7 @@
                 <div class="menu-item" data-role="admin">
                     <button class="menu-btn" data-toggle="submenu-historial">
                         <svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
-                        Historial <span class="arrow">▼</span>
+                        📜 Historial <span class="arrow">▼</span>
                     </button>
                     <div class="submenu" id="submenu-historial">
                         <a href="#" class="submenu-item" data-src="html/historial.html" data-js="js/historial.js" data-init="initHistorial">👁️ Ver Historial</a>
@@ -175,6 +175,7 @@
         </aside>
 
         <main id="app-content" class="main-content">
+            <!-- ✅ CONTENIDO DE BIENVENIDA POR DEFECTO (Visible al recargar) -->
             <div class="card welcome-card">
                 <img src="img/LOGO-PNB.png" alt="Logo PNB" class="welcome-logo">
                 <h3>👋 Bienvenido al Sistema de Verificación y Registro Policial</h3>
@@ -202,6 +203,8 @@
             // Obtener rol del usuario (ajusta la clave según tu login)
             const userRole = sessionStorage.getItem('pnb_user_role') || sessionStorage.getItem('user_role') || 'consultor';
             
+            console.log("Rol del usuario:", userRole); // Para depuración
+
             // Ocultar elementos con data-role="admin" si el usuario no es admin
             document.querySelectorAll('[data-role="admin"]').forEach(el => {
                 if (userRole !== 'admin') {
