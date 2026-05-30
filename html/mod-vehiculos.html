@@ -13,6 +13,8 @@
   .msg { padding: 10px; margin-top: 12px; border-radius: 5px; text-align: center; display: none; }
   .msg.success { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
   .msg.error { background: #fde2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+  
+  /* 🔹 Estilos de Fotos y Preview */
   .img-preview { width: 100%; height: auto; max-height: 180px; object-fit: contain; border: 1px solid var(--beige-border); border-radius: 5px; margin-top: 8px; display: none; background: #f8fafc; }
   .status-badge { background: #dcfce7; color: #15803d; font-weight: 700; padding: 6px 12px; border-radius: 6px; border: 1px solid #86efac; font-size: 0.85rem; display: inline-block; }
   
@@ -64,7 +66,7 @@
             <small style="color:#64748b;">El tipo de vehículo no se puede cambiar en la edición.</small>
         </fieldset>
 
-        <!-- 🔹 2. FOTOS -->
+        <!-- 🔹 2. FOTOS (IDs corregidos para coincidir con JS) -->
         <fieldset id="sec-fotos">
             <legend>📸 Fotografías (Suba una nueva para reemplazar)</legend>
             <!-- FOTOS MOTO -->
@@ -83,17 +85,15 @@
             </div>
         </fieldset>
 
-        <!-- 🔹 3. IDENTIFICACIÓN (Placa Editable) -->
+        <!-- 🔹 3. IDENTIFICACIÓN -->
         <fieldset>
             <legend>📋 Datos de Identificación</legend>
             <div class="form-grid">
-                <!-- ✅ PLACA EDITABLE -->
                 <div class="form-group"><label>Placa</label><input type="text" id="m_placa" required style="text-transform: uppercase;"></div>
                 <div class="form-group"><label>Serial de Carrocería</label><input type="text" id="m_serial_carroceria" required></div>
                 <div class="form-group"><label>Serial de Motor</label><input type="text" id="m_serial_motor" placeholder="Opcional en autos"></div>
                 <div class="form-group">
                     <label>Color</label>
-                    <!-- ✅ Select de Color Completo -->
                     <select id="m_color" required>
                         <option value="">Seleccione color...</option>
                         <option value="Blanco">Blanco</option><option value="Blanco Perla">Blanco Perla</option>
@@ -158,7 +158,7 @@
     </form>
 </div>
 
-<!-- Script auxiliar para preview inmediato -->
+<!-- Script auxiliar para preview inmediato de nuevas fotos -->
 <script>
 window.previewFile = function(input, imgId) {
     const img = document.getElementById(imgId);
