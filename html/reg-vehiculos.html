@@ -69,23 +69,34 @@
             </div>
         </fieldset>
 
-        <!-- 🔹 4. CARACTERÍSTICAS -->
-        <fieldset>
-            <legend>⚙️ Características</legend>
-            <div class="form-grid">
-                <div class="form-group"><label>Marca</label><input type="text" id="v_marca" placeholder="Ej: Yamaha, Bera, Toyota..." required></div>
-                <div class="form-group"><label>Modelo</label><input type="text" id="v_modelo" placeholder="Ej: FZ, Corolla, Civic..." required></div>
-                <div class="form-group"><label>Año</label><select id="v_anio" required></select></div>
-                <div class="form-group" id="box-cilindraje"><label>Cilindraje</label>
-                    <select id="v_cilindraje">
-                        <option value="">Seleccione...</option>
-                        <option value="Baja (hasta 250 cc)">Baja Cilindrada (hasta 250 cc)</option>
-                        <option value="Media (300-750 cc)">Media Cilindrada (300 cc - 750 cc)</option>
-                        <option value="Alta (+750 cc)">Alta Cilindrada (más de 750 cc)</option>
-                    </select>
-                </div>
-            </div>
-        </fieldset>
+<!-- 🔹 4. CARACTERÍSTICAS (Marca y Modelo Dinámicos) -->
+<fieldset>
+    <legend>⚙️ Características</legend>
+    <div class="form-grid">
+        <div class="form-group">
+            <label>Marca</label>
+            <select id="v_marca" required>
+                <option value="">Seleccione marca...</option>
+                <!-- Se llena automáticamente con JS -->
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Modelo</label>
+            <select id="v_modelo" required>
+                <option value="">Seleccione primero la marca</option>
+            </select>
+        </div>
+        <div class="form-group"><label>Año</label><select id="v_anio" required></select></div>
+        <div class="form-group" id="box-cilindraje"><label>Cilindraje</label>
+            <select id="v_cilindraje">
+                <option value="">Seleccione...</option>
+                <option value="Baja (hasta 250 cc)">Baja Cilindrada (hasta 250 cc)</option>
+                <option value="Media (300-750 cc)">Media Cilindrada (300 cc - 750 cc)</option>
+                <option value="Alta (+750 cc)">Alta Cilindrada (más de 750 cc)</option>
+            </select>
+        </div>
+    </div>
+</fieldset>
 
         <!-- 🔹 5. DATOS DEL REGISTRO (Estaciones + Dirección de Detención) -->
         <fieldset>
