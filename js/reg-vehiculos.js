@@ -173,7 +173,7 @@ window.initRegVehiculos = function() {
                 return bucket.getPublicUrl(path).data.publicUrl;
             };
 
-            // ✅ Subir 4 fotos para AMBOS tipos
+            // ✅ Subir 4 fotos para AMBOS tipos con nombres consistentes
             let urls = {};
             const prefix = isMoto ? '' : '_a';
             [urls.f, urls.r, urls.rd, urls.ri] = await Promise.all([
@@ -183,7 +183,7 @@ window.initRegVehiculos = function() {
                 uploadFile(`v_foto_izq${prefix}`, 'ri')
             ]);
 
-            // ✅ Datos base comunes a ambas tablas
+            // ✅ Datos base comunes a ambas tablas (MISMOS NOMBRES DE COLUMNAS)
             const data = {
                 estatus: 'Verificación',
                 estacion_policial: estacion,
@@ -191,6 +191,7 @@ window.initRegVehiculos = function() {
                 placa, anio, color, serial_carroceria: serialCarro,
                 marca, modelo,
                 observaciones: document.getElementById('v_observaciones')?.value.trim() || null,
+                // ✅ Fotos con nombres idénticos para ambas tablas
                 foto_frontal: urls.f, 
                 foto_trasera: urls.r,
                 foto_lado_derecho: urls.rd, 
@@ -224,8 +225,8 @@ window.initRegVehiculos = function() {
             if (err.message.includes('23505') || err.message.includes('unique')) mensaje = 'Esta placa ya se encuentra registrada.';
             else if (err.message.includes('storage')) mensaje = 'Error subiendo fotografías.';
             else if (err.message.includes('Falta la fotografía')) mensaje = err.message;
-            else if (err.message.includes('PGRST204') || err.message.includes('column')) {
-                mensaje = 'Error de estructura. Contacte al administrador para actualizar la base de datos.';
+            else if (err.message.includes('PGRST204') || err.message.includes('column') || err.message.includes('foto_lateral')) {
+                mensaje = 'Error de estructura en base de datos. Contacte al administrador para ejecutar el script de actualización de columnas.';
             }
             mostrarError(mensaje);
         } finally { 
