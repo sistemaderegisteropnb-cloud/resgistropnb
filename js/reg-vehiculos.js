@@ -117,7 +117,7 @@ window.initRegVehiculos = function() {
         setupPreview(id, id.replace('v_foto_', 'prev_v_'));
     });
 
-    // 🔹 5. 🚨 VALIDACIÓN EN TIEMPO REAL
+    //  5. 🚨 VALIDACIÓN EN TIEMPO REAL (CORREGIDA: Tablas Separadas)
     function debounce(func, wait) {
         let timeout;
         return function(...args) {
@@ -126,7 +126,7 @@ window.initRegVehiculos = function() {
         };
     }
 
-    async function checkAvailability(input, msgId, currentTable) {
+    async function checkAvailability(input, msgId) {
         const val = input.value.trim().toUpperCase();
         const msgEl = document.getElementById(msgId);
         if (!val) {
@@ -135,22 +135,22 @@ window.initRegVehiculos = function() {
             return;
         }
         
-        if (msgEl) { msgEl.textContent = ' Verificando...'; msgEl.className = 'status-msg'; }
+        if (msgEl) { msgEl.textContent = '⏳ Verificando...'; msgEl.className = 'status-msg'; }
 
         try {
             let found = false;
-            
-            if (input.id === 'v_placa') {
-                const { data: d1 } = await window.supabaseClient.from(currentTable).select('id').eq('placa', val).maybeSingle();
-                if (d1) found = true;
-                const otherTable = currentTable === 'registro_motos' ? 'registro_automoviles' : 'registro_motos';
-                const { data: d2 } = await window.supabaseClient.from(otherTable).select('id').eq('placa', val).maybeSingle();
-                if (d2) found = true;
-            } else {
-                const col = input.id === 'v_serial_carroceria' ? 'serial_carroceria' : 'serial_motor';
-                const { data } = await window.supabaseClient.from(currentTable).select('id').eq(col, val).maybeSingle();
-                if (data) found = true;
-            }
+
+            // ✅ CORRECCIÓN: Solo verificar en la tabla correspondiente al tipo de vehículo
+            // Si estoy en Motos -> verifico en registro_motos
+            // Si estoy en Autos -> verifico en registro_automoviles
+            // NO cruzamos tablas para validación de unicidad (viceversa permitido)
+            const currentTable = document.getElementById('v_tipo').value === 'Motocicleta' ? 'registro_motos' : 'registro_automoviles';
+
+            const col = input.id === 'v_placa' ? 'placa' :
+                        input.id === 'v_serial_carroceria' ? 'serial_carroceria' : 'serial_motor';
+
+            const { data } = await window.supabaseClient.from(currentTable).select('id').eq(col, val).maybeSingle();
+            if (data) found = true;
 
             if (found) {
                 input.classList.add('input-error'); input.classList.remove('input-valid');
@@ -164,15 +164,15 @@ window.initRegVehiculos = function() {
         }
     }
 
-    const validatePlaca = debounce((e) => checkAvailability(e.target, 'msg-placa', document.getElementById('v_tipo').value === 'Motocicleta' ? 'registro_motos' : 'registro_automoviles'), 600);
-    const validateCarro = debounce((e) => checkAvailability(e.target, 'msg-carroceria', document.getElementById('v_tipo').value === 'Motocicleta' ? 'registro_motos' : 'registro_automoviles'), 600);
-    const validateMotor = debounce((e) => checkAvailability(e.target, 'msg-motor', document.getElementById('v_tipo').value === 'Motocicleta' ? 'registro_motos' : 'registro_automoviles'), 600);
+    const validatePlaca = debounce((e) => checkAvailability(e.target, 'msg-placa'), 600);
+    const validateCarro = debounce((e) => checkAvailability(e.target, 'msg-carroceria'), 600);
+    const validateMotor = debounce((e) => checkAvailability(e.target, 'msg-motor'), 600);
 
     document.getElementById('v_placa')?.addEventListener('input', validatePlaca);
     document.getElementById('v_serial_carroceria')?.addEventListener('input', validateCarro);
     document.getElementById('v_serial_motor')?.addEventListener('input', validateMotor);
 
-    // 🔹 6. ✅ FUNCIÓN DE LIMPIEZA COMPLETA (Corrección del error verde)
+    //  6. ✅ FUNCIÓN DE LIMPIEZA COMPLETA (Corrección del error verde)
     function resetValidation() {
         // Limpiar clases de borde
         document.querySelectorAll('.registro-form input').forEach(i => i.classList.remove('input-valid', 'input-error'));
@@ -269,7 +269,7 @@ window.initRegVehiculos = function() {
             let mensaje = 'Error inesperado. Intente nuevamente.';
             if (err.message.includes('23505') || err.message.includes('unique')) mensaje = '❌ Esta placa ya se encuentra registrada.';
             else if (err.message.includes('storage')) mensaje = '❌ Error subiendo fotografías.';
-            else if (err.message.includes('Falta la fotografía')) mensaje = '❌ ' + err.message;
+            else if (err.message.includes('Falta la fotografía')) mensaje = ' ' + err.message;
             mostrarError(mensaje);
         } finally { btn.disabled = false; btn.textContent = '✅ Registrar Vehículo'; }
     });
