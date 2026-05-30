@@ -21,7 +21,7 @@ window.initRegVehiculos = function() {
         "Otra": ["Otra (Especificar en observaciones)"]
     };
 
-    // 🔹 1. Poblar Select de Marcas
+    // 🔹 1. Poblar Select de Marcas y Modelos
     const marcaSelect = document.getElementById('v_marca');
     const modeloSelect = document.getElementById('v_modelo');
     const anioSelect = document.getElementById('v_anio');
@@ -30,41 +30,44 @@ window.initRegVehiculos = function() {
         Object.keys(marcasModelos).sort().forEach(marca => {
             marcaSelect.innerHTML += `<option value="${marca}">${marca}</option>`;
         });
-
-        // Evento para actualizar modelos dinámicamente
         marcaSelect.addEventListener('change', function() {
             const marcaSeleccionada = this.value;
             modeloSelect.innerHTML = '<option value="">Seleccione modelo...</option>';
             if (marcasModelos[marcaSeleccionada]) {
-                marcasModelos[marcaSeleccionada].forEach(mod => {
-                    modeloSelect.innerHTML += `<option value="${mod}">${mod}</option>`;
-                });
+                marcasModelos[marcaSeleccionada].forEach(mod => modeloSelect.innerHTML += `<option value="${mod}">${mod}</option>`);
             }
         });
     }
 
-    // 🔹 2. Poblar Select de Años (1850 -> Hoy)
     if (anioSelect) {
         const currentYear = new Date().getFullYear();
         anioSelect.innerHTML = '<option value="">Seleccione año...</option>';
         for (let y = currentYear; y >= 1850; y--) anioSelect.innerHTML += `<option value="${y}">${y}</option>`;
     }
 
-    // 🔹 3. Selector de Tipo (Moto/Auto)
+    // 🔹 2. Selector de Tipo (Moto/Auto) ✅ CORREGIDO
     window.selectVehicleType = function(type) {
         document.querySelectorAll('.tipo-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.type === type));
         document.getElementById('v_tipo').value = (type === 'moto') ? 'Motocicleta' : 'Automóvil';
         
         const isMoto = type === 'moto';
-        document.getElementById('grid-fotos-moto').style.display = isMoto ? 'grid' : 'none';
-        document.getElementById('grid-fotos-auto').style.display = isMoto ? 'none' : 'grid';
+        const motoGrid = document.getElementById('grid-fotos-moto');
+        const autoGrid = document.getElementById('grid-fotos-auto');
+        
+        motoGrid.style.display = isMoto ? 'grid' : 'none';
+        autoGrid.style.display = isMoto ? 'none' : 'grid';
         document.getElementById('box-cilindraje').style.display = isMoto ? 'block' : 'none';
         
+        // ✅ SOLUCIÓN AL ERROR: Agregar/quitar 'required' según visibilidad
+        motoGrid.querySelectorAll('input[type="file"]').forEach(i => i.required = isMoto);
+        autoGrid.querySelectorAll('input[type="file"]').forEach(i => i.required = !isMoto);
+        
+        // Limpiar inputs al cambiar tipo
         document.querySelectorAll('input[type="file"]').forEach(i => i.value = '');
         document.querySelectorAll('.img-preview').forEach(i => i.style.display = 'none');
     };
 
-    // 🔹 4. Vista Previa de Imágenes
+    // 🔹 3. Vista Previa de Imágenes
     const setupPreview = (inputId, previewId) => {
         const input = document.getElementById(inputId);
         const preview = document.getElementById(previewId);
@@ -80,7 +83,7 @@ window.initRegVehiculos = function() {
     setupPreview('v_foto_frontal_a', 'prev_v_frontal_a'); setupPreview('v_foto_trasera_a', 'prev_v_trasera_a');
     setupPreview('v_foto_der_a', 'prev_v_der_a'); setupPreview('v_foto_izq_a', 'prev_v_izq_a');
 
-    // 🔹 5. Envío del Formulario
+    // 🔹 4. Envío del Formulario
     const form = document.getElementById('form-reg-vehiculos');
     const btn = form?.querySelector('.btn-submit');
     const msg = document.getElementById('msg-reg-vehiculos');
@@ -90,7 +93,12 @@ window.initRegVehiculos = function() {
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        if (!form.checkValidity()) { form.reportValidity(); return; }
+        
+        // Validación HTML5 solo de campos VISIBLES
+        if (!form.checkValidity()) { 
+            form.reportValidity(); 
+            return; 
+        }
 
         const placa = document.getElementById('v_placa').value.trim().toUpperCase();
         const anio = parseInt(document.getElementById('v_anio').value);
