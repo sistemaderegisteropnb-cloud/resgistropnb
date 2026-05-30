@@ -1,4 +1,15 @@
 window.initModVehiculos = function() {
+    // 🔹 FUNCIÓN GLOBAL PARA VISTA PREVIA DE IMÁGENES (CORRECCIÓN DEL ERROR)
+    window.previewFile = function(input, imgId) {
+        const img = document.getElementById(imgId);
+        if (!img) return;
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) { img.src = e.target.result; img.style.display = 'block'; }
+            reader.readAsDataURL(input.files[0]);
+        }
+    };
+
     // 🔹 LISTAS COMPLETAS DE MARCAS/MODELOS (IDÉNTICAS A REGISTRO)
     const marcasModelosMoto = {
         "Empire Keeway": ["Matrix Lite", "Matrix II 150", "EK Xpress Lite", "QJ Fort", "Horse (EK Horse 2 SE)", "EK Arsen II 200", "EK Atlas", "EK Atlas HD/HDS 200", "Owen 200", "Thunder EK", "TX II 150", "TX 250GS", "QJ Motor SRT 550", "QJ Motor SRT 550X", "QJ Motor SRT 700S", "QJ Motor SRT 700SX", "Superlight 200S", "V302C"],
@@ -11,7 +22,7 @@ window.initModVehiculos = function() {
         "Bel Motos": ["Bel Matrix 150", "Bel New Matrix 150", "Bel Speed 150", "Bel Evo 150", "Bel Max 150", "Bel Max 200", "Bel Owen 150", "Bel Horse 150", "Bel Gloster 150", "Bel RK6 200", "Bel Sierra 200", "Bel Dakar 200", "Bel Space 150", "Bel Cargo 200"],
         "Motos Kadi": ["Kadi KD150-13 (Kadi Hawk)", "Kadi KD150-15 (Kadi Jaguar)", "Kadi KD150-23 (Kadi León)", "Kadi KD150-2B (Kadi Águila)", "Kadi KD150T-5 (Kadi Scooter)", "Kadi KD200 (Kadi Enduro / Doble Propósito)", "Kadi KD200-ZH (Kadi Motocargo)"],
         "Escuda Motorcycles": ["Escuda Hero", "Escuda Adventure", "Escuda Extreme", "Escuda EM200", "Escuda New Jog", "Escuda Alexa"],
-        "Yamaha": ["Yamaha YBR 125", "Yamaha FZ16", "Yamaha FZ-S", "Yamaha MT-03", "Yamaha XTZ 125", "Yamaha XTZ 150", "Yamaha XTZ 250 Lander", "Yamaha FZ25", "Yamaha FZ-S v2", "Yamaha SZ-RR", "Yamaha R15", "Yamaha R3", "Yamaha MT-15", "Yamaha Tenere 250", "Yamaha YS 250 Fazer", "Yamaha Lander 250", "Yamaha XTZ 125", "Yamaha YB125", "Yamaha YBR 150", "Yamaha YBR 125 Custom", "Yamaha Crypton 110", "Yamaha Jog", "Yamaha Xeon RC", "Yamaha Neo 125", "Yamaha Zuma", "Yamaha TMAX", "Yamaha XMAX", "Yamaha NMAX", "Yamaha Tricity", "Yamaha FJR1300", "Yamaha FZ8", "Yamaha FZ6", "Yamaha YZF-R1", "Yamaha YZF-R6", "Yamaha MT-07", "Yamaha MT-09", "Yamaha MT-10", "Yamaha Tracer 700", "Yamaha Tracer 900", "Yamaha Ténéré 700", "Yamaha WR 250F", "Yamaha WR 450F", "Yamaha YZ 125", "Yamaha YZ 250", "Yamaha YZ 250F", "Yamaha YZ 450F", "Yamaha PW 50", "Yamaha TT-R 110", "Yamaha TT-R 125", "Yamaha TT-R 230", "Yamaha XT 225", "Yamaha TW 200", "Yamaha Serow 250", "Yamaha Bolt", "Yamaha Star Venture", "Yamaha Super Ténéré", "Yamaha FJR1300ES", "Yamaha YZF-R1M", "Yamaha YZF-R6 Race", "Yamaha MT-09 SP", "Yamaha MT-10 SP", "Yamaha Tracer 9 GT", "Yamaha Niken", "Yamaha Lev 125", "Yamaha Aerox 155", "Yamaha Ray ZR", "Yamaha Fascino", "Yamaha Ray 110", "Yamaha Crux", "Yamaha Saluto", "Yamaha Libero", "Yamaha RX 135", "Yamaha RX 100", "Yamaha RD 350", "Yamaha YSR 50", "Yamaha TZR 50", "Yamaha DT 50", "Yamaha TDR 50", "Yamaha YZ 85", "Yamaha YZ 65", "Yamaha PW 80", "Yamaha TT-R 50", "Yamaha TTR 50", "Yamaha TTR 110", "Yamaha TTR 125L", "Yamaha TTR 230", "Yamaha XT 225 Dual Sport", "Yamaha TW 200 Fat Tire", "Yamaha Serow 250 Enduro", "Yamaha WR 250R", "Yamaha WR 250X", "Yamaha YZ 125 LC", "Yamaha YZ 250 2T", "Yamaha YZ 450F", "Yamaha YZ 250F", "Yamaha YZ 125", "Yamaha YZ 85", "Yamaha YZ 65", "Yamaha PW 50", "Yamaha TT-R 110", "Yamaha TT-R 125", "Yamaha TT-R 230", "Yamaha XT 225", "Yamaha TW 200", "Yamaha Serow 250", "Yamaha Bolt", "Yamaha Star Venture", "Yamaha Super Ténéré", "Yamaha FJR1300ES", "Yamaha YZF-R1M", "Yamaha YZF-R6 Race", "Yamaha MT-09 SP", "Yamaha MT-10 SP", "Yamaha Tracer 9 GT", "Yamaha Niken", "Yamaha Lev 125", "Yamaha Aerox 155", "Yamaha Ray ZR", "Yamaha Fascino", "Yamaha Ray 110", "Yamaha Crux", "Yamaha Saluto", "Yamaha Libero", "Yamaha RX 135", "Yamaha RX 100", "Yamaha RD 350", "Yamaha YSR 50", "Yamaha TZR 50", "Yamaha DT 50", "Yamaha TDR 50"],
+        "Yamaha": ["Yamaha YBR 125", "Yamaha FZ16 / FZ-S / FZ25", "Yamaha YZF-R1 / R6 / R3 / R15", "Yamaha MT-03 / MT-07 / MT-09 / MT-10", "Yamaha TMAX / XMAX / NMAX / BWS (Zuma)", "Yamaha Crypton 110", "Yamaha DT 125 / DT 175", "Yamaha XT 660R / XT 600", "Yamaha Ténéré 700 / Super Ténéré 1200", "Yamaha WR 250F / WR 450F", "Yamaha YZ 250F / YZ 450F", "Yamaha Bolt C-Spec", "Yamaha V-Star 250 / 650 / 1100", "Yamaha XTZ 125 / XTZ 150 / XTZ 250 Lander", "Yamaha Crux 110", "Yamaha RayZR 125", "Yamaha Fascino 125", "Yamaha Tracer 7 / Tracer 9 GT", "Yamaha XSR 155 / XSR 700 / XSR 900", "Yamaha Raptor 700R (Cuatrimoto / ATV)", "Yamaha YFZ450R (Cuatrimoto / ATV)", "Yamaha Grizzly 700 (Cuatrimoto / ATV)"],
         "Honda": ["Honda CG 150 Titan / Titan 120", "Honda CB 125F / CB 190R / CB 250 Twister / CB 500F / CB 650F / CB 1000R", "Honda CBR 250R / CBR 600RR / CBR 1000RR Fireblade", "Honda CRF 250F / CRF 250R / CRF 450R / CRF 1100L Africa Twin", "Honda XR 150L / XR 190L / XR 250 Tornado / XR 650L", "Honda XRE 190 / XRE 300", "Honda Transalp XL750", "Honda GL 1800 Gold Wing", "Honda CMX 500 Rebel / CMX 1100 Rebel", "Honda Shadow 750", "Honda NC 750X", "Honda X-ADV 750", "Honda ADV 160 / ADV 350", "Honda PCX 160", "Honda Elite 125", "Honda Dio 110", "Honda NAVI 110", "Honda Wave 110S", "Honda Biz 125", "Honda GL 150 Cargo", "Honda TRX 420 FourTrax / TRX 700XX (Cuatrimoto / ATV)"],
         "Suzuki": ["Suzuki GN 125", "Suzuki AX 100", "Suzuki DR 150 / DR 200 / DR 650", "Suzuki Gixxer 150 / Gixxer 250", "Suzuki GSX-R600 / GSX-R750 / GSX-R1000", "Suzuki GSX-S750 / GSX-S1000", "Suzuki Hayabusa (GSX1300R)", "Suzuki V-Strom 250 / V-Strom 650 / V-Strom 1050", "Suzuki Boulevard C50 / M109R", "Suzuki Burgman 125 / Burgman 200 / Burgman 400 / Burgman 650", "Suzuki Address 115", "Suzuki Avenis 125", "Suzuki Access 125", "Suzuki EN 125 HU", "Suzuki Katana", "Suzuki SV 650", "Suzuki RM-Z250 / RM-Z450", "Suzuki KingQuad 400 / KingQuad 750 (Cuatrimoto / ATV)"],
         "KTM": ["KTM 125 Duke / 200 Duke / 250 Duke / 390 Duke / 790 Duke / 890 Duke / 990 Duke / 1390 Super Duke R", "KTM RC 125 / RC 200 / RC 390 / RC 8C", "KTM 250 Adventure / 390 Adventure / 790 Adventure / 890 Adventure / 1290 Super Adventure / 1390 Super Adventure", "KTM 690 Enduro R", "KTM 690 SMC R", "KTM 150 EXC / 250 EXC / 300 EXC (TPI / hardenduro)", "KTM 250 EXC-F / 350 EXC-F / 450 EXC-F / 500 EXC-F", "KTM 125 SX / 250 SX", "KTM 250 SX-F / 350 SX-F / 450 SX-F", "KTM 50 SX / 65 SX / 85 SX", "KTM Freeride E-XC"],
@@ -22,25 +33,28 @@ window.initModVehiculos = function() {
     };
 
     const marcasModelosAuto = {
-        "Toyota": ["Corolla", "Yaris", "Hilux", "Fortuner", "Camry", "Land Cruiser", "Prado", "Rav4", "Etios", "Agya", "HiAce", "Yaris Cross", "4Runner", "Sequoia", "Tundra", "Tacoma", "Coaster", "Terios", "Starlet", "Celica", "Merú", "Aygo X", "Aqua", "Avanza", "Rush", "Raize", "Yaris Heykers", "GR Yaris", "GR Corolla", "GR86", "GR Supra", "Avalon", "Century", "Crown", "Mirai", "bZ4X", "Urban Cruiser", "C-HR", "Harrier", "Highlander", "Venza", "Sienna", "Alphard", "Innova", "Roomy", "Sienta", "Voxy", "Noah", "Probox", "LiteAce", "Hilux Champ", "Proace"],
-        "Chevrolet": ["Spark", "Aveo", "Optra", "Cruze", "Onix", "Cavalier", "Tracker", "Captiva", "Trailblazer", "Traverse", "Tahoe", "Suburban", "Orlando", "Silverado", "Colorado", "D-Max", "Grand Vitara", "LUV", "Astra", "Corsa", "Meriva", "Zafira", "Epica", "Impala", "Malibu", "Century", "Celebrity", "Caprice", "Swift", "San Remo", "Trax", "Chevette", "Lumina", "Monte carlos", "Equinox", "Blazer", "Silverado EV", "Montana", "S10", "Spin", "Groove", "Seeker", "Monza", "Sail", "Menlo", "Bolt EV"],
-        "Ford": ["Territory", "EcoSport", "Escape", "Edge", "Explorer", "Everest", "Bronco", "Expedition", "Ranger", "F-150", "F-350", "Fiesta", "Focus", "Laser", "Festiva", "Ka", "Fusion", "Mustang", "Sierra"],
-        "Jeep": ["CJ-5", "Wrangler", "Cherokee", "Grand Cherokee", "Gladiator", "Compass", "Renegade", "Commander", "Wagoneer", "J-10", "Comanche", "Avenger", "Recon", "Wagoneer S", "Grand Commander", "Meridian"],
-        "RAM": ["Ram 1500", "Ram 2500", "Ram 3500", "Ram 700", "Ram 1000", "Ram 1200", "Ram Rampage", "Ram 1500 RHO", "Ram 1500 TRX", "Ram 1500 REV", "Ram ProMaster", "Ram ProMaster City"],
-        "Hyundai": ["Grand i10", "Accent", "Elantra", "Sonata", "Getz", "Matrix", "Atos", "Excel", "Scoupe", "Creta", "Tucson", "Santa Fe", "Veracruz", "Terracan", "Galloper", "Palisade", "Kona", "Ioniq", "Staria", "H-1 / Starex", "HD65", "i10", "HB20", "Bayon", "Venue", "Alcazar", "Mufasa", "Casper", "Inster", "Lafesta", "Celesta", "Aura", "Grandeur", "Santa Cruz", "Nexo", "Porter / H-100"],
-        "Kia": ["Picanto", "Soluto", "Sonet", "Seltos", "Sportage", "Sorento", "Carnival", "Rio", "Cerato", "Optima", "Carens", "Pregio", "Besta", "K2700", "Sephia", "Spectra", "Opirus", "Tasman", "EV2", "EV3", "EV6", "EV9", "K3", "K5", "K8", "K9", "Ray", "Morning", "Ceed", "Stonic", "Niro", "Soul", "Telluride", "Stinger", "Cadenza", "Mohave", "Pegas", "Venga", "Joice"],
-        "Fiat": ["Cronos", "Argo", "Pulse", "Fastback", "Mobi", "Toro", "Fiorino", "Uno", "Palio", "Siena", "Premio", "Regatta", "Tucán", "Ritmo", "Tempra", "Marea", "Brava", "Idea", "Stilo", "Strada", "500", "500X", "600", "Panda", "Tipo", "Titano", "Scudo", "Ducato", "Doblò", "Topolino"],
-        "Renault": ["Logan", "Sandero", "Duster", "Oroch", "Koleos", "Kwid", "Twingo", "Clio", "Symbol", "Megane", "Scenic", "Laguna", "Kangoo", "R19", "Kardian", "Boreal", "Arkana", "Austral", "Rafale", "Espace", "Symbioz", "Captur", "Triber", "Kiger", "Master", "Trafic", "Express"],
-        "JAC Motors": ["Arena", "Aventura (JS3)", "Nevado (JS4)", "Tepuy (JS6)", "Savanna (JS8)", "La Venezolana (T6)", "La Venezolana Pro (T8)", "T9", "J7", "Refine", "Sunray", "Bachaco", "Búfalo", "Leyenda"],
-        "Changan Auto": ["Alsvin", "CS15", "CS35 Plus", "CS55 Plus", "CS75 Plus", "CS85 Coupe", "CS95", "Uni-T", "Uni-K", "Uni-V", "Hunter", "Star 5", "Q20"],
-        "Foton": ["Tunland E", "Tunland G7", "TruckMate M25", "View C2", "Aumark S", "Auman R", "Mars V7", "Sauvana", "Toplander", "Toano", "View Transvan"],
-        "Chery": ["Arrizo 5", "Tiggo 2 Pro", "Tiggo 4", "Tiggo 7 Pro", "Tiggo 8 Pro", "Tiggo 9", "QQ", "Omoda 5", "Jaecoo 7"],
+        "JAC Motors": ["Arena / Arena Sport (Sedán)", "Aventura / Aventura Pro (JS3)", "Nevado / Nevado Sport Wagon (JS4)", "Tepuy / Tepuy Pro (JS6)", "Savanna / Savanna Pro Sport (JS8)", "La Venezolana (T6 - Pick-up 4x2 y 4x4)", "La Venezolana Pro (T8 - Pick-up 4x4)", "T9 (Pick-up)", "J7 / J7 Elite Pro", "Refine (Mini-van / MPV)", "Sunray (Vans de carga y pasajeros)", "Bachaco (Camión de carga)", "Búfalo (Camión de carga)", "Leyenda (Camión de carga)"],
+        "Toyota": ["Agya", "Yaris / Yaris Cross", "Corolla / Corolla Cross", "Camry", "Prius", "Hilux", "Land Cruiser (Serie 70 / Machito)", "Land Cruiser Prado", "Land Cruiser (Serie 200 / Serie 300)", "Fortuner", "4Runner", "RAV4", "Sequoia", "Tundra", "Tacoma", "Hiace", "Coaster", "Terios (Histórico / Daihatsu)", "Starlet (Histórico)", "Celica (Histórico)", "Merú (Histórico)", "Aygo X", "Aqua", "Avanza", "Rush", "Raize", "Yaris Heykers", "Corolla Hatchback / Corolla Touring Sports", "GR Yaris", "GR Corolla", "GR86", "GR Supra", "Avalon", "Century", "Crown / Crown Signia", "Mirai", "bZ4X / bZ3", "Urban Cruiser", "C-HR", "Harrier", "Highlander / Grand Highlander", "Venza", "Sienna", "Alphard / Vellfire", "Innova", "Roomy", "Sienta", "Voxy", "Noah", "Probox", "LiteAce / TownAce", "Hilux Champ / Rangga", "Proace / Proace City / Proace Max"],
+        "Changan Auto": ["Alsvin", "CS15", "CS35 Plus", "CS55 Plus", "CS75 Plus", "CS85 Coupe", "CS95", "Uni-T", "Uni-K", "Uni-V", "Hunter (Pick-up)", "Star 5 (Vans de carga y pasajeros)", "Q20 / M201 (Mini-trucks de carga)"],
+        "Foton": ["Tunland E", "Tunland G7", "TruckMate M25 (1.3 Toneladas)", "TruckMate + Cargabox", "Foton 2 Toneladas", "Foton 3 Toneladas", "View C2 (Van de carga y pasajeros)", "View CS2 (Ambulancia y transporte)", "Aumark S (Camiones de mediana capacidad / 5 a 8 Toneladas)", "Aumark TX", "Auman R (Camiones de carga pesada / 10 a 45 Toneladas)", "Mars V7", "Mars V9", "Tunland V9", "Tunland Yutu", "Grand General G9", "Sauvana", "Toplander", "Saga", "Toano / Toano Grand-V", "View Traveller", "View Transvan", "View i-series", "Gratour V3", "Gratour ix5", "Gratour im6", "Midi", "MP-X", "Smart Smurf E7", "EV Light Truck 4.5T"],
+        "Chevrolet": ["Aveo", "Spark", "Optra", "Cruze", "Onix", "Cavalier", "Tracker", "Captiva", "Trailblazer", "Traverse", "Tahoe", "Suburban", "Orlando", "Silverado", "Colorado", "D-Max", "Grand Vitara", "LUV", "Astra", "Corsa", "Meriva", "Zafira", "Epica", "Impala", "Malibu", "Century", "Celebrity", "Caprice", "Swift", "San Remo", "Trax", "Chevette", "Lumina", "Monte carlos", "Trailblazer (Global/Crossover)", "Equinox", "Equinox EV", "Blazer", "Blazer EV", "Silverado EV", "Montana", "S10", "Spin", "Groove", "Seeker", "Monza (Global actual)", "Sail", "Menlo", "Bolt EV / Bolt EUV"],
+        "Ford": ["Territory", "EcoSport", "Escape", "Edge", "Explorer", "Everest", "Bronco / Bronco Sport", "Expedition", "Ranger / Ranger Raptor", "F-150 / FX4 / Lariat", "F-350 / Super Duty", "Fiesta", "Focus", "Laser", "Festiva", "Ka", "Fusion", "Mustang", "Sierra"],
+        "Jeep": ["CJ-5 / CJ-7", "Wrangler (YJ / TJ / JK / JL)", "Cherokee (XJ / KJ / KK / KL)", "Grand Cherokee (ZJ / WJ / WK / WK2 / WL)", "Gladiator", "Compass", "Renegade", "Commander (Histórico 3 filas)", "Wagoneer / Grand Wagoneer (Históricos)", "J-10 / J-20 (Camionetas pickup históricas)", "Comanche", "Avenger", "Recon", "Wagoneer S", "Commander (Modelo actual para Latinoamérica/Asia)", "Grand Commander (Mercado asiático)", "Meridian"],
+        "RAM": ["Ram 1500 (Classic / DT / Rebel / Laramie)", "Ram 2500 (Heavy Duty)", "Ram 3500 (Heavy Duty)", "Ram 700", "Ram 1000", "Ram 1200", "Ram Rampage", "Ram 1500 RHO", "Ram 1500 TRX", "Ram 1500 REV", "Ram ProMaster", "Ram ProMaster City", "Ram ProMaster Rapid", "Ram V700 Rapid", "Ram V700 City", "Ram Chassis Cab (4500 / 5500)"],
+        "Hyundai": ["Grand i10 (Hatchback / Sedán)", "Accent", "Elantra", "Sonata", "Getz", "Matrix", "Atos", "Excel", "Scoupe", "Creta / Creta Grand", "Tucson", "Santa Fe", "Veracruz", "Terracan", "Galloper", "Palisade", "Kona / Kona EV", "Ioniq", "Staria", "H-1 / Starex", "HD65 / HD72 / HD78 (Camiones de carga)", "i10 / i20 / i30", "HB20 (HB20X / HB20S)", "Bayon", "Venue", "Alcazar", "Mufasa", "Casper", "Inster", "Lafesta", "Celesta", "Aura", "Grandeur / Azera", "Santa Cruz", "Nexo", "Ioniq 3", "Ioniq 5 / Ioniq 5 N", "Ioniq 6 / Ioniq 6 N", "Ioniq 9", "Custo", "Porter / H-100"],
+        "Kia": ["Picanto", "Soluto", "Sonet", "Seltos", "Sportage", "Sorento", "Carnival", "Rio (Stylus / Excite / Spice)", "Cerato / Forte", "Optima", "Carens / Rondo", "Pregio (Van)", "Besta (Van)", "K2700 / K3000 / Bongo (Camiones)", "Sephia", "Spectra", "Opirus", "Tasman (Pick-up global)", "EV2", "EV3", "EV4", "EV5", "EV6 / EV6 GT", "EV9", "K3 / K4 (Sucesores del Cerato y Rio)", "K5 (Sucesor del Optima)", "K8", "K9 / K900", "Ray / Ray EV", "Morning", "Ceed / ProCeed / XCeed", "Stonic", "Niro (Hybrid / Plug-in / EV)", "Soul", "Telluride", "Stinger", "Cadenza", "Mohave / Borrego", "Pegas", "Venga", "Joice"],
+        "Fiat": ["Cronos", "Argo / Argo Trekking", "Pulse (Audace / S-Design)", "Fastback / Fastback Impetus", "Mobi / Mobi Trekking", "Toro", "Fiorino", "Uno (Fire / Way)", "Palio / Palio Weekend", "Siena", "Premio", "Uno Mille", "Regatta", "Tucán", "Ritmo", "Mirafiori / Fiat 131", "Spazio / Fiat 147", "Tempra", "Marea", "Brava", "Idea", "Stilo", "Strada", "500 (500e / Hybrid)", "500X", "600 / 600 Hybrid", "Panda / Grande Panda", "Tipo (Sedán / Hatchback / Cross)", "Titano", "Scudo", "Ducato", "Doblò", "E-Ulysse", "Topolino"],
+        "Renault": ["Logan", "Sandero / Sandero Stepway", "Duster", "Oroch", "Koleos", "Kwid", "Twingo (Histórico muy destacado)", "Clio (Histórico)", "Symbol (Histórico)", "Megane (Histórico)", "Scenic (Histórico)", "Laguna (Histórico)", "Kangoo (Histórico)", "R19 / R11 / R9 / R5 (Históricos clásicos)", "Kardian", "Boreal", "Filante", "Arkana", "Austral", "Rafale", "Espace (Gama SUV actual)", "Symbioz", "Captur", "Triber", "Kiger", "Megane E-Tech (100% Eléctrico)", "Scenic E-Tech (100% Eléctrico)", "Renault 5 E-Tech (Eléctrico retro)", "Renault 4 E-Tech (Eléctrico retro)", "Niagara (Pick-up global)", "Master", "Trafic", "Express"],
+        "Chery": ["Arrizo 5 / Arrizo 5 Pro", "Tiggo 2 Pro Max", "Tiggo 4 / Tiggo 4 Pro Max", "Tiggo 7 Pro / Tiggo 7 Pro Max", "Tiggo 8 Pro / Tiggo 8 Pro Max", "Tiggo 9", "Himla (Pick-up)", "QQ (Histórico muy destacado)", "Arauca (Histórico)", "Orinoco (Histórico)", "Tiggo (Generaciones antiguas 2.0 / 2.4)", "Grand Tiger (Pick-up histórica)", "X1 (Histórico)", "Arrizo 8", "QQ Ice Cream", "Little Ant (eQ1)", "Wujie Pro (eQ7)", "Tiggo 3x / Tiggo 5x", "Tiggo 8 Pro Plug-in Hybrid (PHEV)", "Fulwin T9 / Fulwin T9L", "Fulwin A9", "Fulwin T11", "Omoda 5 / Omoda E5 (Bajo la submarca Omoda)", "Jaecoo 7 / Jaecoo 9 (Bajo la submarca Jaecoo)", "iCAR 03 / iCAR V23 (Bajo la submarca iCAR)", "EQ7", "Arrizo 5 GT"],
+        "Geely": ["Coolray / New Coolray", "Azkarra", "Tugella", "Geometry C (100% Eléctrico)", "Okavango", "Emgrand", "Binyue / Binyue Cool", "Binrui / Binrui Cool", "Xingyue L (Monjaro)", "Xingyue S", "Xingrui (Preface)", "Haoyue L", "Icon", "Boyue L / Boyue Cool", "Panda Mini EV / Panda Knight", "Geometry A / Geometry E (Gama Geometry)", "Galaxy L7 / Galaxy L6 / Galaxy E8 (Gama Geely Galaxy)", "E5", "Preface L", "Jiaji / Jiaji L", "Borui / Borui GE"],
+        "Maxus": ["D60", "G50", "T60", "D90", "Territory (SUV)", "G10", "G20", "G70", "G90", "MIFA 7", "MIFA 9", "T70", "T90", "Terron 9", "eTerron 9", "Interstellar X", "V70", "V80", "V90", "EV30", "Deliver 7", "Deliver 9", "eDeliver 3", "eDeliver 5", "eDeliver 7", "eDeliver 9", "Dana V1", "Dana M1", "Dana T1"],
+        "DFSK": ["D1 (Pick-up)", "E5 Comfort Hybrid (PHEV)", "Seres E3 (100% Eléctrico / Comercializado bajo su red)", "Glory 330S", "K07S (Minivan)", "C31 (Mini Truck)", "Glory 500 / Fengon 500", "Glory 560 Pro", "Glory 580", "Glory 600 / Fengon 600", "Fengon IX5", "Fengon IX7", "E3 / Seres 3", "Seres 5 / Seres 7 (Gama de alta gama en mercados globales)", "Candy (Mini EV)", "K01 / K02 / K05S / K07S (Línea de comerciales K-Series)", "C32 / C35 / C36 / C37 (Línea de comerciales C-Series)", "EC31 / EC35 / EC36 (Comerciales 100% eléctricos)", "D51 / D52 / D71 / D72 (Camiones ligeros y pesados D-Series)", "V21 / V22 / V27 / V29 (Línea comercial V-Series)", "Super Cab"],
+        "Dongfeng": ["D1 (Pick-up)", "E5 Comfort Hybrid (PHEV)", "Glory 500", "Glory 580", "Glory 330S", "Seres E3 (100% Eléctrico)", "K07S (Minivan)", "C31 (Mini Truck)", "E5 Plus", "600 / Glory 600 / Fengon 600", "Glory 560 Pro", "Fengon IX5", "Fengon IX7", "Candy (Mini EV)", "EC35 (Van eléctrica)", "EC31 / EC36 (Comerciales eléctricos)", "K01 / K02 / K05S (Línea comercial K-Series)", "C32 / C35 / C36 / C37 (Línea comercial C-Series)", "D51 / D52 / D71 / D72 (Línea comercial D-Series)", "V21 / V22 / V27 / V29 (Línea comercial V-Series)", "Super Cab", "Seres 5 / Seres 7 (Gama global bajo soporte de la casa matriz)"],
         "Nissan": ["Versa", "Sentra", "Altima", "Pathfinder", "X-Trail", "Frontier", "Kicks", "March", "NP300", "Note", "Magnite"],
-        "Volkswagen": ["Gol", "Polo", "Virtus", "Jetta", "Passat", "Tiguan", "T-Roc", "Taos", "Amarok", "Nivus"],
-        "Peugeot": ["208", "301", "308", "408", "2008", "3008", "5008", "Partner", "Landtrek", "Rifter"],
+        "Peugeot": ["208", "301", "308", "408", "2008", "3008", "5008", "Partner", "Landtrek", "Rifter", "e-208"],
+        "Volkswagen": ["Gol", "Polo", "Virtus", "Jetta", "Passat", "Tiguan", "T-Roc", "Taos", "Amarok", "Nivus", "ID.4"],
         "Mitsubishi": ["L200", "Outlander", "ASX", "Montero", "Lancer", "Eclipse Cross", "Xpander", "Mirage"],
-        "Mazda": ["Mazda 2", "Mazda 3", "Mazda 6", "CX-3", "CX-5", "CX-30", "CX-9", "MX-5", "BT-50"],
-        "Geely": ["Coolray", "Azkarra", "Tugella", "Geometry C", "Okavango", "Emgrand"],
+        "Mazda": ["Mazda 2", "Mazda 3", "Mazda 6", "CX-3", "CX-30", "CX-5", "CX-9", "MX-5", "BT-50"],
         "Otra": ["Otra (Especificar en observaciones)"]
     };
 
@@ -55,7 +69,6 @@ window.initModVehiculos = function() {
     const msgBusqueda = document.getElementById('mod_msg_busqueda');
 
     let currentData = null; // Datos actuales del registro encontrado
-    let currentTable = '';
 
     // 🔹 1. Poblar Años
     if (anioSelect) {
@@ -103,10 +116,8 @@ window.initModVehiculos = function() {
 
     // 🔹 4. 🔒 BUSCADOR EXACTO Y OBLIGATORIO
     btnBuscar.addEventListener('click', async () => {
-        // 1. Normalizar entrada (Mayúsculas y sin espacios)
         const val = inputBusqueda.value.trim().toUpperCase();
         
-        // 2. Validación estricta
         if (!val || val.length < 5) {
             return mostrarMsg(msgBusqueda, '⚠️ Ingrese un dato exacto y completo. Mínimo 5 caracteres.', 'error');
         }
@@ -116,18 +127,13 @@ window.initModVehiculos = function() {
         form.style.display = 'none';
 
         try {
-            // 🔒 Query EXACTA usando .eq. en los 3 campos (No permite parciales)
             const query = `placa.eq.${val},serial_carroceria.eq.${val},serial_motor.eq.${val}`;
-            
-            // Intentar en Motos
             let { data: moto, error: errMoto } = await window.supabaseClient.from('registro_motos').select('*').or(query).maybeSingle();
             
             if (moto && !errMoto) {
                 cargarDatos(moto, 'registro_motos', 'moto');
             } else {
-                // Intentar en Autos
                 let { data: auto, error: errAuto } = await window.supabaseClient.from('registro_automoviles').select('*').or(query).maybeSingle();
-                
                 if (auto && !errAuto) {
                     cargarDatos(auto, 'registro_automoviles', 'auto');
                 } else {
@@ -145,14 +151,12 @@ window.initModVehiculos = function() {
     // 🔹 5. Cargar Datos en el Formulario
     function cargarDatos(data, tabla, tipo) {
         currentData = data;
-        currentTable = tabla;
         setUIForType(tipo);
         
         form.style.display = 'block';
         mostrarMsg(msgBusqueda, '✅ Registro cargado. Puede editar y guardar.', 'success');
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
-        // Llenar campos comunes
         document.getElementById('mod_id_original').value = data.id;
         document.getElementById('m_placa').value = data.placa;
         document.getElementById('m_serial_carroceria').value = data.serial_carroceria || '';
@@ -163,15 +167,12 @@ window.initModVehiculos = function() {
         document.getElementById('m_anio').value = data.anio;
         document.getElementById('mod_estatus_badge').textContent = data.estatus || 'Verificación';
 
-        // ✅ Llenar Color (Manejo seguro)
+        // ✅ Llenar Color
         const colorSelect = document.getElementById('m_color');
         if (data.color) {
             const optionExists = Array.from(colorSelect.options).some(opt => opt.value === data.color);
-            if (optionExists) {
-                colorSelect.value = data.color;
-            } else {
-                colorSelect.value = 'Otro'; 
-            }
+            if (optionExists) colorSelect.value = data.color;
+            else colorSelect.value = 'Otro'; 
         } else {
             colorSelect.value = '';
         }
@@ -179,7 +180,7 @@ window.initModVehiculos = function() {
         // Llenar Marca y Modelo
         if (data.marca) {
             marcaSelect.value = data.marca;
-            marcaSelect.dispatchEvent(new Event('change')); // Disparar evento para llenar modelos
+            marcaSelect.dispatchEvent(new Event('change'));
             setTimeout(() => { modeloSelect.value = data.modelo; }, 150);
         }
 
@@ -187,25 +188,19 @@ window.initModVehiculos = function() {
             document.getElementById('m_cilindraje').value = data.cilindraje || '';
         }
 
-        // ✅ Cargar Previsualización de Fotos Existentes (Corregido para detectar sufijos)
+        // ✅ Cargar Previsualización de Fotos Existentes
         const sufijo = tipo === 'moto' ? '' : '_a';
-        
         mostrarPreview(`m_prev_frontal${sufijo}`, data.foto_frontal);
         mostrarPreview(`m_prev_trasera${sufijo}`, data.foto_trasera);
         mostrarPreview(`m_prev_der${sufijo}`, data.foto_lado_derecho);
         mostrarPreview(`m_prev_izq${sufijo}`, data.foto_lado_izquierdo);
     }
 
-    // Función auxiliar para mostrar imagen si existe URL
     function mostrarPreview(imgId, url) {
         const img = document.getElementById(imgId);
         if (img) {
-            if (url) { 
-                img.src = url; 
-                img.style.display = 'block'; 
-            } else { 
-                img.style.display = 'none'; 
-            }
+            if (url) { img.src = url; img.style.display = 'block'; }
+            else { img.style.display = 'none'; }
         }
     }
 
@@ -214,7 +209,6 @@ window.initModVehiculos = function() {
         e.preventDefault();
         if (!currentData) return mostrarMsg(msgBox, 'Busque un vehículo primero.', 'error');
         
-        // Validaciones
         const placa = document.getElementById('m_placa').value.trim().toUpperCase();
         const serialCarro = document.getElementById('m_serial_carroceria').value.trim();
         const color = document.getElementById('m_color').value;
@@ -225,7 +219,7 @@ window.initModVehiculos = function() {
 
         const btnSubmit = form.querySelector('.btn-submit');
         btnSubmit.disabled = true; btnSubmit.textContent = '⏳ Guardando...';
-        mostrarMsg(msgBox, '', ''); // Limpiar
+        mostrarMsg(msgBox, '', '');
 
         try {
             const bucket = window.supabaseClient.storage.from('fotos_vehiculos');
@@ -233,45 +227,34 @@ window.initModVehiculos = function() {
             const ts = Date.now();
             const tipo = document.getElementById('mod_tipo_vehiculo').value === 'Motocicleta' ? 'moto' : 'auto';
 
-            // Función auxiliar para subir foto SOLO SI CAMBIA
             const uploadIfNeeded = async (inputId, currentUrl, suffix) => {
                 const file = document.getElementById(inputId).files[0];
-                if (!file) return currentUrl; // Si no hay archivo nuevo, retorna la URL actual
-                
+                if (!file) return currentUrl;
                 const path = `${uid}/mod_${ts}_${suffix}.jpg`;
                 const { error } = await bucket.upload(path, file, { cacheControl: '3600' });
                 if (error) throw new Error('Error subiendo foto.');
                 return bucket.getPublicUrl(path).data.publicUrl;
             };
 
-            // Subir las 4 fotos si fueron cambiadas
             const sufijoInput = tipo === 'moto' ? '' : '_a';
             const f1 = await uploadIfNeeded(`m_foto_frontal${sufijoInput}`, currentData.foto_frontal, 'f');
             const f2 = await uploadIfNeeded(`m_foto_trasera${sufijoInput}`, currentData.foto_trasera, 't');
             const f3 = await uploadIfNeeded(`m_foto_der${sufijoInput}`, currentData.foto_lado_derecho, 'rd');
             const f4 = await uploadIfNeeded(`m_foto_izq${sufijoInput}`, currentData.foto_lado_izquierdo, 'ri');
 
-            // Preparar datos con PLACA EDITABLE
             const updateData = {
-                placa: placa, 
-                serial_carroceria: serialCarro,
+                placa, serial_carroceria: serialCarro,
                 serial_motor: document.getElementById('m_serial_motor').value.trim() || null,
-                color: color,
-                marca: document.getElementById('m_marca').value,
-                modelo: document.getElementById('m_modelo').value,
+                color, marca: document.getElementById('m_marca').value, modelo: document.getElementById('m_modelo').value,
                 anio: parseInt(document.getElementById('m_anio').value),
                 direccion_detencion: document.getElementById('m_direccion_detencion').value.trim() || null,
                 observaciones: document.getElementById('m_observaciones').value.trim() || null,
                 estacion_policial: document.getElementById('m_estacion').value,
-                foto_frontal: f1, foto_trasera: f2,
-                foto_lado_derecho: f3, foto_lado_izquierdo: f4
+                foto_frontal: f1, foto_trasera: f2, foto_lado_derecho: f3, foto_lado_izquierdo: f4
             };
 
-            if (tipo === 'moto') {
-                updateData.cilindraje = document.getElementById('m_cilindraje').value;
-            }
+            if (tipo === 'moto') updateData.cilindraje = document.getElementById('m_cilindraje').value;
 
-            // Actualizar en la tabla correspondiente
             const tablaFinal = document.getElementById('mod_tabla_destino').value;
             const { error: finalError } = await window.supabaseClient.from(tablaFinal).update(updateData).eq('id', currentData.id);
             if (finalError) throw finalError;
@@ -282,9 +265,7 @@ window.initModVehiculos = function() {
         } catch (err) {
             console.error(err);
             let msg = 'Error: ' + err.message;
-            if (err.message.includes('23505') || err.message.includes('unique')) {
-                msg = '❌ Error: La placa ingresada ya existe en otro registro.';
-            }
+            if (err.message.includes('23505') || err.message.includes('unique')) msg = '❌ La placa ya existe en otro registro.';
             mostrarMsg(msgBox, msg, 'error');
         } finally {
             const btnSubmit = form.querySelector('.btn-submit');
@@ -292,11 +273,9 @@ window.initModVehiculos = function() {
         }
     });
 
-    // 🔹 Helpers UI
     function mostrarMsg(el, txt, type) {
         if (el) { el.textContent = txt; el.className = `msg ${type}`; el.style.display = txt ? 'block' : 'none'; }
     }
 
-    // Inicializar con vista de moto por defecto
     setUIForType('moto');
 };
