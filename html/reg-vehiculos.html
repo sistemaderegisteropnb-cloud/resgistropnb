@@ -14,7 +14,6 @@
   .img-preview { width: 100%; height: auto; max-height: 200px; object-fit: contain; border: 1px solid var(--beige-border); border-radius: 5px; margin-top: 8px; display: none; background: #f8fafc; }
   .status-badge { background: #dcfce7; color: #15803d; font-weight: 700; padding: 6px 12px; border-radius: 6px; border: 1px solid #86efac; font-size: 0.85rem; display: inline-block; }
   
-  /* 🔹 Tipo de Vehículo Selector */
   .tipo-selector { display: flex; gap: 12px; margin-bottom: 20px; }
   .tipo-btn { flex: 1; padding: 12px; border: 2px solid var(--beige-border); border-radius: 8px; background: #fff; cursor: pointer; text-align: center; transition: 0.2s; font-weight: 600; color: #64748b; }
   .tipo-btn:hover { border-color: var(--secondary); }
@@ -27,13 +26,12 @@
 <div class="card">
     <h3>🚗 Registro de Vehículo</h3>
     <form id="form-reg-vehiculos" class="registro-form" novalidate>
-        
         <div style="margin-bottom: 18px; display: flex; align-items: center; gap: 10px;">
             <label style="font-weight: 600; font-size: 0.95rem;">Estatus:</label>
             <span class="status-badge">✅ VERIFICACIÓN</span>
         </div>
 
-        <!-- 🔹 1. SELECCIÓN DE TIPO -->
+        <!-- 🔹 1. TIPO DE VEHÍCULO -->
         <fieldset>
             <legend>🚗 Tipo de Vehículo</legend>
             <div class="tipo-selector">
@@ -43,24 +41,29 @@
             <input type="hidden" id="v_tipo" value="Motocicleta">
         </fieldset>
 
-        <!-- 🔹 2. FOTOGRAFÍAS (4 Vistas para Motos) -->
-        <fieldset id="sec-fotos-moto">
-            <legend>📸 Fotografías (Motocicleta)</legend>
-            <div class="form-grid">
+        <!-- 🔹 2. FOTOS (Dinámico) -->
+        <fieldset id="sec-fotos">
+            <legend>📸 Fotografías</legend>
+            <div class="form-grid" id="grid-fotos-moto">
                 <div class="form-group"><label>Frontal</label><input type="file" id="v_foto_frontal" accept="image/*" required><img id="prev_v_frontal" class="img-preview"></div>
                 <div class="form-group"><label>Trasera</label><input type="file" id="v_foto_trasera" accept="image/*" required><img id="prev_v_trasera" class="img-preview"></div>
                 <div class="form-group"><label>Lado Derecho</label><input type="file" id="v_foto_der" accept="image/*" required><img id="prev_v_der" class="img-preview"></div>
                 <div class="form-group"><label>Lado Izquierdo</label><input type="file" id="v_foto_izq" accept="image/*" required><img id="prev_v_izq" class="img-preview"></div>
             </div>
+            <div class="form-grid hidden-view" id="grid-fotos-auto">
+                <div class="form-group"><label>Frontal</label><input type="file" id="v_foto_frontal_a" accept="image/*" required><img id="prev_v_frontal_a" class="img-preview"></div>
+                <div class="form-group"><label>Trasera</label><input type="file" id="v_foto_trasera_a" accept="image/*" required><img id="prev_v_trasera_a" class="img-preview"></div>
+                <div class="form-group"><label>Lateral</label><input type="file" id="v_foto_lateral_a" accept="image/*" required><img id="prev_v_lateral_a" class="img-preview"></div>
+            </div>
         </fieldset>
 
-        <!-- 🔹 3. DATOS DE IDENTIFICACIÓN -->
+        <!-- 🔹 3. IDENTIFICACIÓN -->
         <fieldset>
             <legend>📋 Datos de Identificación</legend>
             <div class="form-grid">
                 <div class="form-group"><label>Placa</label><input type="text" id="v_placa" maxlength="10" placeholder="Ej: AA123BC" required style="text-transform: uppercase;"></div>
                 <div class="form-group"><label>Serial de Carrocería</label><input type="text" id="v_serial_carroceria" placeholder="Nro. de Chasis/Carrocería" required></div>
-                <div class="form-group"><label>Serial de Motor</label><input type="text" id="v_serial_motor" placeholder="Nro. de Motor" required></div>
+                <div class="form-group"><label>Serial de Motor</label><input type="text" id="v_serial_motor" placeholder="Nro. de Motor"></div>
                 <div class="form-group"><label>Color</label><input type="text" id="v_color" placeholder="Ej: Negro" required></div>
             </div>
         </fieldset>
@@ -69,21 +72,13 @@
         <fieldset>
             <legend>⚙️ Características</legend>
             <div class="form-grid">
-                <div class="form-group">
-                    <label>Marca</label>
-                    <input type="text" id="v_marca" placeholder="Ej: Yamaha, Bera..." required>
-                </div>
-                <div class="form-group">
-                    <label>Modelo</label>
-                    <input type="text" id="v_modelo" placeholder="Ej: FZ, Empire..." required>
-                </div>
-                <div class="form-group">
-                    <label>Año</label>
-                    <select id="v_anio" required></select> <!-- Se llena con JS -->
-                </div>
-                <div class="form-group">
-                    <label>Cilindraje</label>
-                    <select id="v_cilindraje" required>
+                <div class="form-group"><label>Marca</label><input type="text" id="v_marca" placeholder="Ej: Yamaha, Bera, Toyota..." required></div>
+                <div class="form-group"><label>Modelo</label><input type="text" id="v_modelo" placeholder="Ej: FZ, Empire, Corolla..." required></div>
+                <div class="form-group"><label>Año</label><select id="v_anio" required></select></div>
+                
+                <!-- Solo visible para Motos -->
+                <div class="form-group" id="box-cilindraje"><label>Cilindraje</label>
+                    <select id="v_cilindraje">
                         <option value="">Seleccione...</option>
                         <option value="Baja (hasta 250 cc)">Baja Cilindrada (hasta 250 cc)</option>
                         <option value="Media (300-750 cc)">Media Cilindrada (300 cc - 750 cc)</option>
@@ -93,10 +88,21 @@
             </div>
         </fieldset>
 
-        <!-- 🔹 5. OBSERVACIONES -->
+        <!-- 🔹 5. ESTACIÓN Y OBSERVACIONES -->
         <fieldset>
-            <legend>📝 Observaciones (Opcional)</legend>
-            <textarea id="v_observaciones" rows="2" placeholder="Detalles adicionales (rayones, accesorios, etc.)..."></textarea>
+            <legend>🏛️ Datos del Registro</legend>
+            <div class="form-group" style="grid-column: span 2;"><label>Estación policial</label>
+                <select id="v_estacion" required>
+                    <option value="">Seleccione estación...</option>
+                    <option value="EPM MARACAIBO">EPM MARACAIBO</option><option value="EPM SAN FRANCISCO">EPM SAN FRANCISCO</option>
+                    <option value="EPP CRISTO DE ARANZA">EPP CRISTO DE ARANZA</option><option value="EPP LUIS HURTADO">EPP LUIS HURTADO</option>
+                    <option value="EPP DAGNINO">EPP DAGNINO</option><option value="EPP OLEGARIO VILLALOBOS">EPP OLEGARIO VILLALOBOS</option>
+                    <option value="EPP CHIQUINQUIRA">EPP CHIQUINQUIRA</option><option value="EPP CARACCIOLO">EPP CARACCIOLO</option>
+                    <option value="EPP VENANCIO PULGAR">EPP VENANCIO PULGAR</option><option value="EPP BOLIVAR">EPP BOLIVAR</option>
+                    <option value="EPP SANTA LUCIA">EPP SANTA LUCIA</option>
+                </select>
+            </div>
+            <textarea id="v_observaciones" rows="2" placeholder="Notas adicionales (accesorios, rayones, etc.)..." style="margin-top:10px;"></textarea>
         </fieldset>
 
         <button type="submit" class="btn-submit">✅ Registrar Vehículo</button>
