@@ -1,6 +1,6 @@
 window.initRegVehiculos = function() {
-    // 🔹 BASE DE DATOS DE MARCAS Y MODELOS
-    const marcasModelos = {
+    // 🔹 LISTA SEPARADA: MOTOCICLETAS
+    const marcasModelosMoto = {
         "Empire Keeway": ["Matrix Lite", "Matrix II 150", "EK Xpress Lite", "QJ Fort", "Horse (EK Horse 2 SE)", "EK Arsen II 200", "EK Atlas", "EK Atlas HD/HDS 200", "Owen 200", "Thunder EK", "TX II 150", "TX 250GS", "QJ Motor SRT 550", "QJ Motor SRT 550X", "QJ Motor SRT 700S", "QJ Motor SRT 700SX", "Superlight 200S", "V302C"],
         "Bera Motorcycles": ["Bera BWS", "Milán", "Runner", "SBR", "X1", "BRF", "León", "BR200 / DT", "Cobra", "Kavak", "BRZ", "GR", "Antiking", "Carguero"],
         "Motos Toro": ["Toro Jaguar TR150cc", "Toro León TR200cc", "Toro TRX 150", "Toro TRX 250", "Toro Cappuccino TR180cc", "Toro Power TR180cc", "Toro Moka 150", "Toro Fox TR180cc", "Toro REX TR150cc", "Toro REX TR250cc", "Toro REX Motard", "Toro R3X 250", "Toro Tank TR180cc", "Toro Cyclone RX650"],
@@ -21,24 +21,54 @@ window.initRegVehiculos = function() {
         "Otra": ["Otra (Especificar en observaciones)"]
     };
 
-    // 🔹 1. Poblar Select de Marcas y Modelos
+    // 🔹 LISTA SEPARADA: AUTOMÓVILES
+    const marcasModelosAuto = {
+        "Toyota": ["Corolla", "Yaris", "Hilux", "Fortuner", "Camry", "Land Cruiser", "Prado", "Rav4", "Etios", "Agya", "HiAce", "Yaris Cross"],
+        "Chevrolet": ["Spark", "Aveo", "Cruze", "Malibu", "Traverse", "Tahoe", "Silverado", "Tracker", "Orlando", "Spin", "Montana", "Onix"],
+        "Ford": ["Fiesta", "Focus", "Mustang", "Explorer", "F-150", "Ranger", "EcoSport", "Territory", "Bronco Sport", "Maverick", "Escape"],
+        "Hyundai": ["Tucson", "Creta", "Accent", "Elantra", "Sonata", "Santa Fe", "Kona", "Grand i10", "H100", "Venue", "Ioniq 5"],
+        "Kia": ["Picanto", "Rio", "Cerato", "Seltos", "Sportage", "Sorento", "Soul", "Stonic", "K2700", "Forte", "EV6"],
+        "Nissan": ["Versa", "Sentra", "Altima", "Pathfinder", "X-Trail", "Frontier", "Kicks", "March", "NP300", "Note", "Magnite"],
+        "Renault": ["Sandero", "Logan", "Duster", "Kwid", "Captur", "Koleos", "Oroch", "Stepway", "Kangoo", "Master"],
+        "Peugeot": ["208", "301", "308", "408", "2008", "3008", "5008", "Partner", "Landtrek", "Rifter", "e-208"],
+        "Volkswagen": ["Gol", "Polo", "Virtus", "Jetta", "Passat", "Tiguan", "T-Roc", "Taos", "Amarok", "Nivus", "ID.4"],
+        "Fiat": ["Mobi", "Argo", "Cronos", "Toro", "Pulse", "500", "Strada", "Ducato", "Fiorino", "Titano"],
+        "Mitsubishi": ["L200", "Outlander", "ASX", "Montero", "Lancer", "Eclipse Cross", "Xpander", "Mirage"],
+        "Suzuki": ["Swift", "Baleno", "Dzire", "Vitara", "Jimny", "Ertiga", "S-Cross", "Ignis", "Celerio", "Fronx"],
+        "Mazda": ["Mazda 2", "Mazda 3", "Mazda 6", "CX-3", "CX-30", "CX-5", "CX-9", "MX-5", "BT-50"],
+        "Honda": ["City", "Civic", "Accord", "CR-V", "HR-V", "WR-V", "Fit", "Ridgeline", "Pilot"],
+        "Jeep": ["Renegade", "Compass", "Cherokee", "Grand Cherokee", "Wrangler", "Gladiator", "Commander"],
+        "Otra": ["Otra (Especificar en observaciones)"]
+    };
+
+    // 🔹 Referencias DOM
     const marcaSelect = document.getElementById('v_marca');
     const modeloSelect = document.getElementById('v_modelo');
     const anioSelect = document.getElementById('v_anio');
 
+    // 🔹 1. Función para poblar Marcas según Tipo
+    function cargarMarcas(tipo) {
+        const lista = tipo === 'moto' ? marcasModelosMoto : marcasModelosAuto;
+        marcaSelect.innerHTML = '<option value="">Seleccione marca...</option>';
+        Object.keys(lista).sort().forEach(m => marcaSelect.innerHTML += `<option value="${m}">${m}</option>`);
+        modeloSelect.innerHTML = '<option value="">Seleccione primero la marca</option>';
+    }
+
+    // 🔹 Evento Cambio de Marca (Dinámico)
     if (marcaSelect && modeloSelect) {
-        Object.keys(marcasModelos).sort().forEach(marca => {
-            marcaSelect.innerHTML += `<option value="${marca}">${marca}</option>`;
-        });
         marcaSelect.addEventListener('change', function() {
+            const tipoActual = document.getElementById('v_tipo').value === 'Motocicleta' ? 'moto' : 'auto';
+            const lista = tipoActual === 'moto' ? marcasModelosMoto : marcasModelosAuto;
             const marcaSeleccionada = this.value;
+            
             modeloSelect.innerHTML = '<option value="">Seleccione modelo...</option>';
-            if (marcasModelos[marcaSeleccionada]) {
-                marcasModelos[marcaSeleccionada].forEach(mod => modeloSelect.innerHTML += `<option value="${mod}">${mod}</option>`);
+            if (lista[marcaSeleccionada]) {
+                lista[marcaSeleccionada].forEach(mod => modeloSelect.innerHTML += `<option value="${mod}">${mod}</option>`);
             }
         });
     }
 
+    // 🔹 Poblar Años
     if (anioSelect) {
         const currentYear = new Date().getFullYear();
         anioSelect.innerHTML = '<option value="">Seleccione año...</option>';
@@ -50,18 +80,19 @@ window.initRegVehiculos = function() {
         document.querySelectorAll('.tipo-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.type === type));
         document.getElementById('v_tipo').value = (type === 'moto') ? 'Motocicleta' : 'Automóvil';
         
+        // Cargar marcas correspondientes
+        cargarMarcas(type === 'moto' ? 'moto' : 'auto');
+
         const isMoto = type === 'moto';
         const motoGrid = document.getElementById('grid-fotos-moto');
         const autoGrid = document.getElementById('grid-fotos-auto');
         const cilindrajeBox = document.getElementById('box-cilindraje');
         
-        // Mostrar/Ocultar contenedores
         motoGrid.style.display = isMoto ? 'grid' : 'none';
         autoGrid.style.display = isMoto ? 'none' : 'grid';
         cilindrajeBox.style.display = isMoto ? 'block' : 'none';
         
         // ✅ SOLUCIÓN DEFINITIVA: Agregar/quitar 'required' según visibilidad
-        // Esto evita que el navegador intente validar campos ocultos
         motoGrid.querySelectorAll('input[type="file"]').forEach(i => i.required = isMoto);
         autoGrid.querySelectorAll('input[type="file"]').forEach(i => i.required = !isMoto);
         cilindrajeBox.querySelector('select').required = isMoto;
@@ -71,7 +102,7 @@ window.initRegVehiculos = function() {
         document.querySelectorAll('.img-preview').forEach(i => i.style.display = 'none');
     };
 
-    // ✅ Inicializar estado correcto al cargar para evitar errores de focus
+    // ✅ Inicializar estado correcto al cargar
     setTimeout(() => selectVehicleType('moto'), 0);
 
     // 🔹 3. Vista Previa de Imágenes
@@ -100,12 +131,7 @@ window.initRegVehiculos = function() {
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
-        // Validación HTML5 solo de campos VISIBLES
-        if (!form.checkValidity()) { 
-            form.reportValidity(); 
-            return; 
-        }
+        if (!form.checkValidity()) { form.reportValidity(); return; }
 
         const placa = document.getElementById('v_placa').value.trim().toUpperCase();
         const anio = parseInt(document.getElementById('v_anio').value);
@@ -172,7 +198,7 @@ window.initRegVehiculos = function() {
             if (error) throw error;
 
             if (msg) { msg.textContent = '✅ Vehículo registrado exitosamente.'; msg.className = 'msg success'; msg.style.display = 'block'; setTimeout(() => msg.style.display = 'none', 4000); }
-            form.reset(); selectVehicleType('moto'); // Reset a moto
+            form.reset(); selectVehicleType('moto');
         } catch (err) {
             console.error('Error:', err);
             let mensaje = 'Error inesperado. Intente nuevamente.';
