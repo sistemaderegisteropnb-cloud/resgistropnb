@@ -11,7 +11,7 @@ window.initModVehiculos = function() {
         "Bel Motos": ["Bel Matrix 150", "Bel New Matrix 150", "Bel Speed 150", "Bel Evo 150", "Bel Max 150", "Bel Max 200", "Bel Owen 150", "Bel Horse 150", "Bel Gloster 150", "Bel RK6 200", "Bel Sierra 200", "Bel Dakar 200", "Bel Space 150", "Bel Cargo 200"],
         "Motos Kadi": ["Kadi KD150-13 (Kadi Hawk)", "Kadi KD150-15 (Kadi Jaguar)", "Kadi KD150-23 (Kadi León)", "Kadi KD150-2B (Kadi Águila)", "Kadi KD150T-5 (Kadi Scooter)", "Kadi KD200 (Kadi Enduro / Doble Propósito)", "Kadi KD200-ZH (Kadi Motocargo)"],
         "Escuda Motorcycles": ["Escuda Hero", "Escuda Adventure", "Escuda Extreme", "Escuda EM200", "Escuda New Jog", "Escuda Alexa"],
-        "Yamaha": ["Yamaha YBR 125", "Yamaha FZ16 / FZ-S / FZ25", "Yamaha YZF-R1 / R6 / R3 / R15", "Yamaha MT-03 / MT-07 / MT-09 / MT-10", "Yamaha TMAX / XMAX / NMAX / BWS (Zuma)", "Yamaha Crypton 110", "Yamaha DT 125 / DT 175", "Yamaha XT 660R / XT 600", "Yamaha Ténéré 700 / Super Ténéré 1200", "Yamaha WR 250F / WR 450F", "Yamaha YZ 250F / YZ 450F", "Yamaha Bolt C-Spec", "Yamaha V-Star 250 / 650 / 1100", "Yamaha XTZ 125 / XTZ 150 / XTZ 250 Lander", "Yamaha Crux 110", "Yamaha RayZR 125", "Yamaha Fascino 125", "Yamaha Tracer 7 / Tracer 9 GT", "Yamaha XSR 155 / XSR 700 / XSR 900", "Yamaha Raptor 700R (Cuatrimoto / ATV)", "Yamaha YFZ450R (Cuatrimoto / ATV)", "Yamaha Grizzly 700 (Cuatrimoto / ATV)"],
+        "Yamaha": ["Yamaha YBR 125", "Yamaha FZ16", "Yamaha FZ-S", "Yamaha MT-03", "Yamaha XTZ 125", "Yamaha XTZ 150", "Yamaha XTZ 250 Lander", "Yamaha FZ25", "Yamaha FZ-S v2", "Yamaha SZ-RR", "Yamaha R15", "Yamaha R3", "Yamaha MT-15", "Yamaha Tenere 250", "Yamaha YS 250 Fazer", "Yamaha Lander 250", "Yamaha XTZ 125", "Yamaha YB125", "Yamaha YBR 150", "Yamaha YBR 125 Custom", "Yamaha Crypton 110", "Yamaha Jog", "Yamaha Xeon RC", "Yamaha Neo 125", "Yamaha Zuma", "Yamaha TMAX", "Yamaha XMAX", "Yamaha NMAX", "Yamaha Tricity", "Yamaha FJR1300", "Yamaha FZ8", "Yamaha FZ6", "Yamaha YZF-R1", "Yamaha YZF-R6", "Yamaha MT-07", "Yamaha MT-09", "Yamaha MT-10", "Yamaha Tracer 700", "Yamaha Tracer 900", "Yamaha Ténéré 700", "Yamaha WR 250F", "Yamaha WR 450F", "Yamaha YZ 125", "Yamaha YZ 250", "Yamaha YZ 250F", "Yamaha YZ 450F", "Yamaha PW 50", "Yamaha TT-R 110", "Yamaha TT-R 125", "Yamaha TT-R 230", "Yamaha XT 225", "Yamaha TW 200", "Yamaha Serow 250", "Yamaha Bolt", "Yamaha Star Venture", "Yamaha Super Ténéré", "Yamaha FJR1300ES", "Yamaha YZF-R1M", "Yamaha YZF-R6 Race", "Yamaha MT-09 SP", "Yamaha MT-10 SP", "Yamaha Tracer 9 GT", "Yamaha Niken", "Yamaha Lev 125", "Yamaha Aerox 155", "Yamaha Ray ZR", "Yamaha Fascino", "Yamaha Ray 110", "Yamaha Crux", "Yamaha Saluto", "Yamaha Libero", "Yamaha RX 135", "Yamaha RX 100", "Yamaha RD 350", "Yamaha YSR 50", "Yamaha TZR 50", "Yamaha DT 50", "Yamaha TDR 50", "Yamaha YZ 85", "Yamaha YZ 65", "Yamaha PW 80", "Yamaha TT-R 50", "Yamaha TTR 50", "Yamaha TTR 110", "Yamaha TTR 125L", "Yamaha TTR 230", "Yamaha XT 225 Dual Sport", "Yamaha TW 200 Fat Tire", "Yamaha Serow 250 Enduro", "Yamaha WR 250R", "Yamaha WR 250X", "Yamaha YZ 125 LC", "Yamaha YZ 250 2T", "Yamaha YZ 450F", "Yamaha YZ 250F", "Yamaha YZ 125", "Yamaha YZ 85", "Yamaha YZ 65", "Yamaha PW 50", "Yamaha TT-R 110", "Yamaha TT-R 125", "Yamaha TT-R 230", "Yamaha XT 225", "Yamaha TW 200", "Yamaha Serow 250", "Yamaha Bolt", "Yamaha Star Venture", "Yamaha Super Ténéré", "Yamaha FJR1300ES", "Yamaha YZF-R1M", "Yamaha YZF-R6 Race", "Yamaha MT-09 SP", "Yamaha MT-10 SP", "Yamaha Tracer 9 GT", "Yamaha Niken", "Yamaha Lev 125", "Yamaha Aerox 155", "Yamaha Ray ZR", "Yamaha Fascino", "Yamaha Ray 110", "Yamaha Crux", "Yamaha Saluto", "Yamaha Libero", "Yamaha RX 135", "Yamaha RX 100", "Yamaha RD 350", "Yamaha YSR 50", "Yamaha TZR 50", "Yamaha DT 50", "Yamaha TDR 50"],
         "Honda": ["Honda CG 150 Titan / Titan 120", "Honda CB 125F / CB 190R / CB 250 Twister / CB 500F / CB 650F / CB 1000R", "Honda CBR 250R / CBR 600RR / CBR 1000RR Fireblade", "Honda CRF 250F / CRF 250R / CRF 450R / CRF 1100L Africa Twin", "Honda XR 150L / XR 190L / XR 250 Tornado / XR 650L", "Honda XRE 190 / XRE 300", "Honda Transalp XL750", "Honda GL 1800 Gold Wing", "Honda CMX 500 Rebel / CMX 1100 Rebel", "Honda Shadow 750", "Honda NC 750X", "Honda X-ADV 750", "Honda ADV 160 / ADV 350", "Honda PCX 160", "Honda Elite 125", "Honda Dio 110", "Honda NAVI 110", "Honda Wave 110S", "Honda Biz 125", "Honda GL 150 Cargo", "Honda TRX 420 FourTrax / TRX 700XX (Cuatrimoto / ATV)"],
         "Suzuki": ["Suzuki GN 125", "Suzuki AX 100", "Suzuki DR 150 / DR 200 / DR 650", "Suzuki Gixxer 150 / Gixxer 250", "Suzuki GSX-R600 / GSX-R750 / GSX-R1000", "Suzuki GSX-S750 / GSX-S1000", "Suzuki Hayabusa (GSX1300R)", "Suzuki V-Strom 250 / V-Strom 650 / V-Strom 1050", "Suzuki Boulevard C50 / M109R", "Suzuki Burgman 125 / Burgman 200 / Burgman 400 / Burgman 650", "Suzuki Address 115", "Suzuki Avenis 125", "Suzuki Access 125", "Suzuki EN 125 HU", "Suzuki Katana", "Suzuki SV 650", "Suzuki RM-Z250 / RM-Z450", "Suzuki KingQuad 400 / KingQuad 750 (Cuatrimoto / ATV)"],
         "KTM": ["KTM 125 Duke / 200 Duke / 250 Duke / 390 Duke / 790 Duke / 890 Duke / 990 Duke / 1390 Super Duke R", "KTM RC 125 / RC 200 / RC 390 / RC 8C", "KTM 250 Adventure / 390 Adventure / 790 Adventure / 890 Adventure / 1290 Super Adventure / 1390 Super Adventure", "KTM 690 Enduro R", "KTM 690 SMC R", "KTM 150 EXC / 250 EXC / 300 EXC (TPI / hardenduro)", "KTM 250 EXC-F / 350 EXC-F / 450 EXC-F / 500 EXC-F", "KTM 125 SX / 250 SX", "KTM 250 SX-F / 350 SX-F / 450 SX-F", "KTM 50 SX / 65 SX / 85 SX", "KTM Freeride E-XC"],
@@ -101,17 +101,22 @@ window.initModVehiculos = function() {
         cargarMarcas(type);
     }
 
-    // 🔹 4. Buscador
+    // 🔹 4. 🔒 BUSCADOR EXACTO Y OBLIGATORIO
     btnBuscar.addEventListener('click', async () => {
+        // 1. Normalizar entrada (Mayúsculas y sin espacios)
         const val = inputBusqueda.value.trim().toUpperCase();
-        if (!val) return mostrarMsg(msgBusqueda, 'Ingrese un dato para buscar.', 'error');
         
-        mostrarMsg(msgBusqueda, '🔍 Buscando...', 'success');
+        // 2. Validación estricta
+        if (!val || val.length < 5) {
+            return mostrarMsg(msgBusqueda, '⚠️ Ingrese un dato exacto y completo. Mínimo 5 caracteres.', 'error');
+        }
+
+        mostrarMsg(msgBusqueda, '🔍 Buscando coincidencia exacta...', 'success');
         btnBuscar.disabled = true;
         form.style.display = 'none';
 
         try {
-            // Query para Motos
+            // 🔒 Query EXACTA usando .eq. en los 3 campos (No permite parciales)
             const query = `placa.eq.${val},serial_carroceria.eq.${val},serial_motor.eq.${val}`;
             
             // Intentar en Motos
@@ -126,12 +131,12 @@ window.initModVehiculos = function() {
                 if (auto && !errAuto) {
                     cargarDatos(auto, 'registro_automoviles', 'auto');
                 } else {
-                    mostrarMsg(msgBusqueda, '❌ Vehículo no encontrado.', 'error');
+                    mostrarMsg(msgBusqueda, '❌ No se encontró ningún vehículo con ese dato exacto.', 'error');
                 }
             }
         } catch (e) {
             console.error(e);
-            mostrarMsg(msgBusqueda, '❌ Error de conexión.', 'error');
+            mostrarMsg(msgBusqueda, '❌ Error de conexión al buscar.', 'error');
         } finally {
             btnBuscar.disabled = false;
         }
@@ -140,6 +145,7 @@ window.initModVehiculos = function() {
     // 🔹 5. Cargar Datos en el Formulario
     function cargarDatos(data, tabla, tipo) {
         currentData = data;
+        currentTable = tabla;
         setUIForType(tipo);
         
         form.style.display = 'block';
@@ -161,14 +167,19 @@ window.initModVehiculos = function() {
         const colorSelect = document.getElementById('m_color');
         if (data.color) {
             const optionExists = Array.from(colorSelect.options).some(opt => opt.value === data.color);
-            if (optionExists) colorSelect.value = data.color;
-            else colorSelect.value = 'Otro'; 
+            if (optionExists) {
+                colorSelect.value = data.color;
+            } else {
+                colorSelect.value = 'Otro'; 
+            }
+        } else {
+            colorSelect.value = '';
         }
 
         // Llenar Marca y Modelo
         if (data.marca) {
             marcaSelect.value = data.marca;
-            marcaSelect.dispatchEvent(new Event('change')); 
+            marcaSelect.dispatchEvent(new Event('change')); // Disparar evento para llenar modelos
             setTimeout(() => { modeloSelect.value = data.modelo; }, 150);
         }
 
@@ -176,14 +187,13 @@ window.initModVehiculos = function() {
             document.getElementById('m_cilindraje').value = data.cilindraje || '';
         }
 
-        // ✅ Cargar Previsualización de Fotos Existentes
-        // Usamos el sufijo correcto según el tipo
+        // ✅ Cargar Previsualización de Fotos Existentes (Corregido para detectar sufijos)
         const sufijo = tipo === 'moto' ? '' : '_a';
         
         mostrarPreview(`m_prev_frontal${sufijo}`, data.foto_frontal);
         mostrarPreview(`m_prev_trasera${sufijo}`, data.foto_trasera);
-        mostrarPreview(`m_prev_der${sufijo}`, data.foto_lado_derecho); // Ojo: columna en BD es foto_lado_derecho
-        mostrarPreview(`m_prev_izq${sufijo}`, data.foto_lado_izquierdo); // Ojo: columna en BD es foto_lado_izquierdo
+        mostrarPreview(`m_prev_der${sufijo}`, data.foto_lado_derecho);
+        mostrarPreview(`m_prev_izq${sufijo}`, data.foto_lado_izquierdo);
     }
 
     // Función auxiliar para mostrar imagen si existe URL
@@ -234,9 +244,8 @@ window.initModVehiculos = function() {
                 return bucket.getPublicUrl(path).data.publicUrl;
             };
 
-            // Subir las 4 fotos si fueron cambiadas (usando IDs correctos según tipo)
+            // Subir las 4 fotos si fueron cambiadas
             const sufijoInput = tipo === 'moto' ? '' : '_a';
-            
             const f1 = await uploadIfNeeded(`m_foto_frontal${sufijoInput}`, currentData.foto_frontal, 'f');
             const f2 = await uploadIfNeeded(`m_foto_trasera${sufijoInput}`, currentData.foto_trasera, 't');
             const f3 = await uploadIfNeeded(`m_foto_der${sufijoInput}`, currentData.foto_lado_derecho, 'rd');
