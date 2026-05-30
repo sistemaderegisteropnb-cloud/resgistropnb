@@ -1,0 +1,20 @@
+<style>
+  .historial-container { background: #f8fafc; border: 1px solid var(--beige-border); border-radius: 8px; padding: 20px; }
+  .historial-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0; }
+  .historial-header h3 { margin: 0; color: var(--primary); }
+  .badge-count { background: #dbeafe; color: #1d4ed8; padding: 4px 12px; border-radius: 12px; font-weight: 600; font-size: 0.85rem; }
+  .historial-empty { text-align: center; padding: 40px; color: #64748b; background: #fff; border-radius: 6px; border: 2px dashed #cbd5e1; }
+</style>
+
+<div class="card">
+    <h3>📜 Historial de Registros</h3>
+    <div class="historial-container">
+        <div class="historial-header">
+            <h4>Registros Archivados / Eliminados</h4>
+            <span class="badge-count" id="hist-count">Cargando...</span>
+        </div>
+        <div id="hist-content">
+            <div class="historial-empty">🔍 Busca por cédula o filtra por fecha para ver el historial de cambios.</div>
+        </div>
+    </div>
+</div>
