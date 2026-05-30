@@ -18,10 +18,11 @@
   
   /* 🔹 Buscador */
   .search-box { padding: 16px; background: #f8fafc; border: 1.5px dashed var(--beige-border); border-radius: 8px; margin-bottom: 20px; }
+  .search-box label { font-weight: 700; display: block; margin-bottom: 8px; font-size: 0.95rem; }
   .search-row { display: flex; gap: 10px; }
-  .search-row input { flex: 1; padding: 10px; border: 1.5px solid var(--beige-border); border-radius: 5px; font-size: 1.1rem; font-weight: bold; text-transform: uppercase; }
+  .search-row input { flex: 1; padding: 10px; border: 1.5px solid var(--beige-border); border-radius: 5px; font-size: 1rem; text-transform: uppercase; }
   
-  .tipo-selector { display: flex; gap: 12px; margin-bottom: 20px; opacity: 0.7; pointer-events: none; /* Desactivado en edición */ }
+  .tipo-selector { display: flex; gap: 12px; margin-bottom: 20px; opacity: 0.7; pointer-events: none; /* Desactivado visualmente */ }
   .tipo-btn { flex: 1; padding: 12px; border: 2px solid var(--beige-border); border-radius: 8px; background: #fff; text-align: center; font-weight: 600; color: #64748b; }
   .tipo-btn.active { border-color: var(--primary); background: #f0f4f8; color: var(--primary); box-shadow: 0 2px 8px rgba(0,43,92,0.1); }
 
@@ -32,11 +33,11 @@
 <div class="card">
     <h3>✏️ Modificar Vehículo</h3>
     
-    <!-- 🔍 BÚSQUEDA -->
+    <!-- 🔍 BÚSQUEDA MEJORADA -->
     <div class="search-box">
-        <label style="font-weight:700; display:block; margin-bottom:8px;">Buscar por Placa:</label>
+        <label>Buscar por Placa, Serial de Carrocería o Serial de Motor:</label>
         <div class="search-row">
-            <input type="text" id="mod_placa_input" placeholder="Ej: AA123BC" maxlength="10">
+            <input type="text" id="mod_busqueda_input" placeholder="Ingrese dato a buscar..." maxlength="30">
             <button id="btn_buscar_mod" class="btn-search">🔍 Buscar</button>
         </div>
         <div id="mod_msg_busqueda" class="msg" style="margin-top:8px;"></div>
@@ -46,6 +47,7 @@
     <form id="form-mod-vehiculos" class="registro-form" novalidate style="display: none;">
         <input type="hidden" id="mod_id_original">
         <input type="hidden" id="mod_tipo_vehiculo"> <!-- moto o auto -->
+        <input type="hidden" id="mod_tabla_destino"> <!-- nombre tabla BD -->
         
         <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
             <label style="font-weight: 600;">Estatus Actual:</label>
@@ -59,37 +61,39 @@
                 <div class="tipo-btn" id="btn_tipo_moto">🏍️ Motocicleta</div>
                 <div class="tipo-btn" id="btn_tipo_auto">🚙 Automóvil</div>
             </div>
-            <small style="color:#64748b;">No se puede cambiar el tipo de vehículo en la edición.</small>
+            <small style="color:#64748b;">El tipo de vehículo no se puede cambiar en la edición.</small>
         </fieldset>
 
         <!-- 🔹 2. FOTOS -->
         <fieldset id="sec-fotos">
-            <legend>📸 Fotografías (Deje vacío para mantener la actual)</legend>
+            <legend>📸 Fotografías (Suba una nueva para reemplazar)</legend>
             <!-- FOTOS MOTO -->
             <div class="form-grid" id="grid-fotos-moto">
-                <div class="form-group"><label>Frontal</label><input type="file" id="m_foto_frontal" accept="image/*"><img id="m_prev_frontal" class="img-preview"></div>
-                <div class="form-group"><label>Trasera</label><input type="file" id="m_foto_trasera" accept="image/*"><img id="m_prev_trasera" class="img-preview"></div>
-                <div class="form-group"><label>Lado Derecho</label><input type="file" id="m_foto_der" accept="image/*"><img id="m_prev_der" class="img-preview"></div>
-                <div class="form-group"><label>Lado Izquierdo</label><input type="file" id="m_foto_izq" accept="image/*"><img id="m_prev_izq" class="img-preview"></div>
+                <div class="form-group"><label>Frontal</label><input type="file" id="m_foto_frontal" accept="image/*" onchange="previewFile(this, 'm_prev_frontal')"><img id="m_prev_frontal" class="img-preview"></div>
+                <div class="form-group"><label>Trasera</label><input type="file" id="m_foto_trasera" accept="image/*" onchange="previewFile(this, 'm_prev_trasera')"><img id="m_prev_trasera" class="img-preview"></div>
+                <div class="form-group"><label>Lado Derecho</label><input type="file" id="m_foto_der" accept="image/*" onchange="previewFile(this, 'm_prev_der')"><img id="m_prev_der" class="img-preview"></div>
+                <div class="form-group"><label>Lado Izquierdo</label><input type="file" id="m_foto_izq" accept="image/*" onchange="previewFile(this, 'm_prev_izq')"><img id="m_prev_izq" class="img-preview"></div>
             </div>
             <!-- FOTOS AUTO -->
             <div class="form-grid hidden-view" id="grid-fotos-auto">
-                <div class="form-group"><label>Frontal</label><input type="file" id="m_foto_frontal_a" accept="image/*"><img id="m_prev_frontal_a" class="img-preview"></div>
-                <div class="form-group"><label>Trasera</label><input type="file" id="m_foto_trasera_a" accept="image/*"><img id="m_prev_trasera_a" class="img-preview"></div>
-                <div class="form-group"><label>Lado Derecho</label><input type="file" id="m_foto_der_a" accept="image/*"><img id="m_prev_der_a" class="img-preview"></div>
-                <div class="form-group"><label>Lado Izquierdo</label><input type="file" id="m_foto_izq_a" accept="image/*"><img id="m_prev_izq_a" class="img-preview"></div>
+                <div class="form-group"><label>Frontal</label><input type="file" id="m_foto_frontal_a" accept="image/*" onchange="previewFile(this, 'm_prev_frontal_a')"><img id="m_prev_frontal_a" class="img-preview"></div>
+                <div class="form-group"><label>Trasera</label><input type="file" id="m_foto_trasera_a" accept="image/*" onchange="previewFile(this, 'm_prev_trasera_a')"><img id="m_prev_trasera_a" class="img-preview"></div>
+                <div class="form-group"><label>Lado Derecho</label><input type="file" id="m_foto_der_a" accept="image/*" onchange="previewFile(this, 'm_prev_der_a')"><img id="m_prev_der_a" class="img-preview"></div>
+                <div class="form-group"><label>Lado Izquierdo</label><input type="file" id="m_foto_izq_a" accept="image/*" onchange="previewFile(this, 'm_prev_izq_a')"><img id="m_prev_izq_a" class="img-preview"></div>
             </div>
         </fieldset>
 
-        <!-- 🔹 3. IDENTIFICACIÓN -->
+        <!-- 🔹 3. IDENTIFICACIÓN (Placa Editable) -->
         <fieldset>
             <legend>📋 Datos de Identificación</legend>
             <div class="form-grid">
-                <div class="form-group"><label>Placa</label><input type="text" id="m_placa" required style="text-transform: uppercase; background: #f1f5f9; cursor: not-allowed;" readonly></div>
+                <!-- ✅ PLACA EDITABLE -->
+                <div class="form-group"><label>Placa</label><input type="text" id="m_placa" required style="text-transform: uppercase;"></div>
                 <div class="form-group"><label>Serial de Carrocería</label><input type="text" id="m_serial_carroceria" required></div>
                 <div class="form-group"><label>Serial de Motor</label><input type="text" id="m_serial_motor" placeholder="Opcional en autos"></div>
                 <div class="form-group">
                     <label>Color</label>
+                    <!-- ✅ Select de Color Completo -->
                     <select id="m_color" required>
                         <option value="">Seleccione color...</option>
                         <option value="Blanco">Blanco</option><option value="Blanco Perla">Blanco Perla</option>
@@ -153,3 +157,15 @@
         <div id="msg_mod_vehiculos" class="msg"></div>
     </form>
 </div>
+
+<!-- Script auxiliar para preview inmediato -->
+<script>
+window.previewFile = function(input, imgId) {
+    const img = document.getElementById(imgId);
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) { img.src = e.target.result; img.style.display = 'block'; }
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>
