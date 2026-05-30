@@ -107,19 +107,28 @@ window.initModVehiculos = function() {
         cargarMarcas(type);
     }
 
-    // 🔹 FUNCIÓN CENTRALIZADA PARA MOSTRAR MENSAJES CON AUTO-OCULTAMIENTO
+    // 🔹 FUNCIÓN ROBUSTA PARA MOSTRAR MENSAJES CON AUTO-OCULTAMIENTO
     function mostrarMsgAuto(el, txt, type, autoHide = true, delay = 4000) {
         if (!el) return;
+        
+        // Limpiar cualquier timer previo en este elemento
+        if (el.dataset.timerId) {
+            clearTimeout(parseInt(el.dataset.timerId));
+            delete el.dataset.timerId;
+        }
+        
         el.textContent = txt;
         el.className = `msg ${type}`;
         el.style.display = txt ? 'block' : 'none';
         
-        // ✅ Auto-ocultar después de X segundos (solo para mensajes de éxito/advertencia)
+        // ✅ Auto-ocultar después de X segundos (solo para mensajes de éxito/advertencia, NO errores)
         if (autoHide && txt && type !== 'error') {
-            setTimeout(() => {
+            const timerId = setTimeout(() => {
                 el.style.display = 'none';
                 el.textContent = '';
+                delete el.dataset.timerId;
             }, delay);
+            el.dataset.timerId = timerId.toString();
         }
     }
 
@@ -137,14 +146,14 @@ window.initModVehiculos = function() {
             let { data: moto } = await window.supabaseClient.from('registro_motos').select('*').or(query).maybeSingle();
             if (moto) { 
                 cargarDatos(moto, 'registro_motos', 'moto'); 
-                mostrarMsgAuto(msgBusqueda, '✅ Registro cargado. Puede editar y guardar.', 'success'); // ✅ Se auto-ocultará
+                mostrarMsgAuto(msgBusqueda, '✅ Registro cargado. Puede editar y guardar.', 'success'); // ✅ Se auto-ocultará en 4s
                 return; 
             }
             
             let { data: auto } = await window.supabaseClient.from('registro_automoviles').select('*').or(query).maybeSingle();
             if (auto) { 
                 cargarDatos(auto, 'registro_automoviles', 'auto'); 
-                mostrarMsgAuto(msgBusqueda, '✅ Registro cargado. Puede editar y guardar.', 'success'); // ✅ Se auto-ocultará
+                mostrarMsgAuto(msgBusqueda, '✅ Registro cargado. Puede editar y guardar.', 'success'); // ✅ Se auto-ocultará en 4s
                 return; 
             }
             
@@ -160,7 +169,7 @@ window.initModVehiculos = function() {
         currentData = data;
         setUIForType(tipo);
         form.style.display = 'block';
-        // El mensaje de éxito ya se muestra en el buscador
+        // El mensaje de éxito ya se muestra en el buscador con auto-ocultamiento
         
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
