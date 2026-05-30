@@ -41,7 +41,7 @@
             <input type="hidden" id="v_tipo" value="Motocicleta">
         </fieldset>
 
-        <!-- 🔹 2. FOTOS (Dinámico) -->
+        <!-- 🔹 2. FOTOS (4 Vistas para AMBOS) -->
         <fieldset id="sec-fotos">
             <legend>📸 Fotografías</legend>
             <div class="form-grid" id="grid-fotos-moto">
@@ -53,7 +53,8 @@
             <div class="form-grid hidden-view" id="grid-fotos-auto">
                 <div class="form-group"><label>Frontal</label><input type="file" id="v_foto_frontal_a" accept="image/*" required><img id="prev_v_frontal_a" class="img-preview"></div>
                 <div class="form-group"><label>Trasera</label><input type="file" id="v_foto_trasera_a" accept="image/*" required><img id="prev_v_trasera_a" class="img-preview"></div>
-                <div class="form-group"><label>Lateral</label><input type="file" id="v_foto_lateral_a" accept="image/*" required><img id="prev_v_lateral_a" class="img-preview"></div>
+                <div class="form-group"><label>Lado Derecho</label><input type="file" id="v_foto_der_a" accept="image/*" required><img id="prev_v_der_a" class="img-preview"></div>
+                <div class="form-group"><label>Lado Izquierdo</label><input type="file" id="v_foto_izq_a" accept="image/*" required><img id="prev_v_izq_a" class="img-preview"></div>
             </div>
         </fieldset>
 
@@ -63,7 +64,7 @@
             <div class="form-grid">
                 <div class="form-group"><label>Placa</label><input type="text" id="v_placa" maxlength="10" placeholder="Ej: AA123BC" required style="text-transform: uppercase;"></div>
                 <div class="form-group"><label>Serial de Carrocería</label><input type="text" id="v_serial_carroceria" placeholder="Nro. de Chasis/Carrocería" required></div>
-                <div class="form-group"><label>Serial de Motor</label><input type="text" id="v_serial_motor" placeholder="Nro. de Motor"></div>
+                <div class="form-group"><label>Serial de Motor</label><input type="text" id="v_serial_motor" placeholder="Nro. de Motor (Opcional en autos)"></div>
                 <div class="form-group"><label>Color</label><input type="text" id="v_color" placeholder="Ej: Negro" required></div>
             </div>
         </fieldset>
@@ -73,10 +74,8 @@
             <legend>⚙️ Características</legend>
             <div class="form-grid">
                 <div class="form-group"><label>Marca</label><input type="text" id="v_marca" placeholder="Ej: Yamaha, Bera, Toyota..." required></div>
-                <div class="form-group"><label>Modelo</label><input type="text" id="v_modelo" placeholder="Ej: FZ, Empire, Corolla..." required></div>
+                <div class="form-group"><label>Modelo</label><input type="text" id="v_modelo" placeholder="Ej: FZ, Corolla, Civic..." required></div>
                 <div class="form-group"><label>Año</label><select id="v_anio" required></select></div>
-                
-                <!-- Solo visible para Motos -->
                 <div class="form-group" id="box-cilindraje"><label>Cilindraje</label>
                     <select id="v_cilindraje">
                         <option value="">Seleccione...</option>
@@ -88,21 +87,50 @@
             </div>
         </fieldset>
 
-        <!-- 🔹 5. ESTACIÓN Y OBSERVACIONES -->
+        <!-- 🔹 5. DATOS DEL REGISTRO (Estaciones + Dirección de Detención) -->
         <fieldset>
             <legend>🏛️ Datos del Registro</legend>
-            <div class="form-group" style="grid-column: span 2;"><label>Estación policial</label>
-                <select id="v_estacion" required>
-                    <option value="">Seleccione estación...</option>
-                    <option value="EPM MARACAIBO">EPM MARACAIBO</option><option value="EPM SAN FRANCISCO">EPM SAN FRANCISCO</option>
-                    <option value="EPP CRISTO DE ARANZA">EPP CRISTO DE ARANZA</option><option value="EPP LUIS HURTADO">EPP LUIS HURTADO</option>
-                    <option value="EPP DAGNINO">EPP DAGNINO</option><option value="EPP OLEGARIO VILLALOBOS">EPP OLEGARIO VILLALOBOS</option>
-                    <option value="EPP CHIQUINQUIRA">EPP CHIQUINQUIRA</option><option value="EPP CARACCIOLO">EPP CARACCIOLO</option>
-                    <option value="EPP VENANCIO PULGAR">EPP VENANCIO PULGAR</option><option value="EPP BOLIVAR">EPP BOLIVAR</option>
-                    <option value="EPP SANTA LUCIA">EPP SANTA LUCIA</option>
-                </select>
+            <div class="form-grid">
+                <div class="form-group" style="grid-column: span 2;"><label>Estación policial</label>
+                    <select id="v_estacion" required>
+                        <option value="">Seleccione estación...</option>
+                        <option value="EPM MARACAIBO">EPM MARACAIBO</option>
+                        <option value="EPM SAN FRANCISCO">EPM SAN FRANCISCO</option>
+                        <option value="EPM LA CAÑADA">EPM LA CAÑADA</option>
+                        <option value="EPM ESTACION POLICIAL JESUS E. LOSADA">EPM ESTACION POLICIAL JESUS E. LOSADA</option>
+                        <option value="EPP CRISTO DE ARANZA">EPP CRISTO DE ARANZA</option>
+                        <option value="EPP LUIS HURTADO">EPP LUIS HURTADO</option>
+                        <option value="EPP DAGNINO">EPP DAGNINO</option>
+                        <option value="EPP OLEGARIO VILLALOBOS">EPP OLEGARIO VILLALOBOS</option>
+                        <option value="EPP CHIQUINQUIRA">EPP CHIQUINQUIRA</option>
+                        <option value="EPP FRANCISCO EUGENIO">EPP FRANCISCO EUGENIO</option>
+                        <option value="EPP CARACCIOLO">EPP CARACCIOLO</option>
+                        <option value="EPP IDELFONSO">EPP IDELFONSO</option>
+                        <option value="EPP VENANCIO PULGAR">EPP VENANCIO PULGAR</option>
+                        <option value="EPP COQUIVACOA-ZAPARA">EPP COQUIVACOA-ZAPARA</option>
+                        <option value="EPP RAUL LEONI">EPP RAUL LEONI</option>
+                        <option value="EPP ANTONIO BORJAS ROMERO">EPP ANTONIO BORJAS ROMERO</option>
+                        <option value="EPP JUANA DE AVILA">EPP JUANA DE AVILA</option>
+                        <option value="EPP SAN ISIDRO">EPP SAN ISIDRO</option>
+                        <option value="EPP CASIQUE MARA">EPP CASIQUE MARA</option>
+                        <option value="EPP BOLIVAR">EPP BOLIVAR</option>
+                        <option value="EPP EL BAJO">EPP EL BAJO</option>
+                        <option value="EPP DOMITILA">EPP DOMITILA</option>
+                        <option value="EPP CORTIJOS">EPP CORTIJOS</option>
+                        <option value="EPP MARCIAL HERNANDEZ">EPP MARCIAL HERNANDEZ</option>
+                        <option value="EPP POTRERITO">EPP POTRERITO</option>
+                        <option value="EPP ANDRES BELLO">EPP ANDRES BELLO</option>
+                        <option value="EPP SANTA LUCIA">EPP SANTA LUCIA</option>
+                    </select>
+                </div>
+                <div class="form-group" style="grid-column: span 2;"><label>Dirección de detención</label><input type="text" id="v_direccion_detencion" placeholder="Lugar exacto donde fue detenido"></div>
             </div>
-            <textarea id="v_observaciones" rows="2" placeholder="Notas adicionales (accesorios, rayones, etc.)..." style="margin-top:10px;"></textarea>
+        </fieldset>
+
+        <!-- 🔹 6. OBSERVACIONES -->
+        <fieldset>
+            <legend>📝 Observaciones (Opcional)</legend>
+            <textarea id="v_observaciones" rows="2" placeholder="Notas adicionales (accesorios, rayones, condiciones, etc.)..."></textarea>
         </fieldset>
 
         <button type="submit" class="btn-submit">✅ Registrar Vehículo</button>
