@@ -96,9 +96,12 @@ window.initRegVehiculos = function() {
         
         document.querySelectorAll('input[type="file"]').forEach(i => i.value = '');
         document.querySelectorAll('.img-preview').forEach(i => { i.style.display = 'none'; i.src = ''; });
+        
+        // ✅ Resetear validación al cambiar de tipo también
+        resetValidation();
     };
 
-    // 🔹 4. Vista Previa de Imágenes
+    //  4. Vista Previa de Imágenes
     const setupPreview = (inputId, previewId) => {
         const input = document.getElementById(inputId);
         const preview = document.getElementById(previewId);
@@ -113,7 +116,7 @@ window.initRegVehiculos = function() {
         setupPreview(id, id.replace('v_foto_', 'prev_v_'));
     });
 
-    // 🔹 5. 🚨 VALIDACIÓN EN TIEMPO REAL (Placa, Serial Carro, Serial Motor)
+    // 🔹 5. 🚨 VALIDACIÓN EN TIEMPO REAL
     function debounce(func, wait) {
         let timeout;
         return function(...args) {
@@ -136,16 +139,13 @@ window.initRegVehiculos = function() {
         try {
             let found = false;
             
-            // Para PLACA: buscar en AMBAS tablas (Motos y Autos)
             if (input.id === 'v_placa') {
                 const { data: d1 } = await window.supabaseClient.from(currentTable).select('id').eq('placa', val).maybeSingle();
                 if (d1) found = true;
                 const otherTable = currentTable === 'registro_motos' ? 'registro_automoviles' : 'registro_motos';
                 const { data: d2 } = await window.supabaseClient.from(otherTable).select('id').eq('placa', val).maybeSingle();
                 if (d2) found = true;
-            } 
-            // Para SERIALES: buscar solo en la tabla actual
-            else {
+            } else {
                 const col = input.id === 'v_serial_carroceria' ? 'serial_carroceria' : 'serial_motor';
                 const { data } = await window.supabaseClient.from(currentTable).select('id').eq(col, val).maybeSingle();
                 if (data) found = true;
@@ -171,7 +171,18 @@ window.initRegVehiculos = function() {
     document.getElementById('v_serial_carroceria')?.addEventListener('input', validateCarro);
     document.getElementById('v_serial_motor')?.addEventListener('input', validateMotor);
 
-    // 🔹 6. Envío del Formulario
+    // 🔹 6. ✅ FUNCIÓN DE LIMPIEZA COMPLETA (Corrección del error)
+    function resetValidation() {
+        // Limpiar clases de borde
+        document.querySelectorAll('.registro-form input').forEach(i => i.classList.remove('input-valid', 'input-error'));
+        // Limpiar textos de mensajes
+        ['msg-placa', 'msg-carroceria', 'msg-motor'].forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.textContent = '';
+        });
+    }
+
+    //  7. Envío del Formulario
     if (!form || !btn) return console.error('❌ Formulario no encontrado');
 
     form.addEventListener('submit', async (e) => {
@@ -182,13 +193,12 @@ window.initRegVehiculos = function() {
         const serialCarro = document.getElementById('v_serial_carroceria').value.trim();
         const color = document.getElementById('v_color').value;
         
-        // Validación extra: no permitir enviar si hay errores en vivo
         const msgPlaca = document.getElementById('msg-placa');
         if (msgPlaca?.classList.contains('error')) return mostrarError('La placa ya se encuentra registrada.');
 
         if (placa.length < 6) return mostrarError('La placa debe tener al menos 6 caracteres.');
 
-        btn.disabled = true; btn.textContent = '⏳ Guardando...'; msg.style.display = 'none';
+        btn.disabled = true; btn.textContent = ' Guardando...'; msg.style.display = 'none';
 
         try {
             const isMoto = document.getElementById('v_tipo').value === 'Motocicleta';
@@ -239,18 +249,17 @@ window.initRegVehiculos = function() {
             if (error) throw error;
 
             msg.textContent = '✅ Vehículo registrado exitosamente.'; msg.className = 'msg success'; msg.style.display = 'block';
-            setTimeout(() => msg.style.display = 'none', 4000);
-            form.reset(); selectVehicleType('moto');
-            // Limpiar mensajes de validación
-            ['msg-placa', 'msg-carroceria', 'msg-motor'].forEach(id => {
-                const el = document.getElementById(id);
-                if(el) el.textContent = '';
-            });
+            
+            // ✅ LIMPIEZA TOTAL TRAS ÉXITO
+            form.reset(); 
+            resetValidation(); // Esto borra el verde y los textos
+            selectVehicleType('moto'); // Esto reinicia el tipo a Moto
+
         } catch (err) {
             console.error('Error:', err);
             let mensaje = 'Error inesperado. Intente nuevamente.';
-            if (err.message.includes('23505') || err.message.includes('unique')) mensaje = '❌ Esta placa ya se encuentra registrada.';
-            else if (err.message.includes('storage')) mensaje = '❌ Error subiendo fotografías.';
+            if (err.message.includes('23505') || err.message.includes('unique')) mensaje = ' Esta placa ya se encuentra registrada.';
+            else if (err.message.includes('storage')) mensaje = ' Error subiendo fotografías.';
             else if (err.message.includes('Falta la fotografía')) mensaje = '❌ ' + err.message;
             mostrarError(mensaje);
         } finally { btn.disabled = false; btn.textContent = '✅ Registrar Vehículo'; }
