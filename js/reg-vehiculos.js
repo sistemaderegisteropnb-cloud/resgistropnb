@@ -75,7 +75,7 @@ window.initRegVehiculos = function() {
         for (let y = currentYear; y >= 1850; y--) anioSelect.innerHTML += `<option value="${y}">${y}</option>`;
     }
 
-    // 🔹 2. Selector de Tipo (Moto/Auto) ✅ CORREGIDO
+    // 🔹 2. Selector de Tipo (Moto/Auto) ✅ CORREGIDO CON LIMPIEZA COMPLETA
     window.selectVehicleType = function(type) {
         document.querySelectorAll('.tipo-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.type === type));
         document.getElementById('v_tipo').value = (type === 'moto') ? 'Motocicleta' : 'Automóvil';
@@ -88,18 +88,22 @@ window.initRegVehiculos = function() {
         const autoGrid = document.getElementById('grid-fotos-auto');
         const cilindrajeBox = document.getElementById('box-cilindraje');
         
+        // Mostrar/Ocultar contenedores
         motoGrid.style.display = isMoto ? 'grid' : 'none';
         autoGrid.style.display = isMoto ? 'none' : 'grid';
         cilindrajeBox.style.display = isMoto ? 'block' : 'none';
         
-        // ✅ SOLUCIÓN DEFINITIVA: Agregar/quitar 'required' según visibilidad
+        // ✅ SOLUCIÓN: Agregar/quitar 'required' según visibilidad (evita error focusable)
         motoGrid.querySelectorAll('input[type="file"]').forEach(i => i.required = isMoto);
         autoGrid.querySelectorAll('input[type="file"]').forEach(i => i.required = !isMoto);
         cilindrajeBox.querySelector('select').required = isMoto;
         
-        // Limpiar inputs al cambiar tipo
-        document.querySelectorAll('input[type="file"]').forEach(i => i.value = '');
-        document.querySelectorAll('.img-preview').forEach(i => i.style.display = 'none');
+        // ✅ LIMPIEZA COMPLETA al cambiar tipo (tablas separadas = datos separados)
+        form?.reset();
+        document.querySelectorAll('input[type="file"]').forEach(i => { i.value = ''; });
+        document.querySelectorAll('.img-preview').forEach(i => { i.style.display = 'none'; i.src = ''; });
+        if(modeloSelect) modeloSelect.innerHTML = '<option value="">Seleccione primero la marca</option>';
+        if(anioSelect) anioSelect.selectedIndex = 0;
     };
 
     // ✅ Inicializar estado correcto al cargar
@@ -169,13 +173,17 @@ window.initRegVehiculos = function() {
                 return bucket.getPublicUrl(path).data.publicUrl;
             };
 
+            // ✅ Subir 4 fotos para AMBOS tipos
             let urls = {};
             const prefix = isMoto ? '' : '_a';
             [urls.f, urls.r, urls.rd, urls.ri] = await Promise.all([
-                uploadFile(`v_foto_frontal${prefix}`, 'f'), uploadFile(`v_foto_trasera${prefix}`, 't'),
-                uploadFile(`v_foto_der${prefix}`, 'rd'), uploadFile(`v_foto_izq${prefix}`, 'ri')
+                uploadFile(`v_foto_frontal${prefix}`, 'f'), 
+                uploadFile(`v_foto_trasera${prefix}`, 't'),
+                uploadFile(`v_foto_der${prefix}`, 'rd'), 
+                uploadFile(`v_foto_izq${prefix}`, 'ri')
             ]);
 
+            // ✅ Datos base comunes a ambas tablas
             const data = {
                 estatus: 'Verificación',
                 estacion_policial: estacion,
@@ -183,29 +191,46 @@ window.initRegVehiculos = function() {
                 placa, anio, color, serial_carroceria: serialCarro,
                 marca, modelo,
                 observaciones: document.getElementById('v_observaciones')?.value.trim() || null,
-                foto_frontal: urls.f, foto_trasera: urls.r,
-                foto_lado_derecho: urls.rd, foto_lado_izquierdo: urls.ri
+                foto_frontal: urls.f, 
+                foto_trasera: urls.r,
+                foto_lado_derecho: urls.rd, 
+                foto_lado_izquierdo: urls.ri
             };
 
+            // ✅ Campos específicos según tipo
             if (isMoto) {
                 data.serial_motor = document.getElementById('v_serial_motor').value.trim() || null;
                 data.cilindraje = document.getElementById('v_cilindraje').value;
             } else {
+                // Para autos, serial_motor es opcional
                 data.serial_motor = document.getElementById('v_serial_motor').value.trim() || null;
             }
 
+            // ✅ Insertar en la tabla correcta
             const { error } = await window.supabaseClient.from(tablaDestino).insert([data]);
             if (error) throw error;
 
-            if (msg) { msg.textContent = '✅ Vehículo registrado exitosamente.'; msg.className = 'msg success'; msg.style.display = 'block'; setTimeout(() => msg.style.display = 'none', 4000); }
-            form.reset(); selectVehicleType('moto');
+            if (msg) { 
+                msg.textContent = `✅ ${isMoto ? 'Motocicleta' : 'Automóvil'} registrado exitosamente.`; 
+                msg.className = 'msg success'; 
+                msg.style.display = 'block'; 
+                setTimeout(() => msg.style.display = 'none', 4000); 
+            }
+            form.reset(); 
+            selectVehicleType('moto'); // Reset a moto por defecto
         } catch (err) {
             console.error('Error:', err);
             let mensaje = 'Error inesperado. Intente nuevamente.';
             if (err.message.includes('23505') || err.message.includes('unique')) mensaje = 'Esta placa ya se encuentra registrada.';
             else if (err.message.includes('storage')) mensaje = 'Error subiendo fotografías.';
             else if (err.message.includes('Falta la fotografía')) mensaje = err.message;
+            else if (err.message.includes('PGRST204') || err.message.includes('column')) {
+                mensaje = 'Error de estructura. Contacte al administrador para actualizar la base de datos.';
+            }
             mostrarError(mensaje);
-        } finally { btn.disabled = false; btn.textContent = '✅ Registrar Vehículo'; }
+        } finally { 
+            btn.disabled = false; 
+            btn.textContent = '✅ Registrar Vehículo'; 
+        }
     });
 };
