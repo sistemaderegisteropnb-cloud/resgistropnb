@@ -1,10 +1,19 @@
 <style>
+  :root { --primary: #002b5c; --secondary: #c5a028; --beige-border: #d4c9a8; }
   .registro-form fieldset { border: 1px solid var(--beige-border); border-radius: 8px; padding: 16px; margin-bottom: 18px; background: #fafbfc; }
   .registro-form legend { font-weight: 600; color: var(--primary); font-size: 0.95rem; padding: 0 8px; }
   .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
   .registro-form label { font-weight: 500; font-size: 0.85rem; margin-bottom: 4px; display: block; }
-  .registro-form input, .registro-form select, .registro-form textarea { width: 100%; padding: 9px 10px; border: 1.5px solid var(--beige-border); border-radius: 5px; font-size: 0.9rem; background: #fff; }
+  .registro-form input, .registro-form select, .registro-form textarea { width: 100%; padding: 9px 10px; border: 1.5px solid var(--beige-border); border-radius: 5px; font-size: 0.9rem; background: #fff; transition: border 0.2s; }
   .registro-form input:focus, .registro-form select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(0,43,92,0.1); }
+  
+  /* 🔹 Indicadores de Validación */
+  .status-msg { display: block; font-size: 0.75rem; margin-top: 4px; font-weight: 600; min-height: 16px; }
+  .status-msg.valid { color: #15803d; }
+  .status-msg.error { color: #dc2626; }
+  .registro-form input.input-valid { border-color: #22c55e; background-color: #f0fdf4; }
+  .registro-form input.input-error { border-color: #ef4444; background-color: #fef2f2; }
+
   .btn-submit { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; margin-top: 15px; }
   .btn-submit:hover { background: var(--secondary); }
   .btn-submit:disabled { background: #9ca3af; cursor: not-allowed; }
@@ -41,7 +50,7 @@
             <input type="hidden" id="v_tipo" value="Motocicleta">
         </fieldset>
 
-        <!-- 🔹 2. FOTOS (4 Vistas para AMBOS) -->
+        <!-- 🔹 2. FOTOS (Dinámico) -->
         <fieldset id="sec-fotos">
             <legend>📸 Fotografías</legend>
             <div class="form-grid" id="grid-fotos-moto">
@@ -58,136 +67,64 @@
             </div>
         </fieldset>
 
-        <!-- 🔹 3. IDENTIFICACIÓN -->
+        <!-- 🔹 3. IDENTIFICACIÓN (Con validación en vivo) -->
         <fieldset>
             <legend>📋 Datos de Identificación</legend>
             <div class="form-grid">
-                <div class="form-group"><label>Placa</label><input type="text" id="v_placa" maxlength="10" placeholder="Ej: AA123BC" required style="text-transform: uppercase;"></div>
-                <div class="form-group"><label>Serial de Carrocería</label><input type="text" id="v_serial_carroceria" placeholder="Nro. de Chasis/Carrocería" required></div>
-                <div class="form-group"><label>Serial de Motor</label><input type="text" id="v_serial_motor" placeholder="Nro. de Motor (Opcional en autos)"></div>
-               <div class="form-group">
-    <label>Color</label>
-    <select id="v_color" required>
-        <option value="">Seleccione color...</option>
-        <!-- Blancos -->
-        <option value="Blanco">Blanco</option>
-        <option value="Blanco Perla">Blanco Perla</option>
-        <option value="Blanco Hielo">Blanco Hielo</option>
-        <option value="Blanco Ártico">Blanco Ártico</option>
-        <!-- Negros -->
-        <option value="Negro">Negro</option>
-        <option value="Negro Azabache">Negro Azabache</option>
-        <option value="Negro Mate">Negro Mate</option>
-        <option value="Negro Brillante">Negro Brillante</option>
-        <!-- Grises y Platas -->
-        <option value="Gris">Gris</option>
-        <option value="Gris Plata">Gris Plata</option>
-        <option value="Gris Acero">Gris Acero</option>
-        <option value="Gris Carbón">Gris Carbón</option>
-        <option value="Gris Grafito">Gris Grafito</option>
-        <option value="Gris Humo">Gris Humo</option>
-        <option value="Plata">Plata</option>
-        <option value="Plata Metálico">Plata Metálico</option>
-        <option value="Titanio">Titanio</option>
-        <!-- Rojos -->
-        <option value="Rojo">Rojo</option>
-        <option value="Rojo Fuego">Rojo Fuego</option>
-        <option value="Rojo Vino">Rojo Vino</option>
-        <option value="Rojo Cereza">Rojo Cereza</option>
-        <option value="Rojo Rubí">Rojo Rubí</option>
-        <option value="Borgoña">Borgoña</option>
-        <option value="Vino Tinto">Vino Tinto</option>
-        <!-- Azules -->
-        <option value="Azul">Azul</option>
-        <option value="Azul Marino">Azul Marino</option>
-        <option value="Azul Eléctrico">Azul Eléctrico</option>
-        <option value="Azul Rey">Azul Rey</option>
-        <option value="Azul Cielo">Azul Cielo</option>
-        <option value="Azul Cobalto">Azul Cobalto</option>
-        <option value="Azul Medianoche">Azul Medianoche</option>
-        <!-- Verdes -->
-        <option value="Verde">Verde</option>
-        <option value="Verde Militar">Verde Militar</option>
-        <option value="Verde Esmeralda">Verde Esmeralda</option>
-        <option value="Verde Lima">Verde Lima</option>
-        <option value="Verde Oliva">Verde Oliva</option>
-        <option value="Verde Bosque">Verde Bosque</option>
-        <!-- Amarillos y Naranjas -->
-        <option value="Amarillo">Amarillo</option>
-        <option value="Amarillo Sol">Amarillo Sol</option>
-        <option value="Amarillo Mostaza">Amarillo Mostaza</option>
-        <option value="Naranja">Naranja</option>
-        <option value="Naranja Atardecer">Naranja Atardecer</option>
-        <!-- Marrones y Beiges -->
-        <option value="Marrón">Marrón</option>
-        <option value="Marrón Café">Marrón Café</option>
-        <option value="Marrón Chocolate">Marrón Chocolate</option>
-        <option value="Beige">Beige</option>
-        <option value="Beige Arena">Beige Arena</option>
-        <option value="Crema">Crema</option>
-        <option value="Marfil">Marfil</option>
-        <!-- Dorados, Bronces y Cobres -->
-        <option value="Dorado">Dorado</option>
-        <option value="Dorado Arena">Dorado Arena</option>
-        <option value="Bronce">Bronce</option>
-        <option value="Bronce Metálico">Bronce Metálico</option>
-        <option value="Cobre">Cobre</option>
-        <option value="Cobre Metálico">Cobre Metálico</option>
-        <option value="Champagne">Champagne</option>
-        <!-- Otros colores -->
-        <option value="Morado">Morado</option>
-        <option value="Morado Oscuro">Morado Oscuro</option>
-        <option value="Lavanda">Lavanda</option>
-        <option value="Rosa">Rosa</option>
-        <option value="Rosa Pastel">Rosa Pastel</option>
-        <option value="Turquesa">Turquesa</option>
-        <option value="Cian">Cian</option>
-        <option value="Índigo">Índigo</option>
-        <option value="Caqui">Caqui</option>
-        <option value="Óxido">Óxido</option>
-        <!-- Especiales -->
-        <option value="Metálico">Metálico (Genérico)</option>
-        <option value="Perla">Perla (Genérico)</option>
-        <option value="Mate">Mate (Genérico)</option>
-        <option value="Bicromático">Bicromático</option>
-        <option value="Otro">Otro (Especificar en observaciones)</option>
-    </select>
-</div>
+                <div class="form-group">
+                    <label>Placa</label>
+                    <input type="text" id="v_placa" maxlength="10" placeholder="Ej: AA123BC" required style="text-transform: uppercase;">
+                    <small id="msg-placa" class="status-msg"></small>
+                </div>
+                <div class="form-group">
+                    <label>Serial de Carrocería</label>
+                    <input type="text" id="v_serial_carroceria" placeholder="Nro. de Chasis/Carrocería" required>
+                    <small id="msg-carroceria" class="status-msg"></small>
+                </div>
+                <div class="form-group">
+                    <label>Serial de Motor</label>
+                    <input type="text" id="v_serial_motor" placeholder="Nro. de Motor">
+                    <small id="msg-motor" class="status-msg"></small>
+                </div>
+                <div class="form-group">
+                    <label>Color</label>
+                    <select id="v_color" required>
+                        <option value="">Seleccione color...</option>
+                        <option value="Blanco">Blanco</option><option value="Blanco Perla">Blanco Perla</option>
+                        <option value="Negro">Negro</option><option value="Negro Azabache">Negro Azabache</option><option value="Negro Mate">Negro Mate</option>
+                        <option value="Gris">Gris</option><option value="Gris Plata">Gris Plata</option><option value="Gris Carbón">Gris Carbón</option><option value="Plata">Plata</option>
+                        <option value="Rojo">Rojo</option><option value="Rojo Vino">Rojo Vino</option><option value="Borgoña">Borgoña</option>
+                        <option value="Azul">Azul</option><option value="Azul Marino">Azul Marino</option><option value="Azul Eléctrico">Azul Eléctrico</option>
+                        <option value="Verde">Verde</option><option value="Verde Militar">Verde Militar</option>
+                        <option value="Amarillo">Amarillo</option><option value="Naranja">Naranja</option>
+                        <option value="Marrón">Marrón</option><option value="Beige">Beige</option><option value="Dorado">Dorado</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </div>
             </div>
         </fieldset>
 
-<!-- 🔹 4. CARACTERÍSTICAS (Marca y Modelo Dinámicos) -->
-<fieldset>
-    <legend>⚙️ Características</legend>
-    <div class="form-grid">
-        <div class="form-group">
-            <label>Marca</label>
-            <select id="v_marca" required>
-                <option value="">Seleccione marca...</option>
-                <!-- Se llena automáticamente con JS -->
-            </select>
-        </div>
-        <div class="form-group">
-            <label>Modelo</label>
-            <select id="v_modelo" required>
-                <option value="">Seleccione primero la marca</option>
-            </select>
-        </div>
-        <div class="form-group"><label>Año</label><select id="v_anio" required></select></div>
-        <div class="form-group" id="box-cilindraje"><label>Cilindraje</label>
-            <select id="v_cilindraje">
-                <option value="">Seleccione...</option>
-                <option value="Baja (hasta 250 cc)">Baja Cilindrada (hasta 250 cc)</option>
-                <option value="Media (300-750 cc)">Media Cilindrada (300 cc - 750 cc)</option>
-                <option value="Alta (+750 cc)">Alta Cilindrada (más de 750 cc)</option>
-            </select>
-        </div>
-    </div>
-</fieldset>
-
-        <!-- 🔹 5. DATOS DEL REGISTRO (Estaciones + Dirección de Detención) -->
+        <!-- 🔹 4. CARACTERÍSTICAS -->
         <fieldset>
-            <legend>🏛️ Datos del Registro</legend>
+            <legend>⚙️ Características</legend>
+            <div class="form-grid">
+                <div class="form-group"><label>Marca</label><select id="v_marca" required></select></div>
+                <div class="form-group"><label>Modelo</label><select id="v_modelo" required></select></div>
+                <div class="form-group"><label>Año</label><select id="v_anio" required></select></div>
+                <div class="form-group" id="box-cilindraje"><label>Cilindraje</label>
+                    <select id="v_cilindraje">
+                        <option value="">Seleccione...</option>
+                        <option value="Baja (hasta 250 cc)">Baja Cilindrada (hasta 250 cc)</option>
+                        <option value="Media (300-750 cc)">Media Cilindrada (300 cc - 750 cc)</option>
+                        <option value="Alta (+750 cc)">Alta Cilindrada (más de 750 cc)</option>
+                    </select>
+                </div>
+            </div>
+        </fieldset>
+
+        <!-- 🔹 5. DATOS DEL REGISTRO -->
+        <fieldset>
+            <legend>️ Datos del Registro</legend>
             <div class="form-grid">
                 <div class="form-group" style="grid-column: span 2;"><label>Estación policial</label>
                     <select id="v_estacion" required>
