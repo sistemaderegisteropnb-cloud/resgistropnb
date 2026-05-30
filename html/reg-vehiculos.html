@@ -1,0 +1,105 @@
+<style>
+  .registro-form fieldset { border: 1px solid var(--beige-border); border-radius: 8px; padding: 16px; margin-bottom: 18px; background: #fafbfc; }
+  .registro-form legend { font-weight: 600; color: var(--primary); font-size: 0.95rem; padding: 0 8px; }
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+  .registro-form label { font-weight: 500; font-size: 0.85rem; margin-bottom: 4px; display: block; }
+  .registro-form input, .registro-form select, .registro-form textarea { width: 100%; padding: 9px 10px; border: 1.5px solid var(--beige-border); border-radius: 5px; font-size: 0.9rem; background: #fff; }
+  .registro-form input:focus, .registro-form select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(0,43,92,0.1); }
+  .btn-submit { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; margin-top: 15px; }
+  .btn-submit:hover { background: var(--secondary); }
+  .btn-submit:disabled { background: #9ca3af; cursor: not-allowed; }
+  .msg { padding: 10px; margin-top: 12px; border-radius: 5px; text-align: center; display: none; }
+  .msg.success { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+  .msg.error { background: #fde2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+  .img-preview { width: 100%; height: auto; max-height: 200px; object-fit: contain; border: 1px solid var(--beige-border); border-radius: 5px; margin-top: 8px; display: none; background: #f8fafc; }
+  .status-badge { background: #dcfce7; color: #15803d; font-weight: 700; padding: 6px 12px; border-radius: 6px; border: 1px solid #86efac; font-size: 0.85rem; display: inline-block; }
+  
+  /* 🔹 Tipo de Vehículo Selector */
+  .tipo-selector { display: flex; gap: 12px; margin-bottom: 20px; }
+  .tipo-btn { flex: 1; padding: 12px; border: 2px solid var(--beige-border); border-radius: 8px; background: #fff; cursor: pointer; text-align: center; transition: 0.2s; font-weight: 600; color: #64748b; }
+  .tipo-btn:hover { border-color: var(--secondary); }
+  .tipo-btn.active { border-color: var(--primary); background: #f0f4f8; color: var(--primary); box-shadow: 0 2px 8px rgba(0,43,92,0.1); }
+  
+  .hidden-view { display: none; }
+  @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } .tipo-selector { flex-direction: column; } }
+</style>
+
+<div class="card">
+    <h3>🚗 Registro de Vehículo</h3>
+    <form id="form-reg-vehiculos" class="registro-form" novalidate>
+        
+        <div style="margin-bottom: 18px; display: flex; align-items: center; gap: 10px;">
+            <label style="font-weight: 600; font-size: 0.95rem;">Estatus:</label>
+            <span class="status-badge">✅ VERIFICACIÓN</span>
+        </div>
+
+        <!-- 🔹 1. SELECCIÓN DE TIPO -->
+        <fieldset>
+            <legend>🚗 Tipo de Vehículo</legend>
+            <div class="tipo-selector">
+                <div class="tipo-btn active" data-type="moto" onclick="selectVehicleType('moto')">🏍️ Motocicleta</div>
+                <div class="tipo-btn" data-type="auto" onclick="selectVehicleType('auto')">🚙 Automóvil</div>
+            </div>
+            <input type="hidden" id="v_tipo" value="Motocicleta">
+        </fieldset>
+
+        <!-- 🔹 2. FOTOGRAFÍAS (4 Vistas para Motos) -->
+        <fieldset id="sec-fotos-moto">
+            <legend>📸 Fotografías (Motocicleta)</legend>
+            <div class="form-grid">
+                <div class="form-group"><label>Frontal</label><input type="file" id="v_foto_frontal" accept="image/*" required><img id="prev_v_frontal" class="img-preview"></div>
+                <div class="form-group"><label>Trasera</label><input type="file" id="v_foto_trasera" accept="image/*" required><img id="prev_v_trasera" class="img-preview"></div>
+                <div class="form-group"><label>Lado Derecho</label><input type="file" id="v_foto_der" accept="image/*" required><img id="prev_v_der" class="img-preview"></div>
+                <div class="form-group"><label>Lado Izquierdo</label><input type="file" id="v_foto_izq" accept="image/*" required><img id="prev_v_izq" class="img-preview"></div>
+            </div>
+        </fieldset>
+
+        <!-- 🔹 3. DATOS DE IDENTIFICACIÓN -->
+        <fieldset>
+            <legend>📋 Datos de Identificación</legend>
+            <div class="form-grid">
+                <div class="form-group"><label>Placa</label><input type="text" id="v_placa" maxlength="10" placeholder="Ej: AA123BC" required style="text-transform: uppercase;"></div>
+                <div class="form-group"><label>Serial de Carrocería</label><input type="text" id="v_serial_carroceria" placeholder="Nro. de Chasis/Carrocería" required></div>
+                <div class="form-group"><label>Serial de Motor</label><input type="text" id="v_serial_motor" placeholder="Nro. de Motor" required></div>
+                <div class="form-group"><label>Color</label><input type="text" id="v_color" placeholder="Ej: Negro" required></div>
+            </div>
+        </fieldset>
+
+        <!-- 🔹 4. CARACTERÍSTICAS -->
+        <fieldset>
+            <legend>⚙️ Características</legend>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Marca</label>
+                    <input type="text" id="v_marca" placeholder="Ej: Yamaha, Bera..." required>
+                </div>
+                <div class="form-group">
+                    <label>Modelo</label>
+                    <input type="text" id="v_modelo" placeholder="Ej: FZ, Empire..." required>
+                </div>
+                <div class="form-group">
+                    <label>Año</label>
+                    <select id="v_anio" required></select> <!-- Se llena con JS -->
+                </div>
+                <div class="form-group">
+                    <label>Cilindraje</label>
+                    <select id="v_cilindraje" required>
+                        <option value="">Seleccione...</option>
+                        <option value="Baja (hasta 250 cc)">Baja Cilindrada (hasta 250 cc)</option>
+                        <option value="Media (300-750 cc)">Media Cilindrada (300 cc - 750 cc)</option>
+                        <option value="Alta (+750 cc)">Alta Cilindrada (más de 750 cc)</option>
+                    </select>
+                </div>
+            </div>
+        </fieldset>
+
+        <!-- 🔹 5. OBSERVACIONES -->
+        <fieldset>
+            <legend>📝 Observaciones (Opcional)</legend>
+            <textarea id="v_observaciones" rows="2" placeholder="Detalles adicionales (rayones, accesorios, etc.)..."></textarea>
+        </fieldset>
+
+        <button type="submit" class="btn-submit">✅ Registrar Vehículo</button>
+        <div id="msg-reg-vehiculos" class="msg"></div>
+    </form>
+</div>
