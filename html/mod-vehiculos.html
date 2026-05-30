@@ -1,0 +1,155 @@
+<style>
+  :root { --primary: #002b5c; --secondary: #c5a028; --beige-border: #d4c9a8; }
+  .registro-form fieldset { border: 1px solid var(--beige-border); border-radius: 8px; padding: 16px; margin-bottom: 18px; background: #fafbfc; }
+  .registro-form legend { font-weight: 600; color: var(--primary); font-size: 0.95rem; padding: 0 8px; }
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+  .registro-form label { font-weight: 500; font-size: 0.85rem; margin-bottom: 4px; display: block; }
+  .registro-form input, .registro-form select, .registro-form textarea { width: 100%; padding: 9px 10px; border: 1.5px solid var(--beige-border); border-radius: 5px; font-size: 0.9rem; background: #fff; }
+  .registro-form input:focus, .registro-form select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(0,43,92,0.1); }
+  .btn-submit { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; margin-top: 15px; }
+  .btn-submit:hover { background: var(--secondary); }
+  .btn-submit:disabled { background: #9ca3af; cursor: not-allowed; }
+  .btn-search { padding: 9px 15px; background: var(--secondary); color: #fff; border: none; border-radius: 5px; cursor: pointer; font-weight: 600; }
+  .msg { padding: 10px; margin-top: 12px; border-radius: 5px; text-align: center; display: none; }
+  .msg.success { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+  .msg.error { background: #fde2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+  .img-preview { width: 100%; height: auto; max-height: 180px; object-fit: contain; border: 1px solid var(--beige-border); border-radius: 5px; margin-top: 8px; display: none; background: #f8fafc; }
+  .status-badge { background: #dcfce7; color: #15803d; font-weight: 700; padding: 6px 12px; border-radius: 6px; border: 1px solid #86efac; font-size: 0.85rem; display: inline-block; }
+  
+  /* 🔹 Buscador */
+  .search-box { padding: 16px; background: #f8fafc; border: 1.5px dashed var(--beige-border); border-radius: 8px; margin-bottom: 20px; }
+  .search-row { display: flex; gap: 10px; }
+  .search-row input { flex: 1; padding: 10px; border: 1.5px solid var(--beige-border); border-radius: 5px; font-size: 1.1rem; font-weight: bold; text-transform: uppercase; }
+  
+  .tipo-selector { display: flex; gap: 12px; margin-bottom: 20px; opacity: 0.7; pointer-events: none; /* Desactivado en edición */ }
+  .tipo-btn { flex: 1; padding: 12px; border: 2px solid var(--beige-border); border-radius: 8px; background: #fff; text-align: center; font-weight: 600; color: #64748b; }
+  .tipo-btn.active { border-color: var(--primary); background: #f0f4f8; color: var(--primary); box-shadow: 0 2px 8px rgba(0,43,92,0.1); }
+
+  .hidden-view { display: none; }
+  @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } .search-row { flex-direction: column; } }
+</style>
+
+<div class="card">
+    <h3>✏️ Modificar Vehículo</h3>
+    
+    <!-- 🔍 BÚSQUEDA -->
+    <div class="search-box">
+        <label style="font-weight:700; display:block; margin-bottom:8px;">Buscar por Placa:</label>
+        <div class="search-row">
+            <input type="text" id="mod_placa_input" placeholder="Ej: AA123BC" maxlength="10">
+            <button id="btn_buscar_mod" class="btn-search">🔍 Buscar</button>
+        </div>
+        <div id="mod_msg_busqueda" class="msg" style="margin-top:8px;"></div>
+    </div>
+
+    <!-- 📝 FORMULARIO (Oculto hasta encontrar registro) -->
+    <form id="form-mod-vehiculos" class="registro-form" novalidate style="display: none;">
+        <input type="hidden" id="mod_id_original">
+        <input type="hidden" id="mod_tipo_vehiculo"> <!-- moto o auto -->
+        
+        <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+            <label style="font-weight: 600;">Estatus Actual:</label>
+            <span id="mod_estatus_badge" class="status-badge">Verificación</span>
+        </div>
+
+        <!-- 🔹 1. TIPO (Informativo) -->
+        <fieldset>
+            <legend>🚗 Tipo de Vehículo</legend>
+            <div class="tipo-selector">
+                <div class="tipo-btn" id="btn_tipo_moto">🏍️ Motocicleta</div>
+                <div class="tipo-btn" id="btn_tipo_auto">🚙 Automóvil</div>
+            </div>
+            <small style="color:#64748b;">No se puede cambiar el tipo de vehículo en la edición.</small>
+        </fieldset>
+
+        <!-- 🔹 2. FOTOS -->
+        <fieldset id="sec-fotos">
+            <legend>📸 Fotografías (Deje vacío para mantener la actual)</legend>
+            <!-- FOTOS MOTO -->
+            <div class="form-grid" id="grid-fotos-moto">
+                <div class="form-group"><label>Frontal</label><input type="file" id="m_foto_frontal" accept="image/*"><img id="m_prev_frontal" class="img-preview"></div>
+                <div class="form-group"><label>Trasera</label><input type="file" id="m_foto_trasera" accept="image/*"><img id="m_prev_trasera" class="img-preview"></div>
+                <div class="form-group"><label>Lado Derecho</label><input type="file" id="m_foto_der" accept="image/*"><img id="m_prev_der" class="img-preview"></div>
+                <div class="form-group"><label>Lado Izquierdo</label><input type="file" id="m_foto_izq" accept="image/*"><img id="m_prev_izq" class="img-preview"></div>
+            </div>
+            <!-- FOTOS AUTO -->
+            <div class="form-grid hidden-view" id="grid-fotos-auto">
+                <div class="form-group"><label>Frontal</label><input type="file" id="m_foto_frontal_a" accept="image/*"><img id="m_prev_frontal_a" class="img-preview"></div>
+                <div class="form-group"><label>Trasera</label><input type="file" id="m_foto_trasera_a" accept="image/*"><img id="m_prev_trasera_a" class="img-preview"></div>
+                <div class="form-group"><label>Lado Derecho</label><input type="file" id="m_foto_der_a" accept="image/*"><img id="m_prev_der_a" class="img-preview"></div>
+                <div class="form-group"><label>Lado Izquierdo</label><input type="file" id="m_foto_izq_a" accept="image/*"><img id="m_prev_izq_a" class="img-preview"></div>
+            </div>
+        </fieldset>
+
+        <!-- 🔹 3. IDENTIFICACIÓN -->
+        <fieldset>
+            <legend>📋 Datos de Identificación</legend>
+            <div class="form-grid">
+                <div class="form-group"><label>Placa</label><input type="text" id="m_placa" required style="text-transform: uppercase; background: #f1f5f9; cursor: not-allowed;" readonly></div>
+                <div class="form-group"><label>Serial de Carrocería</label><input type="text" id="m_serial_carroceria" required></div>
+                <div class="form-group"><label>Serial de Motor</label><input type="text" id="m_serial_motor" placeholder="Opcional en autos"></div>
+                <div class="form-group">
+                    <label>Color</label>
+                    <select id="m_color" required>
+                        <option value="">Seleccione color...</option>
+                        <option value="Blanco">Blanco</option><option value="Blanco Perla">Blanco Perla</option>
+                        <option value="Negro">Negro</option><option value="Negro Azabache">Negro Azabache</option><option value="Negro Mate">Negro Mate</option>
+                        <option value="Gris">Gris</option><option value="Gris Plata">Gris Plata</option><option value="Gris Carbón">Gris Carbón</option><option value="Plata">Plata</option>
+                        <option value="Rojo">Rojo</option><option value="Rojo Vino">Rojo Vino</option><option value="Borgoña">Borgoña</option>
+                        <option value="Azul">Azul</option><option value="Azul Marino">Azul Marino</option><option value="Azul Eléctrico">Azul Eléctrico</option>
+                        <option value="Verde">Verde</option><option value="Verde Militar">Verde Militar</option>
+                        <option value="Amarillo">Amarillo</option><option value="Naranja">Naranja</option>
+                        <option value="Marrón">Marrón</option><option value="Beige">Beige</option><option value="Dorado">Dorado</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </div>
+            </div>
+        </fieldset>
+
+        <!-- 🔹 4. CARACTERÍSTICAS -->
+        <fieldset>
+            <legend>⚙️ Características</legend>
+            <div class="form-grid">
+                <div class="form-group"><label>Marca</label><select id="m_marca" required></select></div>
+                <div class="form-group"><label>Modelo</label><select id="m_modelo" required></select></div>
+                <div class="form-group"><label>Año</label><select id="m_anio" required></select></div>
+                <div class="form-group" id="box-cilindraje"><label>Cilindraje</label>
+                    <select id="m_cilindraje">
+                        <option value="">Seleccione...</option>
+                        <option value="Baja (hasta 250 cc)">Baja Cilindrada (hasta 250 cc)</option>
+                        <option value="Media (300-750 cc)">Media Cilindrada (300 cc - 750 cc)</option>
+                        <option value="Alta (+750 cc)">Alta Cilindrada (más de 750 cc)</option>
+                    </select>
+                </div>
+            </div>
+        </fieldset>
+
+        <!-- 🔹 5. REGISTRO -->
+        <fieldset>
+            <legend>🏛️ Datos del Registro</legend>
+            <div class="form-grid">
+                <div class="form-group" style="grid-column: span 2;"><label>Estación policial</label>
+                    <select id="m_estacion" required>
+                        <option value="">Seleccione estación...</option>
+                        <option value="EPM MARACAIBO">EPM MARACAIBO</option><option value="EPM SAN FRANCISCO">EPM SAN FRANCISCO</option>
+                        <option value="EPP CRISTO DE ARANZA">EPP CRISTO DE ARANZA</option><option value="EPP LUIS HURTADO">EPP LUIS HURTADO</option>
+                        <option value="EPP DAGNINO">EPP DAGNINO</option><option value="EPP OLEGARIO VILLALOBOS">EPP OLEGARIO VILLALOBOS</option>
+                        <option value="EPP CHIQUINQUIRA">EPP CHIQUINQUIRA</option><option value="EPP CARACCIOLO">EPP CARACCIOLO</option>
+                        <option value="EPP VENANCIO PULGAR">EPP VENANCIO PULGAR</option><option value="EPP BOLIVAR">EPP BOLIVAR</option>
+                        <option value="EPP SANTA LUCIA">EPP SANTA LUCIA</option>
+                        <option value="Otra">Otra</option>
+                    </select>
+                </div>
+                <div class="form-group" style="grid-column: span 2;"><label>Dirección de detención</label><input type="text" id="m_direccion_detencion"></div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>📝 Observaciones</legend>
+            <textarea id="m_observaciones" rows="2"></textarea>
+        </fieldset>
+
+        <button type="submit" class="btn-submit">💾 Guardar Cambios</button>
+        <div id="msg_mod_vehiculos" class="msg"></div>
+    </form>
+</div>
