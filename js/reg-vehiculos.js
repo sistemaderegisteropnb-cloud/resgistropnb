@@ -1,5 +1,5 @@
 window.initRegVehiculos = function() {
-    // 🔹 LISTAS COMPLETAS DE MARCAS Y MODELOS
+    // 🔹 LISTAS COMPLETAS DE MARCAS Y MODELOS PARA MOTOCICLETAS
     const marcasModelosMoto = {
         "Empire Keeway": ["Matrix Lite", "Matrix II 150", "EK Xpress Lite", "QJ Fort", "Horse (EK Horse 2 SE)", "EK Arsen II 200", "EK Atlas", "EK Atlas HD/HDS 200", "Owen 200", "Thunder EK", "TX II 150", "TX 250GS", "QJ Motor SRT 550", "QJ Motor SRT 550X", "QJ Motor SRT 700S", "QJ Motor SRT 700SX", "Superlight 200S", "V302C"],
         "Bera Motorcycles": ["Bera BWS", "Milán", "Runner", "SBR", "X1", "BRF", "León", "BR200 / DT", "Cobra", "Kavak", "BRZ", "GR", "Antiking", "Carguero"],
@@ -21,6 +21,7 @@ window.initRegVehiculos = function() {
         "Otra": ["Otra (Especificar en observaciones)"]
     };
 
+    // 🔹 LISTAS COMPLETAS DE MARCAS Y MODELOS PARA AUTOMÓVILES
     const marcasModelosAuto = {
         "JAC Motors": ["Arena / Arena Sport (Sedán)", "Aventura / Aventura Pro (JS3)", "Nevado / Nevado Sport Wagon (JS4)", "Tepuy / Tepuy Pro (JS6)", "Savanna / Savanna Pro Sport (JS8)", "La Venezolana (T6 - Pick-up 4x2 y 4x4)", "La Venezolana Pro (T8 - Pick-up 4x4)", "T9 (Pick-up)", "J7 / J7 Elite Pro", "Refine (Mini-van / MPV)", "Sunray (Vans de carga y pasajeros)", "Bachaco (Camión de carga)", "Búfalo (Camión de carga)", "Leyenda (Camión de carga)"],
         "Toyota": ["Agya", "Yaris / Yaris Cross", "Corolla / Corolla Cross", "Camry", "Prius", "Hilux", "Land Cruiser (Serie 70 / Machito)", "Land Cruiser Prado", "Land Cruiser (Serie 200 / Serie 300)", "Fortuner", "4Runner", "RAV4", "Sequoia", "Tundra", "Tacoma", "Hiace", "Coaster", "Terios (Histórico / Daihatsu)", "Starlet (Histórico)", "Celica (Histórico)", "Merú (Histórico)", "Aygo X", "Aqua", "Avanza", "Rush", "Raize", "Yaris Heykers", "Corolla Hatchback / Corolla Touring Sports", "GR Yaris", "GR Corolla", "GR86", "GR Supra", "Avalon", "Century", "Crown / Crown Signia", "Mirai", "bZ4X / bZ3", "Urban Cruiser", "C-HR", "Harrier", "Highlander / Grand Highlander", "Venza", "Sienna", "Alphard / Vellfire", "Innova", "Roomy", "Sienta", "Voxy", "Noah", "Probox", "LiteAce / TownAce", "Hilux Champ / Rangga", "Proace / Proace City / Proace Max"],
@@ -97,7 +98,7 @@ window.initRegVehiculos = function() {
         document.querySelectorAll('input[type="file"]').forEach(i => i.value = '');
         document.querySelectorAll('.img-preview').forEach(i => { i.style.display = 'none'; i.src = ''; });
         
-        // ✅ Resetear validación al cambiar de tipo también
+        // ✅ Resetear validación al cambiar de tipo
         resetValidation();
     };
 
@@ -134,7 +135,7 @@ window.initRegVehiculos = function() {
             return;
         }
         
-        if (msgEl) { msgEl.textContent = '⏳ Verificando...'; msgEl.className = 'status-msg'; }
+        if (msgEl) { msgEl.textContent = ' Verificando...'; msgEl.className = 'status-msg'; }
 
         try {
             let found = false;
@@ -171,7 +172,7 @@ window.initRegVehiculos = function() {
     document.getElementById('v_serial_carroceria')?.addEventListener('input', validateCarro);
     document.getElementById('v_serial_motor')?.addEventListener('input', validateMotor);
 
-    // 🔹 6. ✅ FUNCIÓN DE LIMPIEZA COMPLETA (Corrección del error)
+    // 🔹 6. ✅ FUNCIÓN DE LIMPIEZA COMPLETA (Corrección del error verde)
     function resetValidation() {
         // Limpiar clases de borde
         document.querySelectorAll('.registro-form input').forEach(i => i.classList.remove('input-valid', 'input-error'));
@@ -198,7 +199,7 @@ window.initRegVehiculos = function() {
 
         if (placa.length < 6) return mostrarError('La placa debe tener al menos 6 caracteres.');
 
-        btn.disabled = true; btn.textContent = ' Guardando...'; msg.style.display = 'none';
+        btn.disabled = true; btn.textContent = '⏳ Guardando...'; msg.style.display = 'none';
 
         try {
             const isMoto = document.getElementById('v_tipo').value === 'Motocicleta';
@@ -248,18 +249,26 @@ window.initRegVehiculos = function() {
             const { error } = await window.supabaseClient.from(tablaDestino).insert([data]);
             if (error) throw error;
 
-            msg.textContent = '✅ Vehículo registrado exitosamente.'; msg.className = 'msg success'; msg.style.display = 'block';
+            // ✅ MOSTRAR MENSAJE DE ÉXITO
+            msg.textContent = '✅ Vehículo registrado exitosamente.'; 
+            msg.className = 'msg success'; 
+            msg.style.display = 'block';
             
             // ✅ LIMPIEZA TOTAL TRAS ÉXITO
             form.reset(); 
             resetValidation(); // Esto borra el verde y los textos
             selectVehicleType('moto'); // Esto reinicia el tipo a Moto
+            
+            // ✅ Ocultar mensaje después de 4 segundos
+            setTimeout(() => { 
+                msg.style.display = 'none'; 
+            }, 4000);
 
         } catch (err) {
             console.error('Error:', err);
             let mensaje = 'Error inesperado. Intente nuevamente.';
-            if (err.message.includes('23505') || err.message.includes('unique')) mensaje = ' Esta placa ya se encuentra registrada.';
-            else if (err.message.includes('storage')) mensaje = ' Error subiendo fotografías.';
+            if (err.message.includes('23505') || err.message.includes('unique')) mensaje = '❌ Esta placa ya se encuentra registrada.';
+            else if (err.message.includes('storage')) mensaje = '❌ Error subiendo fotografías.';
             else if (err.message.includes('Falta la fotografía')) mensaje = '❌ ' + err.message;
             mostrarError(mensaje);
         } finally { btn.disabled = false; btn.textContent = '✅ Registrar Vehículo'; }
