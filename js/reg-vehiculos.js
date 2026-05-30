@@ -53,19 +53,26 @@ window.initRegVehiculos = function() {
         const isMoto = type === 'moto';
         const motoGrid = document.getElementById('grid-fotos-moto');
         const autoGrid = document.getElementById('grid-fotos-auto');
+        const cilindrajeBox = document.getElementById('box-cilindraje');
         
+        // Mostrar/Ocultar contenedores
         motoGrid.style.display = isMoto ? 'grid' : 'none';
         autoGrid.style.display = isMoto ? 'none' : 'grid';
-        document.getElementById('box-cilindraje').style.display = isMoto ? 'block' : 'none';
+        cilindrajeBox.style.display = isMoto ? 'block' : 'none';
         
-        // ✅ SOLUCIÓN AL ERROR: Agregar/quitar 'required' según visibilidad
+        // ✅ SOLUCIÓN DEFINITIVA: Agregar/quitar 'required' según visibilidad
+        // Esto evita que el navegador intente validar campos ocultos
         motoGrid.querySelectorAll('input[type="file"]').forEach(i => i.required = isMoto);
         autoGrid.querySelectorAll('input[type="file"]').forEach(i => i.required = !isMoto);
+        cilindrajeBox.querySelector('select').required = isMoto;
         
         // Limpiar inputs al cambiar tipo
         document.querySelectorAll('input[type="file"]').forEach(i => i.value = '');
         document.querySelectorAll('.img-preview').forEach(i => i.style.display = 'none');
     };
+
+    // ✅ Inicializar estado correcto al cargar para evitar errores de focus
+    setTimeout(() => selectVehicleType('moto'), 0);
 
     // 🔹 3. Vista Previa de Imágenes
     const setupPreview = (inputId, previewId) => {
