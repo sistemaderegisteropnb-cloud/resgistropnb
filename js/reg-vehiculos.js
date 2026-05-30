@@ -1,5 +1,5 @@
 window.initRegVehiculos = function() {
-    // 🔹 LISTAS COMPLETAS DE MARCAS/MODELOS PARA MOTOCICLETAS
+    // 🔹 LISTAS COMPLETAS DE MARCAS Y MODELOS
     const marcasModelosMoto = {
         "Empire Keeway": ["Matrix Lite", "Matrix II 150", "EK Xpress Lite", "QJ Fort", "Horse (EK Horse 2 SE)", "EK Arsen II 200", "EK Atlas", "EK Atlas HD/HDS 200", "Owen 200", "Thunder EK", "TX II 150", "TX 250GS", "QJ Motor SRT 550", "QJ Motor SRT 550X", "QJ Motor SRT 700S", "QJ Motor SRT 700SX", "Superlight 200S", "V302C"],
         "Bera Motorcycles": ["Bera BWS", "Milán", "Runner", "SBR", "X1", "BRF", "León", "BR200 / DT", "Cobra", "Kavak", "BRZ", "GR", "Antiking", "Carguero"],
@@ -21,7 +21,6 @@ window.initRegVehiculos = function() {
         "Otra": ["Otra (Especificar en observaciones)"]
     };
 
-    // 🔹 LISTAS COMPLETAS DE MARCAS/MODELOS PARA AUTOMÓVILES
     const marcasModelosAuto = {
         "JAC Motors": ["Arena / Arena Sport (Sedán)", "Aventura / Aventura Pro (JS3)", "Nevado / Nevado Sport Wagon (JS4)", "Tepuy / Tepuy Pro (JS6)", "Savanna / Savanna Pro Sport (JS8)", "La Venezolana (T6 - Pick-up 4x2 y 4x4)", "La Venezolana Pro (T8 - Pick-up 4x4)", "T9 (Pick-up)", "J7 / J7 Elite Pro", "Refine (Mini-van / MPV)", "Sunray (Vans de carga y pasajeros)", "Bachaco (Camión de carga)", "Búfalo (Camión de carga)", "Leyenda (Camión de carga)"],
         "Toyota": ["Agya", "Yaris / Yaris Cross", "Corolla / Corolla Cross", "Camry", "Prius", "Hilux", "Land Cruiser (Serie 70 / Machito)", "Land Cruiser Prado", "Land Cruiser (Serie 200 / Serie 300)", "Fortuner", "4Runner", "RAV4", "Sequoia", "Tundra", "Tacoma", "Hiace", "Coaster", "Terios (Histórico / Daihatsu)", "Starlet (Histórico)", "Celica (Histórico)", "Merú (Histórico)", "Aygo X", "Aqua", "Avanza", "Rush", "Raize", "Yaris Heykers", "Corolla Hatchback / Corolla Touring Sports", "GR Yaris", "GR Corolla", "GR86", "GR Supra", "Avalon", "Century", "Crown / Crown Signia", "Mirai", "bZ4X / bZ3", "Urban Cruiser", "C-HR", "Harrier", "Highlander / Grand Highlander", "Venza", "Sienna", "Alphard / Vellfire", "Innova", "Roomy", "Sienta", "Voxy", "Noah", "Probox", "LiteAce / TownAce", "Hilux Champ / Rangga", "Proace / Proace City / Proace Max"],
@@ -114,7 +113,65 @@ window.initRegVehiculos = function() {
         setupPreview(id, id.replace('v_foto_', 'prev_v_'));
     });
 
-    // 🔹 5. Envío del Formulario
+    // 🔹 5. 🚨 VALIDACIÓN EN TIEMPO REAL (Placa, Serial Carro, Serial Motor)
+    function debounce(func, wait) {
+        let timeout;
+        return function(...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), wait);
+        };
+    }
+
+    async function checkAvailability(input, msgId, currentTable) {
+        const val = input.value.trim().toUpperCase();
+        const msgEl = document.getElementById(msgId);
+        if (!val) {
+            input.classList.remove('input-valid', 'input-error');
+            if (msgEl) { msgEl.textContent = ''; msgEl.className = 'status-msg'; }
+            return;
+        }
+        
+        if (msgEl) { msgEl.textContent = '⏳ Verificando...'; msgEl.className = 'status-msg'; }
+
+        try {
+            let found = false;
+            
+            // Para PLACA: buscar en AMBAS tablas (Motos y Autos)
+            if (input.id === 'v_placa') {
+                const { data: d1 } = await window.supabaseClient.from(currentTable).select('id').eq('placa', val).maybeSingle();
+                if (d1) found = true;
+                const otherTable = currentTable === 'registro_motos' ? 'registro_automoviles' : 'registro_motos';
+                const { data: d2 } = await window.supabaseClient.from(otherTable).select('id').eq('placa', val).maybeSingle();
+                if (d2) found = true;
+            } 
+            // Para SERIALES: buscar solo en la tabla actual
+            else {
+                const col = input.id === 'v_serial_carroceria' ? 'serial_carroceria' : 'serial_motor';
+                const { data } = await window.supabaseClient.from(currentTable).select('id').eq(col, val).maybeSingle();
+                if (data) found = true;
+            }
+
+            if (found) {
+                input.classList.add('input-error'); input.classList.remove('input-valid');
+                if (msgEl) { msgEl.textContent = '❌ Ya registrado'; msgEl.className = 'status-msg error'; }
+            } else {
+                input.classList.add('input-valid'); input.classList.remove('input-error');
+                if (msgEl) { msgEl.textContent = '✅ Disponible'; msgEl.className = 'status-msg valid'; }
+            }
+        } catch (e) {
+            if (msgEl) msgEl.textContent = '⚠️ Error de conexión';
+        }
+    }
+
+    const validatePlaca = debounce((e) => checkAvailability(e.target, 'msg-placa', document.getElementById('v_tipo').value === 'Motocicleta' ? 'registro_motos' : 'registro_automoviles'), 600);
+    const validateCarro = debounce((e) => checkAvailability(e.target, 'msg-carroceria', document.getElementById('v_tipo').value === 'Motocicleta' ? 'registro_motos' : 'registro_automoviles'), 600);
+    const validateMotor = debounce((e) => checkAvailability(e.target, 'msg-motor', document.getElementById('v_tipo').value === 'Motocicleta' ? 'registro_motos' : 'registro_automoviles'), 600);
+
+    document.getElementById('v_placa')?.addEventListener('input', validatePlaca);
+    document.getElementById('v_serial_carroceria')?.addEventListener('input', validateCarro);
+    document.getElementById('v_serial_motor')?.addEventListener('input', validateMotor);
+
+    // 🔹 6. Envío del Formulario
     if (!form || !btn) return console.error('❌ Formulario no encontrado');
 
     form.addEventListener('submit', async (e) => {
@@ -125,6 +182,10 @@ window.initRegVehiculos = function() {
         const serialCarro = document.getElementById('v_serial_carroceria').value.trim();
         const color = document.getElementById('v_color').value;
         
+        // Validación extra: no permitir enviar si hay errores en vivo
+        const msgPlaca = document.getElementById('msg-placa');
+        if (msgPlaca?.classList.contains('error')) return mostrarError('La placa ya se encuentra registrada.');
+
         if (placa.length < 6) return mostrarError('La placa debe tener al menos 6 caracteres.');
 
         btn.disabled = true; btn.textContent = '⏳ Guardando...'; msg.style.display = 'none';
@@ -180,6 +241,11 @@ window.initRegVehiculos = function() {
             msg.textContent = '✅ Vehículo registrado exitosamente.'; msg.className = 'msg success'; msg.style.display = 'block';
             setTimeout(() => msg.style.display = 'none', 4000);
             form.reset(); selectVehicleType('moto');
+            // Limpiar mensajes de validación
+            ['msg-placa', 'msg-carroceria', 'msg-motor'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.textContent = '';
+            });
         } catch (err) {
             console.error('Error:', err);
             let mensaje = 'Error inesperado. Intente nuevamente.';
