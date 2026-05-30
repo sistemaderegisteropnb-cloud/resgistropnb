@@ -1,5 +1,5 @@
 window.initModVehiculos = function() {
-    // 🔹 LISTAS DE MARCAS/MODELOS (IGUAL QUE REGISTRO)
+    // 🔹 LISTAS DE MARCAS/MODELOS (RESUMIDAS PARA EJEMPLO, USA LAS COMPLETAS SI ES NECESARIO)
     const marcasModelosMoto = {
         "Empire Keeway": ["Matrix Lite", "Matrix II 150", "EK Xpress Lite", "QJ Fort", "Horse (EK Horse 2 SE)", "EK Arsen II 200", "EK Atlas", "Owen 200", "Thunder EK", "TX II 150", "TX 250GS", "V302C"],
         "Bera Motorcycles": ["Bera BWS", "Milán", "Runner", "SBR", "X1", "BRF", "León", "BR200 / DT", "Cobra", "Kavak", "BRZ", "GR", "Antiking"],
@@ -30,11 +30,11 @@ window.initModVehiculos = function() {
     const anioSelect = document.getElementById('m_anio');
     const form = document.getElementById('form-mod-vehiculos');
     const btnBuscar = document.getElementById('btn_buscar_mod');
+    const inputBusqueda = document.getElementById('mod_busqueda_input');
     const msgBox = document.getElementById('msg_mod_vehiculos');
     const msgBusqueda = document.getElementById('mod_msg_busqueda');
 
-    let currentData = null; // Para guardar datos actuales y URLs de fotos
-    let currentTable = ''; // 'registro_motos' o 'registro_automoviles'
+    let currentData = null; // Datos actuales del registro encontrado
 
     // 🔹 1. Poblar Años
     if (anioSelect) {
@@ -63,6 +63,7 @@ window.initModVehiculos = function() {
     function setUIForType(type) {
         const isMoto = type === 'moto';
         document.getElementById('mod_tipo_vehiculo').value = isMoto ? 'Motocicleta' : 'Automóvil';
+        document.getElementById('mod_tabla_destino').value = isMoto ? 'registro_motos' : 'registro_automoviles';
         
         // Botones visuales
         document.getElementById('btn_tipo_moto').classList.toggle('active', isMoto);
@@ -79,24 +80,27 @@ window.initModVehiculos = function() {
         cargarMarcas(type);
     }
 
-    // 🔹 4. Buscador
+    // 🔹 4. Buscador (Placa, Serial Carrocería, Serial Motor)
     btnBuscar.addEventListener('click', async () => {
-        const placa = document.getElementById('mod_placa_input').value.trim().toUpperCase();
-        if (!placa) return mostrarMsg(msgBusqueda, 'Ingrese una placa.', 'error');
+        const val = inputBusqueda.value.trim().toUpperCase();
+        if (!val) return mostrarMsg(msgBusqueda, 'Ingrese un dato para buscar.', 'error');
         
         mostrarMsg(msgBusqueda, '🔍 Buscando...', 'success');
         btnBuscar.disabled = true;
         form.style.display = 'none';
 
         try {
-            // Buscar en Motos
-            let { data: moto, error: errMoto } = await window.supabaseClient.from('registro_motos').select('*').eq('placa', placa).maybeSingle();
+            // Query para Motos: Busca en cualquiera de las 3 columnas
+            // ⚠️ Nota: Supabase usa sintaxis específica para .or() con eq
+            const queryMoto = `placa.eq.${val},serial_carroceria.eq.${val},serial_motor.eq.${val}`;
+            let { data: moto, error: errMoto } = await window.supabaseClient.from('registro_motos').select('*').or(queryMoto).maybeSingle();
             
             if (moto && !errMoto) {
                 cargarDatos(moto, 'registro_motos', 'moto');
             } else {
-                // Buscar en Autos
-                let { data: auto, error: errAuto } = await window.supabaseClient.from('registro_automoviles').select('*').eq('placa', placa).maybeSingle();
+                // Query para Autos
+                const queryAuto = `placa.eq.${val},serial_carroceria.eq.${val},serial_motor.eq.${val}`;
+                let { data: auto, error: errAuto } = await window.supabaseClient.from('registro_automoviles').select('*').or(queryAuto).maybeSingle();
                 
                 if (auto && !errAuto) {
                     cargarDatos(auto, 'registro_automoviles', 'auto');
@@ -115,32 +119,47 @@ window.initModVehiculos = function() {
     // 🔹 5. Cargar Datos en el Formulario
     function cargarDatos(data, tabla, tipo) {
         currentData = data;
-        currentTable = tabla;
         setUIForType(tipo);
         
         form.style.display = 'block';
         mostrarMsg(msgBusqueda, '✅ Registro cargado. Puede editar y guardar.', 'success');
+        window.scrollTo({ top: 0, behavior: 'smooth' }); // Ir arriba para ver el form
 
         // Llenar campos comunes
         document.getElementById('mod_id_original').value = data.id;
-        document.getElementById('m_placa').value = data.placa;
+        document.getElementById('m_placa').value = data.placa; // ✅ Placa cargada y editable
         document.getElementById('m_serial_carroceria').value = data.serial_carroceria || '';
         document.getElementById('m_serial_motor').value = data.serial_motor || '';
-        document.getElementById('m_color').value = data.color;
         document.getElementById('m_direccion_detencion').value = data.direccion_detencion || '';
         document.getElementById('m_observaciones').value = data.observaciones || '';
         document.getElementById('m_estacion').value = data.estacion_policial || '';
         document.getElementById('m_anio').value = data.anio;
         document.getElementById('mod_estatus_badge').textContent = data.estatus || 'Verificación';
 
-        // Llenar Marca y Modelo (Espera a que el evento change de marca cargue los modelos)
+        // ✅ Llenar Color (Manejo seguro)
+        const colorSelect = document.getElementById('m_color');
+        if (data.color) {
+            // Intentar seleccionar por valor exacto
+            const optionExists = Array.from(colorSelect.options).some(opt => opt.value === data.color);
+            if (optionExists) {
+                colorSelect.value = data.color;
+            } else {
+                // Si no existe exacto, buscar coincidencia parcial o poner Otro
+                // Para simplicidad, si no existe, seleccionamos el primero o 'Otro'
+                colorSelect.value = 'Otro'; 
+            }
+        } else {
+            colorSelect.value = '';
+        }
+
+        // Llenar Marca y Modelo
         if (data.marca) {
             marcaSelect.value = data.marca;
             marcaSelect.dispatchEvent(new Event('change')); // Disparar evento para llenar modelos
             setTimeout(() => { modeloSelect.value = data.modelo; }, 100);
         }
 
-        // Campos específicos
+        // Campos específicos Moto
         if (tipo === 'moto') {
             document.getElementById('m_cilindraje').value = data.cilindraje || '';
         }
@@ -163,9 +182,12 @@ window.initModVehiculos = function() {
         e.preventDefault();
         if (!currentData) return mostrarMsg(msgBox, 'Busque un vehículo primero.', 'error');
         
-        // Validaciones básicas
+        // Validaciones
+        const placa = document.getElementById('m_placa').value.trim().toUpperCase();
         const serialCarro = document.getElementById('m_serial_carroceria').value.trim();
         const color = document.getElementById('m_color').value;
+        
+        if (!placa) return mostrarMsg(msgBox, 'La placa es obligatoria.', 'error');
         if (!serialCarro) return mostrarMsg(msgBox, 'El serial de carrocería es obligatorio.', 'error');
         if (!color) return mostrarMsg(msgBox, 'Seleccione un color.', 'error');
 
@@ -178,7 +200,6 @@ window.initModVehiculos = function() {
             const uid = sessionStorage.getItem('pnb_user_id') || 'user';
             const ts = Date.now();
             const tipo = document.getElementById('mod_tipo_vehiculo').value === 'Motocicleta' ? 'moto' : 'auto';
-            const prefix = tipo === 'moto' ? 'm_' : 'm_'; // Los IDs en HTML usan m_ para ambos pero con sufijos
 
             // Función auxiliar para subir foto SOLO SI CAMBIA
             const uploadIfNeeded = async (inputId, currentUrl, suffix) => {
@@ -198,8 +219,9 @@ window.initModVehiculos = function() {
             const f3 = await uploadIfNeeded(tipo === 'moto' ? 'm_foto_der' : 'm_foto_der_a', currentData.foto_lado_derecho, 'rd');
             const f4 = await uploadIfNeeded(tipo === 'moto' ? 'm_foto_izq' : 'm_foto_izq_a', currentData.foto_lado_izquierdo, 'ri');
 
-            // Preparar datos
+            // Preparar datos con PLACA EDITABLE
             const updateData = {
+                placa: placa, // ✅ Se envía la placa nueva
                 serial_carroceria: serialCarro,
                 serial_motor: document.getElementById('m_serial_motor').value.trim() || null,
                 color: color,
@@ -218,15 +240,25 @@ window.initModVehiculos = function() {
             }
 
             // Actualizar en la tabla correspondiente
-            const { error } = await window.supabaseClient.from(currentTable).update(updateData).eq('id', currentData.id);
-            if (error) throw error;
+            const { error } = await window.supabaseClient.from(currentData.id ? (tipo === 'moto' ? 'registro_motos' : 'registro_automoviles') : null)
+                .update(updateData)
+                .eq('id', currentData.id);
+                
+            // Corrección lógica: usar la tabla guardada en hidden input o variable
+            const tablaFinal = document.getElementById('mod_tabla_destino').value;
+            const { error: finalError } = await window.supabaseClient.from(tablaFinal).update(updateData).eq('id', currentData.id);
+            if (finalError) throw finalError;
 
             mostrarMsg(msgBox, '✅ Vehículo actualizado correctamente.', 'success');
-            setTimeout(() => { form.style.display = 'none'; msgBox.style.display = 'none'; document.getElementById('mod_placa_input').value = ''; }, 4000);
+            setTimeout(() => { form.style.display = 'none'; msgBox.style.display = 'none'; inputBusqueda.value = ''; }, 4000);
 
         } catch (err) {
             console.error(err);
-            mostrarMsg(msgBox, '❌ Error: ' + err.message, 'error');
+            let msg = 'Error: ' + err.message;
+            if (err.message.includes('23505') || err.message.includes('unique')) {
+                msg = '❌ Error: La placa ingresada ya existe en otro registro.';
+            }
+            mostrarMsg(msgBox, msg, 'error');
         } finally {
             const btnSubmit = form.querySelector('.btn-submit');
             btnSubmit.disabled = false; btnSubmit.textContent = '💾 Guardar Cambios';
@@ -238,6 +270,6 @@ window.initModVehiculos = function() {
         if (el) { el.textContent = txt; el.className = `msg ${type}`; el.style.display = txt ? 'block' : 'none'; }
     }
 
-    // Inicializar con vista de moto por defecto (aunque se ocultará al buscar)
+    // Inicializar con vista de moto por defecto
     setUIForType('moto');
 };
