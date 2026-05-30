@@ -1,5 +1,5 @@
 window.initModVehiculos = function() {
-    // 🔹 FUNCIÓN GLOBAL PARA VISTA PREVIA DE IMÁGENES (CORRECCIÓN DEL ERROR)
+    // 🔹 FUNCIÓN GLOBAL PARA VISTA PREVIA DE IMÁGENES
     window.previewFile = function(input, imgId) {
         const img = document.getElementById(imgId);
         if (!img) return;
@@ -68,7 +68,7 @@ window.initModVehiculos = function() {
     const msgBox = document.getElementById('msg_mod_vehiculos');
     const msgBusqueda = document.getElementById('mod_msg_busqueda');
 
-    let currentData = null; // Datos actuales del registro encontrado
+    let currentData = null;
 
     // 🔹 1. Poblar Años
     if (anioSelect) {
@@ -93,34 +93,24 @@ window.initModVehiculos = function() {
         if (lista[marca]) lista[marca].forEach(mod => modeloSelect.innerHTML += `<option value="${mod}">${mod}</option>`);
     });
 
-    // 🔹 3. UI Helper para mostrar/ocultar campos según tipo
+    // 🔹 3. UI Helper
     function setUIForType(type) {
         const isMoto = type === 'moto';
         document.getElementById('mod_tipo_vehiculo').value = isMoto ? 'Motocicleta' : 'Automóvil';
         document.getElementById('mod_tabla_destino').value = isMoto ? 'registro_motos' : 'registro_automoviles';
         
-        // Botones visuales
         document.getElementById('btn_tipo_moto').classList.toggle('active', isMoto);
         document.getElementById('btn_tipo_auto').classList.toggle('active', !isMoto);
-
-        // Grids de fotos
         document.getElementById('grid-fotos-moto').style.display = isMoto ? 'grid' : 'none';
         document.getElementById('grid-fotos-auto').style.display = isMoto ? 'none' : 'grid';
-        
-        // Cilindraje
         document.getElementById('box-cilindraje').style.display = isMoto ? 'block' : 'none';
-        
-        // Cargar marcas correctas
         cargarMarcas(type);
     }
 
-    // 🔹 4. 🔒 BUSCADOR EXACTO Y OBLIGATORIO
+    // 🔹 4. Buscador Exacto
     btnBuscar.addEventListener('click', async () => {
         const val = inputBusqueda.value.trim().toUpperCase();
-        
-        if (!val || val.length < 5) {
-            return mostrarMsg(msgBusqueda, '⚠️ Ingrese un dato exacto y completo. Mínimo 5 caracteres.', 'error');
-        }
+        if (!val || val.length < 5) return mostrarMsg(msgBusqueda, '⚠️ Ingrese un dato exacto y completo. Mínimo 5 caracteres.', 'error');
 
         mostrarMsg(msgBusqueda, '🔍 Buscando coincidencia exacta...', 'success');
         btnBuscar.disabled = true;
@@ -128,31 +118,23 @@ window.initModVehiculos = function() {
 
         try {
             const query = `placa.eq.${val},serial_carroceria.eq.${val},serial_motor.eq.${val}`;
-            let { data: moto, error: errMoto } = await window.supabaseClient.from('registro_motos').select('*').or(query).maybeSingle();
+            let { data: moto } = await window.supabaseClient.from('registro_motos').select('*').or(query).maybeSingle();
+            if (moto) { cargarDatos(moto, 'registro_motos', 'moto'); return; }
             
-            if (moto && !errMoto) {
-                cargarDatos(moto, 'registro_motos', 'moto');
-            } else {
-                let { data: auto, error: errAuto } = await window.supabaseClient.from('registro_automoviles').select('*').or(query).maybeSingle();
-                if (auto && !errAuto) {
-                    cargarDatos(auto, 'registro_automoviles', 'auto');
-                } else {
-                    mostrarMsg(msgBusqueda, '❌ No se encontró ningún vehículo con ese dato exacto.', 'error');
-                }
-            }
+            let { data: auto } = await window.supabaseClient.from('registro_automoviles').select('*').or(query).maybeSingle();
+            if (auto) { cargarDatos(auto, 'registro_automoviles', 'auto'); return; }
+            
+            mostrarMsg(msgBusqueda, '❌ No se encontró ningún vehículo con ese dato exacto.', 'error');
         } catch (e) {
             console.error(e);
             mostrarMsg(msgBusqueda, '❌ Error de conexión al buscar.', 'error');
-        } finally {
-            btnBuscar.disabled = false;
-        }
+        } finally { btnBuscar.disabled = false; }
     });
 
-    // 🔹 5. Cargar Datos en el Formulario
+    // 🔹 5. Cargar Datos
     function cargarDatos(data, tabla, tipo) {
         currentData = data;
         setUIForType(tipo);
-        
         form.style.display = 'block';
         mostrarMsg(msgBusqueda, '✅ Registro cargado. Puede editar y guardar.', 'success');
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -167,28 +149,19 @@ window.initModVehiculos = function() {
         document.getElementById('m_anio').value = data.anio;
         document.getElementById('mod_estatus_badge').textContent = data.estatus || 'Verificación';
 
-        // ✅ Llenar Color
         const colorSelect = document.getElementById('m_color');
         if (data.color) {
             const optionExists = Array.from(colorSelect.options).some(opt => opt.value === data.color);
-            if (optionExists) colorSelect.value = data.color;
-            else colorSelect.value = 'Otro'; 
-        } else {
-            colorSelect.value = '';
-        }
+            colorSelect.value = optionExists ? data.color : 'Otro';
+        } else colorSelect.value = '';
 
-        // Llenar Marca y Modelo
         if (data.marca) {
             marcaSelect.value = data.marca;
             marcaSelect.dispatchEvent(new Event('change'));
             setTimeout(() => { modeloSelect.value = data.modelo; }, 150);
         }
+        if (tipo === 'moto') document.getElementById('m_cilindraje').value = data.cilindraje || '';
 
-        if (tipo === 'moto') {
-            document.getElementById('m_cilindraje').value = data.cilindraje || '';
-        }
-
-        // ✅ Cargar Previsualización de Fotos Existentes
         const sufijo = tipo === 'moto' ? '' : '_a';
         mostrarPreview(`m_prev_frontal${sufijo}`, data.foto_frontal);
         mostrarPreview(`m_prev_trasera${sufijo}`, data.foto_trasera);
@@ -204,7 +177,7 @@ window.initModVehiculos = function() {
         }
     }
 
-    // 🔹 6. Guardar Cambios
+    // 🔹 6. Guardar Cambios con VALIDACIÓN Y MENSAJES AMIGABLES
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!currentData) return mostrarMsg(msgBox, 'Busque un vehículo primero.', 'error');
@@ -213,7 +186,12 @@ window.initModVehiculos = function() {
         const serialCarro = document.getElementById('m_serial_carroceria').value.trim();
         const color = document.getElementById('m_color').value;
         
-        if (!placa) return mostrarMsg(msgBox, 'La placa es obligatoria.', 'error');
+        // ✅ VALIDACIÓN DE FORMATO DE PLACA (Coincide con CHECK de la BD)
+        // Ajusta esta regex si tu restricción en BD es diferente
+        const regexPlaca = /^[A-Z0-9]{6,10}$/;
+        if (!placa || !regexPlaca.test(placa)) {
+            return mostrarMsg(msgBox, '❌ La placa debe tener entre 6 y 10 caracteres, solo letras mayúsculas y números (sin espacios ni guiones).', 'error');
+        }
         if (!serialCarro) return mostrarMsg(msgBox, 'El serial de carrocería es obligatorio.', 'error');
         if (!color) return mostrarMsg(msgBox, 'Seleccione un color.', 'error');
 
@@ -232,7 +210,7 @@ window.initModVehiculos = function() {
                 if (!file) return currentUrl;
                 const path = `${uid}/mod_${ts}_${suffix}.jpg`;
                 const { error } = await bucket.upload(path, file, { cacheControl: '3600' });
-                if (error) throw new Error('Error subiendo foto.');
+                if (error) throw new Error('storage');
                 return bucket.getPublicUrl(path).data.publicUrl;
             };
 
@@ -252,21 +230,33 @@ window.initModVehiculos = function() {
                 estacion_policial: document.getElementById('m_estacion').value,
                 foto_frontal: f1, foto_trasera: f2, foto_lado_derecho: f3, foto_lado_izquierdo: f4
             };
-
             if (tipo === 'moto') updateData.cilindraje = document.getElementById('m_cilindraje').value;
 
             const tablaFinal = document.getElementById('mod_tabla_destino').value;
-            const { error: finalError } = await window.supabaseClient.from(tablaFinal).update(updateData).eq('id', currentData.id);
-            if (finalError) throw finalError;
+            const { error } = await window.supabaseClient.from(tablaFinal).update(updateData).eq('id', currentData.id);
+            if (error) throw error;
 
             mostrarMsg(msgBox, '✅ Vehículo actualizado correctamente.', 'success');
             setTimeout(() => { form.style.display = 'none'; msgBox.style.display = 'none'; inputBusqueda.value = ''; }, 4000);
 
         } catch (err) {
-            console.error(err);
-            let msg = 'Error: ' + err.message;
-            if (err.message.includes('23505') || err.message.includes('unique')) msg = '❌ La placa ya existe en otro registro.';
-            mostrarMsg(msgBox, msg, 'error');
+            console.error('Error:', err);
+            // ✅ TRADUCCIÓN DE ERRORES TÉCNICOS A MENSAJES AMIGABLES
+            let mensajeUsuario = 'Ocurrió un error inesperado. Intente nuevamente.';
+            
+            if (err.message?.includes('23514') || err.message?.includes('check constraint') || err.message?.includes('placa_check')) {
+                mensajeUsuario = '❌ El formato de la placa no es válido. Use solo letras mayúsculas y números.';
+            } else if (err.message?.includes('23505') || err.message?.includes('unique_constraint')) {
+                mensajeUsuario = '❌ Esa placa ya está registrada para otro vehículo.';
+            } else if (err.message?.includes('storage') || err.message?.includes('Error subiendo')) {
+                mensajeUsuario = '❌ No se pudieron subir las fotografías. Verifique su conexión.';
+            } else if (err.message?.includes('23503') || err.message?.includes('foreign key')) {
+                mensajeUsuario = '❌ Error de referencia. Contacte al administrador.';
+            } else if (err.message?.includes('PGRST')) {
+                mensajeUsuario = '❌ Error de conexión con la base de datos. Intente en unos minutos.';
+            }
+            
+            mostrarMsg(msgBox, mensajeUsuario, 'error');
         } finally {
             const btnSubmit = form.querySelector('.btn-submit');
             btnSubmit.disabled = false; btnSubmit.textContent = '💾 Guardar Cambios';
