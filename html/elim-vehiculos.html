@@ -5,25 +5,44 @@
   .search-row { display: flex; gap: 10px; }
   .search-row input { flex: 1; padding: 10px; border: 1.5px solid var(--beige-border); border-radius: 5px; text-transform: uppercase; }
   .search-row button { padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 600; }
+  
+  /* 🔹 Mensajes y Banners */
   .search-msg { margin-top: 8px; font-size: 0.85rem; display: none; }
   .search-msg.error { color: #dc2626; }
   .search-msg.success { color: #15803d; }
-  .search-msg.archived { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; padding: 8px; border-radius: 4px; margin-top: 8px; display: none; }
+  
+  /* Mensaje de advertencia (Sujeto eliminado) */
+  .search-msg.archived { 
+    background: #fffbeb; color: #92400e; border: 1px solid #fcd34d; 
+    padding: 10px; border-radius: 6px; margin-top: 10px; display: none; font-weight: 500;
+  }
+  .search-msg.archived strong { color: #78350f; }
+
+  /* Banner de Registro Archivado */
+  .archived-banner { 
+    background: #fef3c7; border: 1px solid #fcd34d; border-radius: 8px; 
+    padding: 16px; margin-bottom: 20px; display: none; text-align: center;
+  }
+  .archived-banner strong { color: #92400e; font-size: 1rem; }
+  .archived-banner p { margin: 5px 0 0; color: #4b5563; }
+
   .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
   .data-item label { font-weight: 600; font-size: 0.8rem; color: #64748b; display: block; margin-bottom: 4px; }
   .data-item input, .data-item select, .data-item textarea { width: 100%; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 4px; padding: 8px; font-size: 0.9rem; pointer-events: none; }
   .img-preview { width: 100%; height: auto; max-height: 200px; object-fit: contain; border: 1px solid var(--beige-border); border-radius: 5px; margin-top: 4px; display: none; background: #fff; }
+  
   .btn-eliminar { width: 100%; padding: 14px; background: #dc2626; color: white; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; margin-top: 20px; font-size: 1rem; }
   .btn-eliminar:hover { background: #b91c1c; }
   .btn-eliminar:disabled { background: #fca5a5; cursor: not-allowed; }
+  
   .btn-reintegrar { width: 100%; padding: 14px; background: #059669; color: white; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; margin-top: 20px; font-size: 1rem; display: none; }
   .btn-reintegrar:hover { background: #047857; }
   .btn-reintegrar:disabled { background: #6ee7b7; cursor: not-allowed; }
+  
   .msg { padding: 12px; margin-top: 15px; border-radius: 5px; text-align: center; display: none; }
   .msg.success { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
   .msg.error { background: #fde2e2; color: #b91c1c; border: 1px solid #fca5a5; }
-  .archived-banner { background: #fef3c7; border: 1px solid #fcd34d; border-radius: 6px; padding: 12px; margin-bottom: 16px; display: none; text-align: center; }
-  .archived-banner strong { color: #92400e; }
+  
   .elim-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
   .elim-modal-box { background: #fff; padding: 24px; border-radius: 8px; width: 90%; max-width: 420px; text-align: center; box-shadow: 0 6px 20px rgba(0,0,0,0.25); }
   .elim-modal-box h4 { margin: 0 0 10px; color: var(--primary); }
@@ -48,16 +67,17 @@
             <button id="btn-buscar-elim">🔍 Buscar</button>
         </div>
         <div id="buscar-msg-elim" class="search-msg"></div>
+        <!-- ✅ MENSAJE DE ADVERTENCIA (Igual que en Personas) -->
         <div id="archived-notice" class="search-msg archived">
             🔒 Vehículo eliminado anteriormente. Use el botón <strong>Reintegrar</strong> si desea volver a activarlo.
         </div>
     </div>
 
     <div id="elim-data-container" style="display: none;">
-        <!-- Banner para registros ya eliminados -->
+        <!-- ✅ BANNER DE REGISTRO ARCHIVADO (Igual que en Personas) -->
         <div id="archived-banner" class="archived-banner">
-            <strong>🗄️ Registro Archivado</strong><br>
-            Eliminado el <span id="archived-date">-</span> por <span id="archived-by">-</span>
+            <strong>🗄️ Registro Archivado</strong>
+            <p>Eliminado el <span id="archived-date">-</span> por <span id="archived-by">-</span></p>
         </div>
 
         <fieldset style="border:1px solid var(--beige-border); border-radius:8px; padding:16px; margin-bottom:18px; background:#fafbfc;">
@@ -91,7 +111,7 @@
         </fieldset>
 
         <fieldset style="border:1px solid var(--beige-border); border-radius:8px; padding:16px; margin-bottom:18px; background:#fafbfc;">
-            <legend>🏛️ Registro</legend>
+            <legend>️ Registro</legend>
             <div class="data-item" style="margin-bottom:10px;"><label>Tipo</label><input id="elim-tipo" readonly style="font-weight:600; color:var(--primary);"></div>
             <div class="data-item" style="margin-bottom:10px;"><label>Estación Policial</label><input id="elim-estacion" readonly></div>
             <div class="data-item" style="margin-bottom:10px;"><label>Dirección de Detención</label><input id="elim-dir-det" readonly></div>
