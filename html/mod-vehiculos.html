@@ -4,8 +4,16 @@
   .registro-form legend { font-weight: 600; color: var(--primary); font-size: 0.95rem; padding: 0 8px; }
   .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
   .registro-form label { font-weight: 500; font-size: 0.85rem; margin-bottom: 4px; display: block; }
-  .registro-form input, .registro-form select, .registro-form textarea { width: 100%; padding: 9px 10px; border: 1.5px solid var(--beige-border); border-radius: 5px; font-size: 0.9rem; background: #fff; }
+  .registro-form input, .registro-form select, .registro-form textarea { width: 100%; padding: 9px 10px; border: 1.5px solid var(--beige-border); border-radius: 5px; font-size: 0.9rem; background: #fff; transition: border 0.2s; }
   .registro-form input:focus, .registro-form select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(0,43,92,0.1); }
+  
+  /*  Indicadores de Validación */
+  .status-msg { display: block; font-size: 0.75rem; margin-top: 4px; font-weight: 600; min-height: 16px; }
+  .status-msg.valid { color: #15803d; }
+  .status-msg.error { color: #dc2626; }
+  .registro-form input.input-valid { border-color: #22c55e; background-color: #f0fdf4; }
+  .registro-form input.input-error { border-color: #ef4444; background-color: #fef2f2; }
+
   .btn-submit { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; margin-top: 15px; }
   .btn-submit:hover { background: var(--secondary); }
   .btn-submit:disabled { background: #9ca3af; cursor: not-allowed; }
@@ -13,39 +21,48 @@
   .msg { padding: 10px; margin-top: 12px; border-radius: 5px; text-align: center; display: none; }
   .msg.success { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
   .msg.error { background: #fde2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+  .img-preview { width: 100%; height: auto; max-height: 200px; object-fit: contain; border: 1px solid var(--beige-border); border-radius: 5px; margin-top: 8px; display: none; background: #f8fafc; }
   
-  /* 🔹 Estilos de Fotos y Preview */
-  .img-preview { width: 100%; height: auto; max-height: 180px; object-fit: contain; border: 1px solid var(--beige-border); border-radius: 5px; margin-top: 8px; display: none; background: #f8fafc; }
-  .status-badge { background: #dcfce7; color: #15803d; font-weight: 700; padding: 6px 12px; border-radius: 6px; border: 1px solid #86efac; font-size: 0.85rem; display: inline-block; }
-  
-  /* 🔹 Buscador */
-  .search-box { padding: 16px; background: #f8fafc; border: 1.5px dashed var(--beige-border); border-radius: 8px; margin-bottom: 20px; }
-  .search-box label { font-weight: 700; display: block; margin-bottom: 8px; font-size: 0.95rem; }
-  .search-row { display: flex; gap: 10px; }
-  .search-row input { flex: 1; padding: 10px; border: 1.5px solid var(--beige-border); border-radius: 5px; font-size: 1rem; text-transform: uppercase; }
-  
-  .tipo-selector { display: flex; gap: 12px; margin-bottom: 20px; opacity: 0.7; pointer-events: none; /* Desactivado visualmente */ }
+  /* 🔹 Selección de Tabla */
+  .selection-panel { display: none; padding: 20px; background: #f1f5f9; border: 2px dashed var(--beige-border); border-radius: 8px; margin-bottom: 20px; text-align: center; }
+  .selection-panel.active { display: block; animation: fadeIn 0.3s; }
+  .selection-title { margin: 0 0 15px; font-weight: 600; color: var(--primary); }
+  .selection-btns { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
+  .btn-select-type { padding: 10px 20px; border: 2px solid var(--primary); background: white; border-radius: 8px; cursor: pointer; font-weight: 600; color: var(--primary); transition: 0.2s; }
+  .btn-select-type:hover { background: var(--primary); color: white; }
+
+  .tipo-selector { display: flex; gap: 12px; margin-bottom: 20px; opacity: 0.7; pointer-events: none; }
   .tipo-btn { flex: 1; padding: 12px; border: 2px solid var(--beige-border); border-radius: 8px; background: #fff; text-align: center; font-weight: 600; color: #64748b; }
   .tipo-btn.active { border-color: var(--primary); background: #f0f4f8; color: var(--primary); box-shadow: 0 2px 8px rgba(0,43,92,0.1); }
 
   .hidden-view { display: none; }
-  @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } .search-row { flex-direction: column; } }
+  @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } .selection-btns { flex-direction: column; } }
 </style>
 
 <div class="card">
     <h3>✏️ Modificar Vehículo</h3>
     
-    <!-- 🔍 BÚSQUEDA MEJORADA -->
-    <div class="search-box">
-        <label>Buscar por Placa, Serial de Carrocería o Serial de Motor:</label>
-        <div class="search-row">
-            <input type="text" id="mod_busqueda_input" placeholder="Ingrese dato a buscar..." maxlength="30">
+    <!-- 🔍 BÚSQUEDA -->
+    <div class="search-box" style="padding: 16px; background: #f8fafc; border: 1.5px dashed var(--beige-border); border-radius: 8px; margin-bottom: 20px;">
+        <label style="font-weight:700; display:block; margin-bottom:8px;">Buscar por Placa, Serial de Carrocería o Motor:</label>
+        <div class="search-row" style="display: flex; gap: 10px;">
+            <input type="text" id="mod_busqueda_input" placeholder="Ej: AA123BC" maxlength="20" style="flex: 1; padding: 10px; border: 1.5px solid var(--beige-border); border-radius: 5px; text-transform: uppercase;">
             <button id="btn_buscar_mod" class="btn-search">🔍 Buscar</button>
         </div>
         <div id="mod_msg_busqueda" class="msg" style="margin-top:8px;"></div>
     </div>
 
-    <!-- 📝 FORMULARIO (Oculto hasta encontrar registro) -->
+    <!-- 🔹 PANEL DE SELECCIÓN (Aparece si hay duplicados entre tablas) -->
+    <div id="selection-panel" class="selection-panel">
+        <h4 class="selection-title">⚠️ Dato encontrado en dos registros distintos</h4>
+        <p style="margin-bottom: 15px; font-size: 0.9rem;">Seleccione qué tipo de vehículo desea editar:</p>
+        <div class="selection-btns">
+            <button class="btn-select-type" onclick="seleccionarRegistro('moto')">🏍️ Editar Motocicleta</button>
+            <button class="btn-select-type" onclick="seleccionarRegistro('auto')">🚙 Editar Automóvil</button>
+        </div>
+    </div>
+
+    <!-- 📝 FORMULARIO (Oculto hasta seleccionar) -->
     <form id="form-mod-vehiculos" class="registro-form" novalidate style="display: none;">
         <input type="hidden" id="mod_id_original">
         <input type="hidden" id="mod_tipo_vehiculo"> <!-- moto o auto -->
@@ -53,7 +70,7 @@
         
         <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
             <label style="font-weight: 600;">Estatus Actual:</label>
-            <span id="mod_estatus_badge" class="status-badge">Verificación</span>
+            <span id="mod_estatus_badge" class="status-badge" style="background:#dcfce7; color:#15803d; font-weight:700; padding:6px 12px; border-radius:6px; border:1px solid #86efac; display:inline-block;">Verificación</span>
         </div>
 
         <!-- 🔹 1. TIPO (Informativo) -->
@@ -128,9 +145,9 @@
             </div>
         </fieldset>
 
-        <!-- 🔹 5. REGISTRO (ESTACIÓN POLICIAL IDÉNTICA A REGISTRO) -->
+        <!-- 🔹 5. REGISTRO -->
         <fieldset>
-            <legend>🏛️ Datos del Registro</legend>
+            <legend>️ Datos del Registro</legend>
             <div class="form-grid">
                 <div class="form-group" style="grid-column: span 2;">
                     <label>Estación policial</label>
@@ -178,3 +195,16 @@
         <div id="msg_mod_vehiculos" class="msg"></div>
     </form>
 </div>
+
+<!-- Script auxiliar para preview inmediato -->
+<script>
+window.previewFile = function(input, imgId) {
+    const img = document.getElementById(imgId);
+    if (!img) return;
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) { img.src = e.target.result; img.style.display = 'block'; }
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>
