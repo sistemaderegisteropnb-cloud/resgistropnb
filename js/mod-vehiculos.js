@@ -107,27 +107,51 @@ window.initModVehiculos = function() {
         cargarMarcas(type);
     }
 
+    // 🔹 FUNCIÓN CENTRALIZADA PARA MOSTRAR MENSAJES CON AUTO-OCULTAMIENTO
+    function mostrarMsgAuto(el, txt, type, autoHide = true, delay = 4000) {
+        if (!el) return;
+        el.textContent = txt;
+        el.className = `msg ${type}`;
+        el.style.display = txt ? 'block' : 'none';
+        
+        // ✅ Auto-ocultar después de X segundos (solo para mensajes de éxito/advertencia)
+        if (autoHide && txt && type !== 'error') {
+            setTimeout(() => {
+                el.style.display = 'none';
+                el.textContent = '';
+            }, delay);
+        }
+    }
+
     // 🔹 4. Buscador Exacto
     btnBuscar.addEventListener('click', async () => {
         const val = inputBusqueda.value.trim().toUpperCase();
-        if (!val || val.length < 5) return mostrarMsg(msgBusqueda, '⚠️ Ingrese un dato exacto y completo. Mínimo 5 caracteres.', 'error');
+        if (!val || val.length < 5) return mostrarMsgAuto(msgBusqueda, '⚠️ Ingrese un dato exacto y completo. Mínimo 5 caracteres.', 'error');
 
-        mostrarMsg(msgBusqueda, '🔍 Buscando coincidencia exacta...', 'success');
+        mostrarMsgAuto(msgBusqueda, '🔍 Buscando coincidencia exacta...', 'success', false); // No auto-ocultar mientras busca
         btnBuscar.disabled = true;
         form.style.display = 'none';
 
         try {
             const query = `placa.eq.${val},serial_carroceria.eq.${val},serial_motor.eq.${val}`;
             let { data: moto } = await window.supabaseClient.from('registro_motos').select('*').or(query).maybeSingle();
-            if (moto) { cargarDatos(moto, 'registro_motos', 'moto'); return; }
+            if (moto) { 
+                cargarDatos(moto, 'registro_motos', 'moto'); 
+                mostrarMsgAuto(msgBusqueda, '✅ Registro cargado. Puede editar y guardar.', 'success'); // ✅ Se auto-ocultará
+                return; 
+            }
             
             let { data: auto } = await window.supabaseClient.from('registro_automoviles').select('*').or(query).maybeSingle();
-            if (auto) { cargarDatos(auto, 'registro_automoviles', 'auto'); return; }
+            if (auto) { 
+                cargarDatos(auto, 'registro_automoviles', 'auto'); 
+                mostrarMsgAuto(msgBusqueda, '✅ Registro cargado. Puede editar y guardar.', 'success'); // ✅ Se auto-ocultará
+                return; 
+            }
             
-            mostrarMsg(msgBusqueda, '❌ No se encontró ningún vehículo con ese dato exacto.', 'error');
+            mostrarMsgAuto(msgBusqueda, '❌ No se encontró ningún vehículo con ese dato exacto.', 'error');
         } catch (e) {
             console.error(e);
-            mostrarMsg(msgBusqueda, '❌ Error de conexión al buscar.', 'error');
+            mostrarMsgAuto(msgBusqueda, '❌ Error de conexión al buscar.', 'error');
         } finally { btnBuscar.disabled = false; }
     });
 
@@ -136,7 +160,8 @@ window.initModVehiculos = function() {
         currentData = data;
         setUIForType(tipo);
         form.style.display = 'block';
-        mostrarMsg(msgBusqueda, '✅ Registro cargado. Puede editar y guardar.', 'success');
+        // El mensaje de éxito ya se muestra en el buscador
+        
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
         document.getElementById('mod_id_original').value = data.id;
@@ -180,24 +205,23 @@ window.initModVehiculos = function() {
     // 🔹 6. Guardar Cambios con VALIDACIÓN Y MENSAJES AMIGABLES
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        if (!currentData) return mostrarMsg(msgBox, 'Busque un vehículo primero.', 'error');
+        if (!currentData) return mostrarMsgAuto(msgBox, 'Busque un vehículo primero.', 'error');
         
         const placa = document.getElementById('m_placa').value.trim().toUpperCase();
         const serialCarro = document.getElementById('m_serial_carroceria').value.trim();
         const color = document.getElementById('m_color').value;
         
-        // ✅ VALIDACIÓN DE FORMATO DE PLACA (Coincide con CHECK de la BD)
-        // Ajusta esta regex si tu restricción en BD es diferente
+        // ✅ VALIDACIÓN DE FORMATO DE PLACA
         const regexPlaca = /^[A-Z0-9]{6,10}$/;
         if (!placa || !regexPlaca.test(placa)) {
-            return mostrarMsg(msgBox, '❌ La placa debe tener entre 6 y 10 caracteres, solo letras mayúsculas y números (sin espacios ni guiones).', 'error');
+            return mostrarMsgAuto(msgBox, '❌ La placa debe tener entre 6 y 10 caracteres, solo letras mayúsculas y números.', 'error');
         }
-        if (!serialCarro) return mostrarMsg(msgBox, 'El serial de carrocería es obligatorio.', 'error');
-        if (!color) return mostrarMsg(msgBox, 'Seleccione un color.', 'error');
+        if (!serialCarro) return mostrarMsgAuto(msgBox, 'El serial de carrocería es obligatorio.', 'error');
+        if (!color) return mostrarMsgAuto(msgBox, 'Seleccione un color.', 'error');
 
         const btnSubmit = form.querySelector('.btn-submit');
         btnSubmit.disabled = true; btnSubmit.textContent = '⏳ Guardando...';
-        mostrarMsg(msgBox, '', '');
+        mostrarMsgAuto(msgBox, '', ''); // Limpiar
 
         try {
             const bucket = window.supabaseClient.storage.from('fotos_vehiculos');
@@ -236,12 +260,14 @@ window.initModVehiculos = function() {
             const { error } = await window.supabaseClient.from(tablaFinal).update(updateData).eq('id', currentData.id);
             if (error) throw error;
 
-            mostrarMsg(msgBox, '✅ Vehículo actualizado correctamente.', 'success');
-            setTimeout(() => { form.style.display = 'none'; msgBox.style.display = 'none'; inputBusqueda.value = ''; }, 4000);
+            // ✅ Mensaje de éxito con auto-ocultamiento
+            mostrarMsgAuto(msgBox, '✅ Vehículo actualizado correctamente.', 'success');
+            // Opcional: limpiar formulario después de éxito
+            setTimeout(() => { form.style.display = 'none'; inputBusqueda.value = ''; }, 4000);
 
         } catch (err) {
             console.error('Error:', err);
-            // ✅ TRADUCCIÓN DE ERRORES TÉCNICOS A MENSAJES AMIGABLES
+            // ✅ TRADUCCIÓN DE ERRORES TÉCNICOS A MENSAJES AMIGABLES (sin auto-ocultar errores)
             let mensajeUsuario = 'Ocurrió un error inesperado. Intente nuevamente.';
             
             if (err.message?.includes('23514') || err.message?.includes('check constraint') || err.message?.includes('placa_check')) {
@@ -256,16 +282,12 @@ window.initModVehiculos = function() {
                 mensajeUsuario = '❌ Error de conexión con la base de datos. Intente en unos minutos.';
             }
             
-            mostrarMsg(msgBox, mensajeUsuario, 'error');
+            mostrarMsgAuto(msgBox, mensajeUsuario, 'error', false); // ❌ Los errores NO se auto-ocultan
         } finally {
             const btnSubmit = form.querySelector('.btn-submit');
             btnSubmit.disabled = false; btnSubmit.textContent = '💾 Guardar Cambios';
         }
     });
-
-    function mostrarMsg(el, txt, type) {
-        if (el) { el.textContent = txt; el.className = `msg ${type}`; el.style.display = txt ? 'block' : 'none'; }
-    }
 
     setUIForType('moto');
 };
